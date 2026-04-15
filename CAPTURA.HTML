@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PHOTO MOVIE - Admin</title>
+    <style>
+        :root {
+            --neon-purple: #bc13fe;
+            --dark-bg: #050505;
+            --card-bg: #121212;
+        }
+
+        body {
+            margin: 0; padding: 0; background: var(--dark-bg);
+            font-family: 'Segoe UI', sans-serif; color: white; overflow-x: hidden;
+        }
+
+        /* 1. TELA INICIAL */
+        .screen { display: none; min-height: 100vh; padding: 20px; box-sizing: border-box; flex-direction: column; align-items: center; justify-content: center; }
+        .active { display: flex; }
+
+        .neon-title {
+            font-size: 3rem; font-weight: 900; color: #fff;
+            text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px var(--neon-purple), 0 0 40px var(--neon-purple);
+            animation: pulse 1.5s infinite alternate;
+            margin-bottom: 0;
+        }
+        @keyframes pulse {
+            from { opacity: 1; transform: scale(1); }
+            to { opacity: 0.8; transform: scale(1.05); text-shadow: 0 0 10px #fff, 0 0 30px var(--neon-purple), 0 0 60px var(--neon-purple); }
+        }
+        .subtitle { color: white; font-weight: 300; letter-spacing: 3px; margin-top: 5px; margin-bottom: 40px; }
+
+        /* BOTÕES E INPUTS */
+        .btn-main {
+            background: var(--neon-purple); color: white; border: none;
+            padding: 15px 40px; border-radius: 30px; font-weight: bold;
+            text-transform: uppercase; cursor: pointer; box-shadow: 0 0 15px var(--neon-purple);
+        }
+
+        .form-card {
+            background: var(--card-bg); width: 100%; max-width: 500px;
+            padding: 25px; border-radius: 15px; border: 1px solid #333;
+        }
+        label { display: block; margin: 15px 0 5px; color: var(--neon-purple); font-size: 12px; font-weight: bold; }
+        input, select {
+            width: 100%; padding: 12px; background: #000; border: 1px solid #333;
+            color: white; border-radius: 8px; box-sizing: border-box;
+        }
+
+        /* 7. EFEITOS */
+        .grid-effects { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .opt-effect {
+            background: #1a1a1a; padding: 10px; border: 1px solid #333;
+            text-align: center; border-radius: 5px; font-size: 12px; cursor: pointer;
+        }
+        .opt-effect.selected { border-color: var(--neon-purple); background: #2b103d; }
+
+        /* 8. PREVIEW MOLDURA */
+        .preview-frame {
+            width: 120px; height: 213px; border: 2px dashed #444; margin: 15px auto;
+            background-size: contain; background-repeat: no-repeat; background-position: center;
+            display: flex; align-items: center; justify-content: center; font-size: 10px; color: #666;
+        }
+
+        /* 9. MÚSICA */
+        .music-player { background: #000; padding: 10px; border-radius: 8px; margin-top: 10px; }
+
+        /* 10. CÂMERA */
+        #camera-screen video { width: 100%; height: 100vh; object-fit: cover; }
+    </style>
+</head>
+<body>
+
+    <div id="screen-home" class="screen active">
+        <h1 class="neon-title">PHOTO MOVIE</h1>
+        <div class="subtitle">colecionando momentos</div>
+        <button class="btn-main" onclick="nav('screen-config')">Iniciar Evento</button>
+    </div>
+
+    <div id="screen-config" class="screen">
+        <div class="form-card">
+            <h2 style="margin-top:0; color:var(--neon-purple)">NOVO EVENTO</h2>
+            
+            <label>NOME DO EVENTO</label>
+            <input type="text" id="cfg-nome" placeholder="Ex: Casamento Silva">
+
+            <label>DATA</label>
+            <input type="date" id="cfg-data">
+
+            <label>TEMPO DE GRAVAÇÃO (SEG)</label>
+            <select id="cfg-tempo">
+                <option value="8">8 Segundos</option>
+                <option value="9">9 Segundos</option>
+                <option value="10">10 Segundos</option>
+                <option value="11">11 Segundos</option>
+            </select>
+
+            <label>EFEITOS DE MOVIMENTO</label>
+            <div class="grid-effects">
+                <div class="opt-effect" onclick="selEffect(this, '2x-05x')">2x > 0.5x</div>
+                <div class="opt-effect" onclick="selEffect(this, '05x-2x-05x')">0.5x > 2x > 0.5x</div>
+                <div class="opt-effect" onclick="selEffect(this, '2x-05x-2x')">2x > 0.5x > 2x</div>
+                <div class="opt-effect" onclick="selEffect(this, '1x-05x-1x')">1x > 0.5x > 1x</div>
+            </div>
+
+            <label>UPLOAD MOLDURA (.PNG)</label>
+            <input type="file" id="cfg-moldura" accept="image/png" onchange="previewFrame(this)">
+            <div id="frame-view" class="preview-frame">PREVIEW 9:16</div>
+
+            <label>IMPORTAR MÚSICA</label>
+            <input type="file" id="cfg-musica" accept="audio/*" onchange="loadMusic(this)">
+            <div class="music-player" id="player-area" style="display:none">
+                <audio id="audio-preview" controls style="width:100%"></audio>
+                <label>INÍCIO DA MÚSICA (OFFSET)</label>
+                <input type="range" id="music-start" min="0" max="100" value="0">
+            </div>
+
+            <button class="btn-main" style="width:100%; margin-top:20px;" onclick="iniciarGravacao()">GRAVAR VÍDEO</button>
+        </div>
+    </div>
+
+    <div id="screen-camera" class="screen" style="padding:0">
+        <video id="video-preview" autoplay playsinline muted></video>
+        <div id="overlay-camera" style="position:absolute; inset:0; pointer-events:none; background-size:contain; background-repeat:no-repeat; background-position:center;"></div>
+        <div style="position:absolute; bottom:30px; width:100%; text-align:center;">
+            <div id="rec-timer" style="font-size:24px; font-weight:bold; margin-bottom:10px;">00s</div>
+            <button class="btn-main" id="btn-shoot" onclick="startCapture()">REC</button>
+        </div>
+    </div>
+
+    <script>
+        let config = { efeito: '', moldura: null, musica: null };
+
+        function nav(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function selEffect(el, val) {
+            document.querySelectorAll('.opt-effect').forEach(o => o.classList.remove('selected'));
+            el.classList.add('selected');
+            config.efeito = val;
+        }
+
+        function previewFrame(input) {
+            if (input.files[0]) {
+                const url = URL.createObjectURL(input.files[0]);
+                document.getElementById('frame-view').style.backgroundImage = `url(${url})`;
+                document.getElementById('frame-view').innerText = "";
+                config.moldura = url;
+            }
+        }
+
+        function loadMusic(input) {
+            if (input.files[0]) {
+                const url = URL.createObjectURL(input.files[0]);
+                const player = document.getElementById('audio-preview');
+                player.src = url;
+                document.getElementById('player-area').style.display = 'block';
+                config.musica = url;
+            }
+        }
+
+        async function iniciarGravacao() {
+            nav('screen-camera');
+            document.getElementById('overlay-camera').style.backgroundImage = `url(${config.moldura})`;
+            
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "environment", width: 1080, height: 1920 }
+                });
+                document.getElementById('video-preview').srcObject = stream;
+            } catch (e) { alert("Câmera traseira não encontrada ou bloqueada."); }
+        }
+
+        function startCapture() {
+            let tempo = parseInt(document.getElementById('cfg-tempo').value);
+            let btn = document.getElementById('btn-shoot');
+            let timerEl = document.getElementById('rec-timer');
+            
+            btn.disabled = true;
+            btn.innerText = "GRAVANDO...";
+
+            let count = tempo;
+            let interval = setInterval(() => {
+                count--;
+                timerEl.innerText = count.toString().padStart(2, '0') + "s";
+                if(count <= 0) {
+                    clearInterval(interval);
+                    alert("Gravação concluída! Processando efeitos...");
+                    location.reload(); // Reinicia para o próximo
+                }
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
