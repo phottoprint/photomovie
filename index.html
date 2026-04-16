@@ -3,143 +3,226 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHOTO MOVIE - Câmera Ultra Fluida</title>
+    <title>PHOTO MOVIE - Pro v4.1</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; }
-        
-        /* Títulos Fixos e Pulsantes - Não saem daqui por nada */
-        .brand-fixed {
-            position: fixed; top: 0; left: 0; width: 100%; text-align: center;
-            padding-top: 25px; z-index: 999; pointer-events: none;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+        :root { --neon: #9200ff; --bg: #000; }
+        body { margin: 0; background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
+
+        /* TITULO FIXO NO TOPO */
+        .brand-header {
+            position: fixed; top: 0; width: 100%; text-align: center;
+            padding: 20px 0; z-index: 1000; background: linear-gradient(to bottom, black, transparent);
         }
         .neon-title { 
-            font-size: 2.8rem; font-weight: 900; color: #9200ff;
-            text-shadow: 0 0 15px #9200ff; margin: 0;
-            animation: pulse 1s infinite alternate;
+            font-size: 2.5rem; font-weight: 900; color: var(--neon); margin: 0;
+            text-shadow: 0 0 15px var(--neon); animation: pulse 1s infinite alternate;
         }
-        .subtitle { color: white; letter-spacing: 4px; font-size: 0.7rem; animation: pulse 1.2s infinite alternate; }
+        .subtitle { letter-spacing: 4px; font-size: 0.7rem; text-transform: uppercase; }
         @keyframes pulse { from { opacity: 0.7; transform: scale(1); } to { opacity: 1; transform: scale(1.03); } }
 
-        /* Preview - Usamos o VIDEO direto para ser fluido, o Canvas fica oculto só para gravar */
-        #preview-video { width: 100vw; height: 100vh; object-fit: cover; }
-        #moldura-overlay { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; object-fit: cover; }
-        #hidden-canvas { display: none; }
+        /* TELAS */
+        .screen { display: none; min-height: 100vh; width: 100vw; flex-direction: column; align-items: center; }
+        .active { display: flex; }
 
-        /* Controles */
-        .controls { position: fixed; bottom: 80px; width: 100%; display: flex; justify-content: center; z-index: 100; }
-        .shutter { width: 80px; height: 80px; border: 5px solid white; border-radius: 50%; box-shadow: 0 0 20px #9200ff; cursor: pointer; }
-        
-        /* Contador */
-        #status-msg { 
-            position: fixed; inset: 0; display: none; align-items: center; justify-content: center; 
-            z-index: 500; font-size: 8rem; font-weight: 900; color: white; background: rgba(0,0,0,0.3);
+        /* CAMERA FLUIDA */
+        #preview-container { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
+        #vid-layer { width: 100%; height: 100%; object-fit: cover; }
+        #frame-layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; z-index: 10; }
+        #record-canvas { display: none; } /* Canvas oculto para não pesar o processador */
+
+        /* CONTROLES */
+        .controls { position: absolute; bottom: 60px; width: 100%; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
+        .shutter { width: 80px; height: 80px; border: 5px solid white; border-radius: 50%; box-shadow: 0 0 20px var(--neon); cursor: pointer; }
+        .btn-back { font-size: 2rem; color: var(--neon); background: none; border: none; cursor: pointer; }
+
+        /* GALERIA */
+        .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; margin-top: 120px; padding-bottom: 150px; width: 100%; box-sizing: border-box; }
+        .video-card { aspect-ratio: 9/16; background: #111; border-radius: 12px; border: 1px solid #333; overflow: hidden; position: relative; }
+        .video-card video { width: 100%; height: 100%; object-fit: cover; }
+
+        /* MODAL ZOOM */
+        #modal-zoom { 
+            position: fixed; inset: 0; background: #000; z-index: 2000; display: none; 
+            flex-direction: column; align-items: center; justify-content: center; padding: 20px;
         }
+        #qrcode-box { background: white; padding: 10px; border-radius: 10px; margin: 20px 0; }
+        
+        /* AVISOS */
+        #status-msg { position: fixed; inset: 0; z-index: 1500; display: none; align-items: center; justify-content: center; font-size: 6rem; font-weight: 900; background: rgba(0,0,0,0.4); }
+        
+        /* BOTÃO VOLTAR RODAPÉ (SUBIU) */
+        .footer-nav { position: fixed; bottom: 80px; width: 100%; display: flex; justify-content: center; z-index: 500; }
+        .btn-main { background: var(--neon); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-weight: bold; text-transform: uppercase; cursor: pointer; min-width: 200px; }
     </style>
 </head>
 <body>
 
-    <div class="brand-fixed">
+    <div class="brand-header">
         <h1 class="neon-title">PHOTO MOVIE</h1>
-        <div class="subtitle">COLECIONANDO MOMENTOS</div>
+        <div class="subtitle">Colecionando Momentos</div>
     </div>
 
-    <img id="moldura-overlay" src="" alt="">
-    
-    <video id="preview-video" autoplay playsinline muted></video>
-    
-    <canvas id="hidden-canvas" width="720" height="1280"></canvas>
+    <div id="screen-camera" class="screen active">
+        <div id="preview-container">
+            <video id="vid-layer" autoplay playsinline muted></video>
+            <img id="frame-layer" src="" alt=""> <canvas id="record-canvas" width="720" height="1280"></canvas>
+            
+            <div id="status-msg"></div>
 
-    <div id="status-msg">3</div>
+            <div class="controls">
+                <button class="btn-back" onclick="irParaGaleria()">🎞️</button>
+                <div class="shutter" onclick="iniciarFluxo()"></div>
+                <div style="width:40px"></div>
+            </div>
+        </div>
+    </div>
 
-    <div class="controls">
-        <div class="shutter" onclick="iniciarContagem()"></div>
+    <div id="screen-gallery" class="screen">
+        <div id="gallery-container" class="gallery-grid"></div>
+        <div class="footer-nav">
+            <button class="btn-main" style="background:#222;" onclick="nav('screen-camera')">VOLTAR PARA CÂMERA</button>
+        </div>
+    </div>
+
+    <div id="modal-zoom">
+        <video id="zoom-video" style="width:100%; max-width:320px; border-radius:15px;" controls autoplay loop></video>
+        <div id="qrcode-box"></div>
+        <a id="download-link" class="btn-main" style="text-align:center; text-decoration:none; display:block; margin-bottom:10px;">BAIXAR AGORA</a>
+        <button class="btn-main" style="background:#333;" onclick="fecharZoom()">FECHAR</button>
     </div>
 
 <script>
-    const video = document.getElementById('preview-video');
-    const canvas = document.getElementById('hidden-canvas');
+    let db;
+    let stream, recorder, chunks = [];
+    const video = document.getElementById('vid-layer');
+    const canvas = document.getElementById('record-canvas');
     const ctx = canvas.getContext('2d');
-    const molduraImg = document.getElementById('moldura-overlay');
+    const frame = document.getElementById('frame-layer');
     const status = document.getElementById('status-msg');
-    let recorder;
-    let chunks = [];
 
-    // 1. CARREGAR TUDO ANTES DE LIBERAR A CAMERA
-    async function init() {
-        // Recupera a moldura que você salvou no IndexedDB ou LocalStorage no passo anterior
-        // Para teste, estou pegando uma do sistema ou a última usada
-        const savedFrame = localStorage.getItem('activeFrame');
-        if(savedFrame) molduraImg.src = savedFrame;
+    // 1. BANCO DE DADOS LOCAL
+    const req = indexedDB.open("PhotoMovieDB", 1);
+    req.onupgradeneeded = e => {
+        db = e.target.result;
+        db.createObjectStore("movies", { keyPath: "id", autoIncrement: true });
+    };
+    req.onsuccess = e => { db = e.target.result; initCamera(); };
+
+    // 2. INICIAR CAMERA
+    async function initCamera() {
+        // PEGUE A MOLDURA (Simulação: use o link da sua moldura PNG aqui)
+        frame.src = "https://i.imgur.com/8f5N1mU.png"; // <-- COLOQUE SUA MOLDURA AQUI
 
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } },
+            stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: "environment", width: 1280, height: 720 },
                 audio: false 
             });
             video.srcObject = stream;
-        } catch (err) {
-            alert("Erro na câmera: " + err);
-        }
+        } catch (err) { alert("Erro na câmera: " + err); }
     }
 
-    // 2. CONTAGEM REGRESSIVA
-    function iniciarContagem() {
+    // 3. FLUXO DE GRAVAÇÃO
+    function iniciarFluxo() {
         let c = 3;
         status.style.display = 'flex';
         status.innerText = c;
         
         const timer = setInterval(() => {
             c--;
-            if(c > 0) {
-                status.innerText = c;
-            } else {
-                clearInterval(timer);
-                status.innerText = "";
-                gravar();
-            }
+            if(c > 0) status.innerText = c;
+            else { clearInterval(timer); status.innerText = ""; gravar(); }
         }, 1000);
     }
 
-    // 3. GRAVAÇÃO SEM TRAVAR O PREVIEW
     function gravar() {
         chunks = [];
-        // O segredo da fluidez: O Canvas só começa a desenhar no momento do REC
+        // O Canvas só desenha no REC para manter a fluidez do vídeo nativo
         const recordLoop = () => {
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            if(molduraImg.src) ctx.drawImage(molduraImg, 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(video, 0, 0, 720, 1280);
+            if(frame.src) ctx.drawImage(frame, 0, 0, 720, 1280);
             if(recorder && recorder.state === "recording") requestAnimationFrame(recordLoop);
         };
 
-        const stream = canvas.captureStream(30); // 30 FPS estável
-        recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp8' });
-
+        const recStream = canvas.captureStream(30);
+        recorder = new MediaRecorder(recStream, { mimeType: 'video/webm;codecs=vp8' });
+        
         recorder.ondataavailable = e => chunks.push(e.data);
         recorder.onstop = () => {
             const blob = new Blob(chunks, { type: 'video/webm' });
-            console.log("Vídeo Processado com Moldura!");
-            // PRÓXIMO PASSO: Enviar para o IndexedDB da Galeria
+            salvarNoDB(blob);
         };
 
         recorder.start();
         recordLoop();
 
-        let tempo = 10;
-        const countdown = setInterval(() => {
-            tempo--;
-            status.innerText = tempo + "s";
-            if(tempo <= 3) status.style.color = "#ff8c00";
-            if(tempo <= 0) {
-                clearInterval(countdown);
-                recorder.stop();
+        let t = 10;
+        const count = setInterval(() => {
+            t--;
+            status.innerText = t + "s";
+            if(t <= 3) status.style.color = "#ff8c00";
+            if(t <= 0) {
+                clearInterval(count); recorder.stop();
                 status.innerText = "FINALIZOU!";
                 status.style.color = "#ff0000";
-                setTimeout(() => { status.style.display = 'none'; status.style.color = "white"; }, 1500);
+                setTimeout(() => { status.style.display = 'none'; status.style.color = 'white'; irParaGaleria(); }, 1200);
             }
         }, 1000);
     }
 
-    init();
+    // 4. PERSISTÊNCIA E GALERIA
+    function salvarNoDB(blob) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            db.transaction("movies", "readwrite").objectStore("movies").add({
+                video: e.target.result,
+                date: Date.now()
+            });
+        };
+        reader.readAsDataURL(blob);
+    }
+
+    function irParaGaleria() {
+        nav('screen-gallery');
+        const cont = document.getElementById('gallery-container');
+        cont.innerHTML = "";
+        
+        db.transaction("movies", "readonly").objectStore("movies").openCursor(null, 'prev').onsuccess = e => {
+            const cursor = e.target.result;
+            if(cursor) {
+                const data = cursor.value.video;
+                cont.innerHTML += `
+                    <div class="video-card" onclick="abrirZoom('${data}')">
+                        <video src="${data}" muted></video>
+                    </div>`;
+                cursor.continue();
+            }
+        };
+    }
+
+    function nav(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    // 5. ZOOM, QR CODE E BAIXAR
+    function abrirZoom(url) {
+        document.getElementById('zoom-video').src = url;
+        const qrb = document.getElementById('qrcode-box');
+        qrb.innerHTML = "";
+        new QRCode(qrb, { text: url, width: 180, height: 180 });
+        
+        const dl = document.getElementById('download-link');
+        dl.href = url; dl.download = "video_com_moldura.webm";
+
+        document.getElementById('modal-zoom').style.display = 'flex';
+    }
+
+    function fecharZoom() {
+        document.getElementById('zoom-video').pause();
+        document.getElementById('modal-zoom').style.display = 'none';
+    }
 </script>
 </body>
 </html>
