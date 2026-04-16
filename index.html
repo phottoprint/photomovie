@@ -136,7 +136,8 @@
 
         // AJAX para monitorar progresso do upload no 4G
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'https://SEU_WORKER.workers.dev/upload', true);
+        // Substitua o 'photomovie.maxprimefotovideo' pelo subdomínio real do seu worker
+xhr.open('POST', 'https://photomovie.maxprimefotovideo.workers.dev/upload', true);
         
         xhr.upload.onprogress = (e) => {
             if (e.lengthComputable) {
