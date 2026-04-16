@@ -104,7 +104,7 @@
     const canvas = document.getElementById('record-canvas');
     const ctx = canvas.getContext('2d');
     const frameImg = document.getElementById('moldura-r2');
-    const WORKER_URL = "SUA_URL_DO_CLOUDFLARE_AQUI"; // Atualize aqui!
+    const WORKER_URL = "photomovie.maxprimefotovideo.workers.dev"; // Atualize aqui!
 
     const req = indexedDB.open("PhotoMovieDB", 1);
     req.onupgradeneeded = e => { e.target.result.createObjectStore("movies", { keyPath: "id", autoIncrement: true }); };
