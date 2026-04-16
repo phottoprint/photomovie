@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CENTRAL - Photo Movie</title>
+    <style>
+        :root { 
+            --turquesa-dark: #003333; 
+            --dourado: #c5a059;      
+            --dourado-dark: #8e6d2d;
+            --bg-modal: rgba(0, 20, 20, 0.98);
+            --cinza-minimal: #666666; 
+        }
+        
+        body { 
+            margin: 0; 
+            background: var(--turquesa-dark); 
+            color: white; 
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .header {
+            margin-top: 1.8cm;
+            text-align: center;
+            z-index: 10;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: var(--dourado);
+            font-size: 52px; 
+            font-weight: 900;
+            letter-spacing: 3px;
+            margin: 0;
+            text-transform: uppercase;
+            animation: pulse-gold 3s infinite ease-in-out;
+        }
+
+        .header p {
+            color: var(--dourado); 
+            font-size: 20px; 
+            margin: -5px 0 0 0;
+            letter-spacing: 4px;
+            font-weight: 300;
+            text-transform: lowercase;
+            opacity: 0.9;
+        }
+
+        @keyframes pulse-gold {
+            0% { text-shadow: 0 0 5px rgba(197, 160, 89, 0.2); transform: scale(1); }
+            50% { text-shadow: 0 0 25px rgba(197, 160, 89, 0.7); transform: scale(1.02); }
+            100% { text-shadow: 0 0 5px rgba(197, 160, 89, 0.2); transform: scale(1); }
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        /* ESTILO BASE DOS BOTÕES */
+        .btn-central {
+            width: 100%;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 12px;
+            text-transform: uppercase;
+            font-weight: 800;
+            font-size: 15px;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            display: none; 
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        /* BOTÃO PRINCIPAL: CRIAR EVENTO */
+        .btn-create {
+            background: linear-gradient(135deg, var(--dourado), var(--dourado-dark));
+            color: #1a1a1a;
+            border: none;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+
+        /* BOTÃO SECUNDÁRIO: GALERIA (Estilo Glass Dourado) */
+        #btn-galeria {
+            background: rgba(197, 160, 89, 0.1);
+            color: var(--dourado);
+            border: 1px solid var(--dourado);
+            margin-bottom: 25px;
+        }
+
+        #btn-galeria:hover {
+            background: rgba(197, 160, 89, 0.2);
+            box-shadow: 0 0 15px rgba(197, 160, 89, 0.3);
+        }
+
+        /* BOTÃO LOGIN */
+        #btn-login {
+            display: block;
+            background: transparent;
+            color: var(--dourado);
+            border: 2px solid var(--dourado);
+            margin-top: 50px;
+        }
+
+        /* LISTA DE EVENTOS */
+        .event-list-container {
+            width: 100%;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .event-card {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(197, 160, 89, 0.2);
+            padding: 18px;
+            border-radius: 15px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        
+        .event-card:active { transform: scale(0.98); }
+
+        .event-info h4 { margin: 0; color: var(--dourado); text-transform: uppercase; font-size: 16px; }
+        .event-info span { font-size: 11px; color: #888; }
+
+        .btn-action {
+            background: rgba(255,59,48,0.1);
+            border: 1px solid rgba(255,59,48,0.3);
+            color: #ff3b30;
+            width: 38px; height: 38px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* MODAL SENHA */
+        #modal-senha {
+            position: fixed; inset: 0;
+            background: var(--bg-modal);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            backdrop-filter: blur(15px);
+        }
+
+        .modal-content {
+            background: #002222;
+            padding: 35px;
+            border-radius: 25px;
+            border: 1px solid var(--dourado);
+            text-align: center;
+            width: 85%;
+            max-width: 320px;
+        }
+
+        .modal-content input {
+            width: 100%; padding: 18px;
+            background: #000; border: 1px solid var(--dourado);
+            color: var(--dourado); border-radius: 12px;
+            text-align: center; font-size: 28px; letter-spacing: 12px;
+            margin-bottom: 25px; box-sizing: border-box; outline: none;
+        }
+
+        .btn-confirm {
+            background: var(--dourado); color: #000;
+            border: none; padding: 15px; border-radius: 10px;
+            font-weight: 900; width: 100%; cursor: pointer;
+        }
+
+        .footer-minimal {
+            padding: 40px 0;
+            font-size: 11px;
+            color: var(--cinza-minimal);
+            letter-spacing: 2px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>PHOTO MOVIE</h1>
+        <p>colecionando momentos</p>
+    </div>
+
+    <div class="main-container">
+        <button id="btn-login" class="btn-central" onclick="abrirModal()">🔓 ACESSAR SISTEMA</button>
+
+        <a href="config_evento.html" id="btn-create" class="btn-protected btn-central btn-create">➕ CRIAR NOVO EVENTO</a>
+        
+        <a href="galeria.html" id="btn-galeria" class="btn-protected btn-central">🎞️ ACESSAR GALERIA</a>
+        
+        <div id="container-eventos" class="event-list-container">
+            <h3 style="font-size: 11px; color: var(--dourado); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; opacity: 0.6;">Eventos Ativos</h3>
+            <div id="lista-eventos"></div>
+        </div>
+
+        <button id="btn-lock" class="btn-protected btn-central" onclick="bloquear()" style="background: transparent; color: #ff5555; border: 1px solid rgba(255,85,85,0.3); margin-top: 30px; font-size: 12px; padding: 10px;">ENCERRAR SESSÃO</button>
+    </div>
+
+    <div class="footer-minimal">Sistema de gestão 360º</div>
+
+    <div id="modal-senha">
+        <div class="modal-content">
+            <h3 style="color:var(--dourado); letter-spacing: 2px;">AUTENTICAÇÃO</h3>
+            <input type="password" id="input-senha" inputmode="numeric" pattern="[0-9]*" placeholder="••••">
+            <button class="btn-confirm" onclick="validarSenha()">CONFIRMAR</button>
+            <p onclick="fecharModal()" style="margin-top:20px; font-size:13px; color:#999; cursor:pointer">Voltar</p>
+        </div>
+    </div>
+
+<script>
+    const SENHA_MESTRA = "1234"; 
+
+    window.onload = () => {
+        if(sessionStorage.getItem('logado') === 'true') {
+            liberarSistema();
+        }
+    }
+
+    function abrirModal() {
+        document.getElementById('modal-senha').style.display = 'flex';
+        document.getElementById('input-senha').focus();
+    }
+
+    function fecharModal() {
+        document.getElementById('modal-senha').style.display = 'none';
+        document.getElementById('input-senha').value = '';
+    }
+
+    function validarSenha() {
+        const input = document.getElementById('input-senha');
+        if (input.value === SENHA_MESTRA) {
+            sessionStorage.setItem('logado', 'true');
+            fecharModal();
+            liberarSistema();
+        } else {
+            alert("Senha Incorreta");
+            input.value = '';
+        }
+    }
+
+    function liberarSistema() {
+        document.getElementById('btn-login').style.display = 'none';
+        document.querySelectorAll('.btn-protected').forEach(b => b.style.display = 'block');
+        document.getElementById('container-eventos').style.display = 'block';
+        renderEventos();
+    }
+
+    function renderEventos() {
+        const eventos = JSON.parse(localStorage.getItem('meus_eventos')) || [];
+        const container = document.getElementById('lista-eventos');
+        
+        if(eventos.length === 0) {
+            container.innerHTML = '<p style="font-size:12px; color:#444; text-align:center;">Nenhum evento ativo.</p>';
+            return;
+        }
+
+        container.innerHTML = '';
+        eventos.forEach((ev, index) => {
+            container.innerHTML += `
+                <div class="event-card">
+                    <div class="event-info" onclick="abrirEvento('${ev.nome}')" style="cursor:pointer; flex:1;">
+                        <h4>${ev.nome}</h4>
+                        <span>📅 ${ev.data}</span>
+                    </div>
+                    <div>
+                        <button class="btn-action" onclick="excluirEvento(${index})">🗑️</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function abrirEvento(nome) {
+        // Pega todos os eventos salvos
+        const todos = JSON.parse(localStorage.getItem('meus_eventos')) || [];
+        // Encontra os dados exatos do evento clicado
+        const config = todos.find(e => e.nome === nome);
+        
+        if(config) {
+            // Salva como a configuração que a câmera deve usar
+            localStorage.setItem('config_atual', JSON.stringify(config));
+            window.location.href = 'camera.html'; 
+        }
+    }
+
+    function excluirEvento(index) {
+        if(confirm("Deseja realmente excluir este evento?")) {
+            let eventos = JSON.parse(localStorage.getItem('meus_eventos'));
+            eventos.splice(index, 1);
+            localStorage.setItem('meus_eventos', JSON.stringify(eventos));
+            renderEventos();
+        }
+    }
+
+    function bloquear() {
+        sessionStorage.removeItem('logado');
+        location.reload();
+    }
+</script>
+</body>
+</html>
