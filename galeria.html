@@ -2,225 +2,130 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GALERIA DE VÍDEOS - 360°</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GALERIA - Photo Movie</title>
     <style>
-        :root { 
-            --turquesa-dark: #003333; 
-            --dourado: #c5a059;      
-            --dourado-fosco: #8e6d2d;
-            --cinza-minimal: #666666;
-        }
+        :root { --turquesa: #00d1d1; --dourado: #c5a059; --bg: #001a1a; }
+        body { background: var(--bg); color: white; font-family: sans-serif; text-align: center; margin: 0; }
         
-        body { 
-            margin: 0; 
-            background: var(--turquesa-dark); 
-            color: white; 
-            font-family: 'Segoe UI', Roboto, sans-serif;
-            min-height: 100vh;
+        .header { padding: 20px; border-bottom: 1px solid var(--dourado); }
+        h1 { color: var(--dourado); letter-spacing: 2px; }
+
+        /* Filtro de Eventos */
+        .filter-container { margin: 20px 0; }
+        select { 
+            background: #000; color: var(--dourado); border: 1px solid var(--dourado);
+            padding: 10px; border-radius: 8px; width: 80%; max-width: 300px;
         }
 
-        /* Cabeçalho com Nome Maior e Subtítulo */
-        .header { 
-            padding: 40px 20px 20px 20px; 
-            text-align: center; 
-            background: rgba(0,0,0,0.2); 
-            border-bottom: 1px solid var(--dourado); 
+        .gallery-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px; padding: 15px;
         }
 
-        .header h1 { 
-            margin: 0; 
-            font-size: 42px; 
-            color: var(--dourado); 
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            font-weight: 900;
+        .video-card {
+            background: #000; border: 1px solid #333; border-radius: 12px;
+            overflow: hidden; aspect-ratio: 9/16; position: relative;
         }
 
-        .header p { 
-            font-size: 14px; 
-            color: var(--dourado); 
-            margin: -5px 0 20px 0;
-            letter-spacing: 3px;
-            text-transform: lowercase;
-            opacity: 0.8;
-        }
+        video { width: 100%; height: 100%; object-fit: cover; }
 
-        /* Barra de Busca Arredondada */
-        .search-container {
-            position: relative;
-            max-width: 300px;
-            margin: 0 auto;
+        /* Modal de Visualização */
+        #modal-zoom {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000;
         }
-
-        .search-container input {
-            width: 100%;
-            padding: 12px 20px 12px 40px;
-            border-radius: 50px;
-            border: 1px solid var(--dourado);
-            background: rgba(0,0,0,0.3);
-            color: white;
-            outline: none;
-            box-sizing: border-box;
-            font-size: 14px;
-        }
-
-        .search-container::before {
-            content: '🔍';
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 14px;
-            opacity: 0.6;
-        }
-
-        /* Grid da Galeria */
-        .gallery-grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 15px; 
-            padding: 20px; 
-        }
-
-        .video-card { 
-            background: rgba(0, 0, 0, 0.3); 
-            border: 1px solid rgba(197, 160, 89, 0.1); 
-            border-radius: 20px; 
-            padding: 10px; 
-            text-align: center; 
-            transition: all 0.3s ease;
-        }
-
-        .video-card:active { transform: scale(0.98); }
-
-        .video-link {
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
-
-        video.thumb { 
-            width: 100%; 
-            border-radius: 15px; 
-            background: #000; 
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        /* Info do vídeo (Número bem visível) */
-        .video-info { 
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 5px;
-            margin-bottom: 5px; 
-        }
-
-        .video-number {
-            font-size: 20px; 
-            font-weight: 900;
-            color: var(--dourado);
-        }
-
-        .video-id-text {
-            font-size: 9px;
-            color: var(--cinza-minimal);
-            text-transform: uppercase;
-        }
-
-        .loading { 
-            grid-column: span 2; 
-            text-align: center; 
-            padding: 80px 0; 
-            color: var(--dourado); 
-            letter-spacing: 2px;
-        }
+        #modal-zoom video { width: 80%; max-height: 70vh; border: 2px solid var(--dourado); border-radius: 15px; }
+        
+        .btn-close { margin-top: 20px; padding: 10px 30px; background: var(--dourado); border: none; border-radius: 20px; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>PHOTO MOVIE</h1>
-        <p>colecionando momentos</p>
-        
-        <div class="search-container">
-            <input type="number" id="videoSearch" placeholder="Buscar pelo NÚMERO..." onkeyup="filtrarGaleria()">
+        <h1>GALERIA VIP</h1>
+        <div class="filter-container">
+            <select id="select-evento" onchange="carregarVideosPorEvento()">
+                <option value="">Todos os Eventos</option>
+            </select>
         </div>
     </div>
 
     <div id="gallery-container" class="gallery-grid">
-        <div class="loading">SINCRONIZANDO...</div>
+        </div>
+
+    <div id="modal-zoom">
+        <video id="video-full" controls playsinline></video>
+        <button class="btn-close" onclick="fecharZoom()">FECHAR</button>
     </div>
 
 <script>
-    const WORKER_URL = 'https://photomovie.maxprimefotovideo.workers.dev';
-    let videosComNumeracao = [];
+    const WORKER_URL = "SUA_URL_AQUI"; // URL que configuramos no Worker
 
-    async function carregarGaleria() {
+    window.onload = () => {
+        popularFiltro();
+        carregarVideosPorEvento();
+    };
+
+    // Preenche o Select com os nomes dos eventos que existem no seu sistema
+    function popularFiltro() {
+        const eventos = JSON.parse(localStorage.getItem('meus_eventos')) || [];
+        const select = document.getElementById('select-evento');
+        eventos.forEach(ev => {
+            let opt = document.createElement('option');
+            opt.value = ev.nome;
+            opt.innerHTML = ev.nome;
+            select.appendChild(opt);
+        });
+    }
+
+    async function carregarVideosPorEvento() {
+        const eventoSelecionado = document.getElementById('select-evento').value;
         const container = document.getElementById('gallery-container');
+        container.innerHTML = "<p>Carregando momentos...</p>";
+
         try {
-            const res = await fetch(`${WORKER_URL}/list-videos`);
+            // Chama a rota do Worker com o parâmetro de evento se houver
+            let url = `${WORKER_URL}/list-videos`;
+            if(eventoSelecionado) url += `?evento=${encodeURIComponent(eventoSelecionado)}`;
+
+            const res = await fetch(url);
             const videos = await res.json();
+
+            container.innerHTML = "";
             
-            if (!videos || videos.length === 0) {
-                container.innerHTML = "<div class='loading'>NENHUM VÍDEO ENCONTRADO</div>";
+            if(videos.length === 0) {
+                container.innerHTML = "<p style='color:#666'>Nenhum vídeo encontrado nesta pasta.</p>";
                 return;
             }
 
-            // Ordem Reversa e Numeração Fixa
-            const total = videos.length;
-            videosComNumeracao = videos.reverse().map((vid, index) => ({
-                ...vid,
-                numero: total - index
-            }));
-
-            renderizarVideos(videosComNumeracao);
-
-        } catch (e) {
-            container.innerHTML = "<div class='loading' style='color:red'>ERRO AO CONECTAR</div>";
-        }
-    }
-
-   function renderizarVideos(lista) {
-        const container = document.getElementById('gallery-container');
-        container.innerHTML = "";
-        
-        lista.forEach(vid => {
-            const card = document.createElement('div');
-            card.className = 'video-card';
-            
-            // USE O CAMINHO RELATIVO PARA EVITAR ERROS DE REDIRECIONAMENTO
-            const downloadUrl = `download.html?id=${vid.uuid}&n=${vid.numero}`;
-            
-            card.innerHTML = `
-                <a href="${downloadUrl}" class="video-link">
-                    <div class="video-info">
-                        <span class="video-number">#${vid.numero}</span>
-                        <span class="video-id-text">ID: ${vid.uuid.substring(0,6)}</span>
+            videos.forEach(vid => {
+                // O id do stream agora é o caminho completo: Pasta/uuid.webm
+                const streamUrl = `${WORKER_URL}/stream?id=${encodeURIComponent(vid.url_video)}`;
+                
+                container.innerHTML += `
+                    <div class="video-card" onclick="abrirZoom('${streamUrl}')">
+                        <video src="${streamUrl}"></video>
                     </div>
-                    <video class="thumb" src="${WORKER_URL}/stream?id=${vid.uuid}#t=0.5" preload="metadata"></video>
-                </a>
-            `;
-            container.appendChild(card);
-        });
-    } 
-
-    // Filtra apenas pelo número do vídeo
-    function filtrarGaleria() {
-        const termo = document.getElementById('videoSearch').value;
-        if (!termo) {
-            renderizarVideos(videosComNumeracao);
-            return;
+                `;
+            });
+        } catch (e) {
+            container.innerHTML = "<p>Erro ao carregar vídeos.</p>";
         }
-        const filtrados = videosComNumeracao.filter(v => v.numero.toString() === termo);
-        renderizarVideos(filtrados);
     }
 
-    // Inicializa
-    carregarGaleria();
-    // Atualização automática suave
-    setInterval(carregarGaleria, 30000);
+    function abrirZoom(url) {
+        const modal = document.getElementById('modal-zoom');
+        const v = document.getElementById('video-full');
+        v.src = url;
+        modal.style.display = 'flex';
+        v.play();
+    }
+
+    function fecharZoom() {
+        document.getElementById('modal-zoom').style.display = 'none';
+        document.getElementById('video-full').pause();
+    }
 </script>
 </body>
 </html>
