@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHOTO MOVIE Pro</title>
+    <title>PHOTO MOVIE - Performance Mode</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { --neon: #9200ff; --bg: #000; }
         body { margin: 0; background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
 
-        /* TÍTULO FIXO E PULSANTE */
+        /* HEADER FIXO */
         .brand-header {
             position: fixed; top: 0; width: 100%; text-align: center;
             padding: 20px 0; z-index: 1000; background: linear-gradient(to bottom, black, transparent);
@@ -19,52 +19,61 @@
             font-size: 2.5rem; font-weight: 900; color: var(--neon); margin: 0;
             text-shadow: 0 0 15px var(--neon); animation: pulse 1s infinite alternate;
         }
-        @keyframes pulse { from { opacity: 0.7; transform: scale(1); } to { opacity: 1; transform: scale(1.03); } }
+        @keyframes pulse { from { opacity: 0.8; transform: scale(1); } to { opacity: 1; transform: scale(1.02); } }
 
         .screen { display: none; min-height: 100vh; width: 100vw; flex-direction: column; align-items: center; position: absolute; }
         .active { display: flex; }
 
-        /* FORMULÁRIO DE EVENTO */
-        .form-container { margin-top: 120px; width: 90%; max-width: 400px; background: #111; padding: 20px; border-radius: 20px; border: 1px solid #333; }
-        input { width: 100%; padding: 15px; margin: 10px 0; background: #000; border: 1px solid #444; color: white; border-radius: 10px; box-sizing: border-box; }
-
-        /* CÂMERA */
-        #cam-container { width: 100vw; height: 100vh; position: relative; }
+        /* CAMERA ENGINE */
+        #cam-container { width: 100vw; height: 100vh; position: relative; background: #000; }
         #vid-preview { width: 100%; height: 100%; object-fit: cover; }
-        #moldura-layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; z-index: 10; }
+        #moldura-layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; z-index: 10; opacity: 0.9; }
         
-        /* BOTÕES E CONTROLES */
+        /* CONTROLES ESTILO PROFISSIONAL */
         .controls { position: absolute; bottom: 80px; width: 100%; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
-        .shutter { width: 80px; height: 80px; border: 5px solid white; border-radius: 50%; box-shadow: 0 0 20px var(--neon); cursor: pointer; }
-        .footer-nav { position: fixed; bottom: 60px; z-index: 500; }
-        .btn-main { background: var(--neon); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-weight: bold; cursor: pointer; }
+        .shutter { 
+            width: 85px; height: 85px; border: 6px solid white; border-radius: 50%; 
+            background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .shutter:active { transform: scale(0.9); }
+        .shutter-inner { width: 65px; height: 65px; background: red; border-radius: 50%; }
 
-        /* GALERIA E ZOOM */
-        .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 20px; margin-top: 120px; overflow-y: auto; width: 100%; box-sizing: border-box; }
-        .video-card { aspect-ratio: 9/16; background: #111; border-radius: 12px; border: 1px solid #333; overflow: hidden; position: relative; }
+        .btn-circle { background: rgba(255,255,255,0.1); border: 1px solid #444; color: white; width: 50px; height: 50px; border-radius: 50%; font-size: 1.2rem; cursor: pointer; }
+
+        /* AVISO DE GRAVAÇÃO */
+        #status-msg { 
+            position: fixed; inset: 0; z-index: 1500; display: none; align-items: center; justify-content: center; 
+            font-size: 7rem; font-weight: 900; background: rgba(0,0,0,0.2); pointer-events: none;
+        }
+        
+        .rec-dot { width: 15px; height: 15px; background: red; border-radius: 50%; display: inline-block; margin-right: 10px; animation: blink 0.8s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
+
+        /* GALERIA */
+        .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px; margin-top: 110px; overflow-y: auto; width: 100%; box-sizing: border-box; }
+        .video-card { aspect-ratio: 9/16; background: #111; border-radius: 15px; border: 1px solid #222; overflow: hidden; position: relative; }
         .video-card video { width: 100%; height: 100%; object-fit: cover; }
         
+        /* MODAL */
         #modal-zoom { position: fixed; inset: 0; background: #000; z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        #status-msg { position: fixed; inset: 0; z-index: 1500; display: none; align-items: center; justify-content: center; font-size: 6rem; font-weight: 900; background: rgba(0,0,0,0.5); }
-        #qrcode-box { background: white; padding: 10px; border-radius: 10px; margin: 20px 0; }
+        #qrcode-box { background: white; padding: 15px; border-radius: 15px; margin-bottom: 20px; }
+        .btn-main { background: var(--neon); color: white; border: none; padding: 18px 45px; border-radius: 35px; font-weight: bold; font-size: 1rem; cursor: pointer; box-shadow: 0 4px 15px rgba(146,0,255,0.3); }
     </style>
 </head>
 <body>
 
     <div class="brand-header">
         <h1 class="neon-title">PHOTO MOVIE</h1>
-        <div style="letter-spacing: 4px; font-size: 0.7rem;">COLECIONANDO MOMENTOS</div>
     </div>
 
     <div id="screen-menu" class="screen active">
-        <div class="form-container">
-            <h3 style="color:var(--neon)">NOVO EVENTO</h3>
-            <input type="text" id="event-name" placeholder="Nome do Evento">
-            <label style="font-size: 10px; color: #888;">SELECIONE A MOLDURA (.PNG)</label>
-            <input type="file" id="event-frame" accept="image/png">
-            <button class="btn-main" style="width:100%" onclick="criarEvento()">CRIAR E ABRIR CÂMERA</button>
+        <div style="margin-top: 140px; width: 85%; max-width: 400px; background: #111; padding: 30px; border-radius: 25px;">
+            <h2 style="margin-top:0; color:var(--neon)">CONFIGURAR EVENTO</h2>
+            <input type="text" id="event-name" placeholder="Nome do Evento" style="width:100%; padding:15px; margin:10px 0; background:#000; border:1px solid #333; color:white; border-radius:12px;">
+            <p style="font-size: 12px; color: #777;">Moldura PNG de alta qualidade:</p>
+            <input type="file" id="event-frame" accept="image/png" style="margin-bottom:20px;">
+            <button class="btn-main" style="width:100%" onclick="criarEvento()">ABRIR CÂMERA PROFISSIONAL</button>
         </div>
-        <div id="lista-eventos" style="margin-top: 20px; width: 90%;"></div>
     </div>
 
     <div id="screen-camera" class="screen">
@@ -72,27 +81,37 @@
             <video id="vid-preview" autoplay playsinline muted></video>
             <img id="moldura-layer" src="" alt="">
             <canvas id="hidden-canvas" width="720" height="1280" style="display:none"></canvas>
+            
             <div id="status-msg"></div>
+
             <div class="controls">
-                <button onclick="irGaleria()" style="background:none; border:none; font-size:2rem;">🎞️</button>
-                <div class="shutter" onclick="contagem()"></div>
-                <button onclick="nav('screen-menu')" style="background:none; border:none; color:white;">✖</button>
+                <button class="btn-circle" onclick="irGaleria()">🎞️</button>
+                <div class="shutter" onclick="contagem()">
+                    <div class="shutter-inner"></div>
+                </div>
+                <button class="btn-circle" onclick="nav('screen-menu')">⚙️</button>
+            </div>
+            
+            <div id="rec-indicator" style="position:fixed; top:100px; left:20px; display:none; align-items:center; background:rgba(0,0,0,0.6); padding:5px 15px; border-radius:20px;">
+                <span class="rec-dot"></span> <span style="font-weight:bold; font-size:14px;">REC</span>
             </div>
         </div>
     </div>
 
     <div id="screen-gallery" class="screen">
         <div id="gallery-container" class="gallery-grid"></div>
-        <div class="footer-nav">
+        <div style="position:fixed; bottom:40px;">
             <button class="btn-main" style="background:#222;" onclick="nav('screen-camera')">VOLTAR</button>
         </div>
     </div>
 
     <div id="modal-zoom">
-        <video id="zoom-video" style="width:100%; max-width:320px; border: 2px solid var(--neon);" controls autoplay loop></video>
+        <video id="zoom-video" style="width:90%; max-height:60vh; border-radius:20px; box-shadow: 0 0 30px var(--neon);" controls autoplay loop></video>
         <div id="qrcode-box"></div>
-        <a id="download-btn" class="btn-main" style="text-decoration:none; margin-bottom:10px;">BAIXAR VÍDEO</a>
-        <button class="btn-main" style="background:#333;" onclick="fecharZoom()">FECHAR</button>
+        <div style="display:flex; gap:10px;">
+            <button class="btn-main" style="background:#333;" onclick="fecharZoom()">FECHAR</button>
+            <a id="download-btn" class="btn-main" style="text-decoration:none;">BAIXAR</a>
+        </div>
     </div>
 
 <script>
@@ -101,6 +120,7 @@
     const ctx = canvas.getContext('2d');
     const video = document.getElementById('vid-preview');
 
+    // BANCO DE DADOS
     const req = indexedDB.open("PhotoMovieDB", 1);
     req.onupgradeneeded = e => {
         db = e.target.result;
@@ -117,7 +137,7 @@
     function criarEvento() {
         const file = document.getElementById('event-frame').files[0];
         const name = document.getElementById('event-name').value;
-        if(!file || !name) return alert("Coloque o nome e a moldura .png!");
+        if(!file || !name) return alert("Configure o nome e a moldura!");
 
         const reader = new FileReader();
         reader.onload = e => {
@@ -131,11 +151,13 @@
     async function iniciarCamera() {
         if(stream) stream.getTracks().forEach(t => t.stop());
         
+        // Configurações de Ultra Qualidade
         const constraints = {
             video: { 
-                facingMode: { ideal: "environment" }, // Tenta a traseira primeiro
-                width: { ideal: 1280 }, 
-                height: { ideal: 720 } 
+                facingMode: { ideal: "environment" },
+                width: { min: 720, ideal: 1080, max: 1920 },
+                height: { min: 1280, ideal: 1920, max: 1080 },
+                frameRate: { ideal: 30, max: 60 }
             },
             audio: false 
         };
@@ -144,8 +166,7 @@
             stream = await navigator.mediaDevices.getUserMedia(constraints);
             video.srcObject = stream;
         } catch (err) {
-            console.error(err);
-            // Fallback para qualquer câmera disponível
+            console.error("Erro na Câmera:", err);
             stream = await navigator.mediaDevices.getUserMedia({ video: true });
             video.srcObject = stream;
         }
@@ -166,36 +187,44 @@
     function gravar() {
         let chunks = [];
         const frameImg = document.getElementById('moldura-layer');
+        document.getElementById('rec-indicator').style.display = 'flex';
 
-        const recLoop = () => {
+        // Otimização de Processamento: Desenha em 30FPS cravados
+        const recordLoop = () => {
             ctx.drawImage(video, 0, 0, 720, 1280);
             if(frameImg.src) ctx.drawImage(frameImg, 0, 0, 720, 1280);
-            if(recorder && recorder.state === "recording") requestAnimationFrame(recLoop);
+            if(recorder && recorder.state === "recording") requestAnimationFrame(recordLoop);
         };
 
         const recStream = canvas.captureStream(30);
-        recorder = new MediaRecorder(recStream, { mimeType: 'video/webm;codecs=vp8' });
+        
+        // CONFIGURAÇÃO DE BITRATE (6Mbps para nitidez total)
+        const options = { 
+            mimeType: 'video/webm;codecs=vp8',
+            videoBitsPerSecond: 6000000 
+        };
+
+        recorder = new MediaRecorder(recStream, options);
         recorder.ondataavailable = e => chunks.push(e.data);
         recorder.onstop = () => {
+            document.getElementById('rec-indicator').style.display = 'none';
             const blob = new Blob(chunks, { type: 'video/webm' });
             salvarVideo(blob);
         };
 
         recorder.start();
-        recLoop();
+        recordLoop();
 
         let tempo = 10;
         const msg = document.getElementById('status-msg');
         const countdown = setInterval(() => {
             tempo--;
             msg.innerText = tempo + "s";
-            if(tempo <= 3) msg.style.color = "#ff8c00";
             if(tempo <= 0) {
                 clearInterval(countdown);
                 recorder.stop();
-                msg.innerText = "FINALIZOU!";
-                msg.style.color = "red";
-                setTimeout(() => { msg.style.display = 'none'; msg.style.color = 'white'; irGaleria(); }, 1200);
+                msg.innerText = "OK!";
+                setTimeout(() => { msg.style.display = 'none'; irGaleria(); }, 1000);
             }
         }, 1000);
     }
@@ -227,9 +256,9 @@
         document.getElementById('zoom-video').src = url;
         const qrb = document.getElementById('qrcode-box');
         qrb.innerHTML = "";
-        new QRCode(qrb, { text: url, width: 180, height: 180 });
+        new QRCode(qrb, { text: url, width: 200, height: 200 });
         const dl = document.getElementById('download-btn');
-        dl.href = url; dl.download = "video.webm";
+        dl.href = url; dl.download = "video_evento.webm";
         document.getElementById('modal-zoom').style.display = 'flex';
     }
 
