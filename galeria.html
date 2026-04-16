@@ -20,7 +20,6 @@
             min-height: 100vh;
         }
 
-        /* Cabeçalho com Nome Maior e Subtítulo */
         .header { 
             padding: 40px 20px 20px 20px; 
             text-align: center; 
@@ -46,7 +45,6 @@
             opacity: 0.8;
         }
 
-        /* Barra de Busca Arredondada */
         .search-container {
             position: relative;
             max-width: 300px;
@@ -75,7 +73,6 @@
             opacity: 0.6;
         }
 
-        /* Grid da Galeria */
         .gallery-grid { 
             display: grid; 
             grid-template-columns: repeat(2, 1fr); 
@@ -83,6 +80,7 @@
             padding: 20px; 
         }
 
+        /* CARD TOTALMENTE CLICÁVEL */
         .video-card { 
             background: rgba(0, 0, 0, 0.3); 
             border: 1px solid rgba(197, 160, 89, 0.1); 
@@ -90,15 +88,11 @@
             padding: 10px; 
             text-align: center; 
             transition: all 0.3s ease;
+            cursor: pointer; /* Indica clique */
+            user-select: none;
         }
 
-        .video-card:active { transform: scale(0.98); }
-
-        .video-link {
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
+        .video-card:active { transform: scale(0.96); background: rgba(0, 0, 0, 0.5); }
 
         video.thumb { 
             width: 100%; 
@@ -106,9 +100,9 @@
             background: #000; 
             display: block;
             margin-bottom: 8px;
+            pointer-events: none; /* Deixa o clique passar para o card */
         }
 
-        /* Info do vídeo (Número bem visível) */
         .video-info { 
             display: flex;
             justify-content: space-between;
@@ -168,7 +162,6 @@
                 return;
             }
 
-            // Ordem Reversa e Numeração Fixa
             const total = videos.length;
             videosComNumeracao = videos.reverse().map((vid, index) => ({
                 ...vid,
@@ -182,7 +175,7 @@
         }
     }
 
-   function renderizarVideos(lista) {
+    function renderizarVideos(lista) {
         const container = document.getElementById('gallery-container');
         container.innerHTML = "";
         
@@ -190,23 +183,26 @@
             const card = document.createElement('div');
             card.className = 'video-card';
             
-            // USE O CAMINHO RELATIVO PARA EVITAR ERROS DE REDIRECIONAMENTO
-            const downloadUrl = `download.html?id=${vid.uuid}&n=${vid.numero}`;
+            // Lógica de navegação direta por JavaScript
+            const urlDestino = `download.html?id=${vid.uuid}&n=${vid.numero}`;
+            card.onclick = () => { window.location.href = urlDestino; };
             
             card.innerHTML = `
-                <a href="${downloadUrl}" class="video-link">
-                    <div class="video-info">
-                        <span class="video-number">#${vid.numero}</span>
-                        <span class="video-id-text">ID: ${vid.uuid.substring(0,6)}</span>
-                    </div>
-                    <video class="thumb" src="${WORKER_URL}/stream?id=${vid.uuid}#t=0.5" preload="metadata"></video>
-                </a>
+                <div class="video-info">
+                    <span class="video-number">#${vid.numero}</span>
+                    <span class="video-id-text">ID: ${vid.uuid.substring(0,6)}</span>
+                </div>
+                <video class="thumb" 
+                       src="${WORKER_URL}/stream?id=${vid.uuid}#t=0.5" 
+                       preload="metadata" 
+                       muted 
+                       playsinline>
+                </video>
             `;
             container.appendChild(card);
         });
     } 
 
-    // Filtra apenas pelo número do vídeo
     function filtrarGaleria() {
         const termo = document.getElementById('videoSearch').value;
         if (!termo) {
@@ -217,9 +213,7 @@
         renderizarVideos(filtrados);
     }
 
-    // Inicializa
     carregarGaleria();
-    // Atualização automática suave
     setInterval(carregarGaleria, 30000);
 </script>
 </body>
