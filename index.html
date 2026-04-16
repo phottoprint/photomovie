@@ -3,241 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHOTO MOVIE - Purple Neon Edition</title>
+    <title>PHOTO MOVIE - Ultra Purple</title>
     <style>
         :root { 
-            --neon-purple: #bc13fe; 
-            --neon-purple-glow: #8a2be2;
-            --neon-red: #ff0033; 
-            --dark-bg: #050505; 
+            --neon-purple: #9d00ff; /* Roxo mais profundo e forte */
+            --neon-glow: #6a00ff;
+            --dark-bg: #000000;
         }
         
-        body { margin: 0; background: var(--dark-bg); font-family: 'Segoe UI', sans-serif; color: white; overflow-x: hidden; }
+        body { margin: 0; background: var(--dark-bg); font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden; }
 
-        .screen { display: none; min-height: 100vh; width: 100vw; flex-direction: column; align-items: center; justify-content: center; position: absolute; }
+        /* NAVEGAÇÃO: Prevenindo fechamento acidental */
+        .screen { display: none; height: 100vh; width: 100vw; flex-direction: column; align-items: center; position: absolute; padding-top: 40px; box-sizing: border-box; }
         .active { display: flex; }
 
-        /* IDENTIDADE VISUAL */
+        /* 1. TÍTULO E SUBTÍTULO MAIS PARA CIMA */
+        .brand-container { text-align: center; margin-top: -10px; }
         .neon-title { 
-            font-size: 3.5rem; font-weight: 900; color: #fff;
-            text-shadow: 0 0 10px #fff, 0 0 20px var(--neon-purple), 0 0 40px var(--neon-purple-glow); 
-            animation: pulse 1.5s infinite alternate; margin: 0; 
+            font-size: 3.2rem; font-weight: 900; color: var(--neon-purple);
+            text-shadow: 0 0 10px var(--neon-purple), 0 0 20px var(--neon-glow), 0 0 40px var(--neon-glow);
+            animation: pulse-border 2s infinite; margin: 0;
         }
-        @keyframes pulse { from { transform: scale(1); opacity: 1; } to { transform: scale(1.02); opacity: 0.9; } }
-        .subtitle { font-size: 1.2rem; letter-spacing: 4px; color: white; margin-top: 40px; text-transform: uppercase; }
+        @keyframes pulse-border {
+            0% { text-shadow: 0 0 10px var(--neon-purple), 0 0 20px var(--neon-glow); transform: scale(1); }
+            50% { text-shadow: 0 0 20px var(--neon-purple), 0 0 40px var(--neon-glow), 0 0 60px var(--neon-purple); transform: scale(1.02); }
+            100% { text-shadow: 0 0 10px var(--neon-purple), 0 0 20px var(--neon-glow); transform: scale(1); }
+        }
+        .subtitle { font-size: 1rem; color: #fff; letter-spacing: 5px; margin-top: 10px; text-transform: uppercase; }
 
-        /* BOTÕES */
+        /* 8. SEQUÊNCIA DE BOTÕES */
+        .menu-container { width: 90%; max-width: 350px; display: flex; flex-direction: column; gap: 15px; margin-top: 30px; }
         .btn-main { 
-            background: var(--neon-purple); color: white; border: none; padding: 18px 40px; 
-            border-radius: 40px; font-weight: bold; cursor: pointer; text-transform: uppercase; 
-            box-shadow: 0 0 20px var(--neon-purple); margin: 10px 0; width: 280px; transition: 0.3s;
+            background: var(--neon-purple); color: white; border: none; padding: 16px; 
+            border-radius: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase;
+            box-shadow: 0 0 15px rgba(157, 0, 255, 0.4); font-size: 14px;
         }
-        .btn-main:active { transform: scale(0.95); box-shadow: 0 0 5px var(--neon-purple); }
 
-        /* LISTA DE EVENTOS E GALERIA */
-        .event-container { width: 90%; max-width: 400px; display: none; flex-direction: column; align-items: center; margin-top: 20px; }
+        /* 4. LISTA DE EVENTOS CRIADOS */
+        .event-list-scroll { width: 100%; max-height: 200px; overflow-y: auto; margin-top: 10px; }
         .event-card { 
-            background: #111; border: 1px solid var(--neon-purple); width: 100%; 
-            padding: 15px; border-radius: 15px; margin-bottom: 10px; 
-            display: flex; justify-content: space-between; align-items: center;
+            background: #111; border-left: 4px solid var(--neon-purple); 
+            padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;
         }
 
-        /* FORMULÁRIO */
-        .form-card { background: #111; width: 90%; max-width: 450px; padding: 25px; border-radius: 20px; border: 1px solid #333; }
-        label { display: block; margin: 15px 0 5px; color: var(--neon-purple); font-weight: bold; font-size: 12px; }
-        input, select { width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: white; border-radius: 10px; box-sizing: border-box; }
-        
-        /* EDITOR DE MÚSICA */
-        .music-editor { background: #1a1a1a; padding: 15px; border-radius: 10px; margin-top: 10px; border: 1px dashed var(--neon-purple); }
+        /* 2. MOSTRUÁRIO DA MOLDURA */
+        .frame-preview-container {
+            width: 120px; height: 213px; border: 1px solid var(--neon-purple);
+            margin: 15px auto; background-size: contain; background-repeat: no-repeat;
+            background-position: center; display: none; background-color: #050505;
+        }
 
-        /* CÂMERA FULL */
-        .camera-container { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; overflow: hidden; }
-        #video-preview { width: 100%; height: 100%; object-fit: cover; }
-        #overlay-camera { position: absolute; inset: 0; pointer-events: none; background-size: 100% 100%; z-index: 5; }
-
-        /* AVISO FINALIZAÇÃO FIXO */
+        /* 6. AVISO FINALIZANDO */
         #finish-overlay { 
             position: fixed; inset: 0; background: rgba(0,0,0,0.9); 
             display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 100; 
         }
-        .finish-text { color: var(--neon-red); font-size: 3rem; font-weight: 900; text-shadow: 0 0 20px #f00; animation: blink 0.5s infinite; }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        .warning-text { color: #ff0000; font-size: 2.5rem; font-weight: 900; animation: blink 0.4s infinite; text-align: center; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* 4. CÂMERA FULL */
+        .camera-container { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1; }
+        #video-preview { width: 100%; height: 100%; object-fit: cover; }
+        #overlay-camera { position: absolute; inset: 0; pointer-events: none; background-size: 100% 100%; z-index: 5; }
+
+        /* 7. GALERIA COM CAPA */
+        .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; padding: 10px; }
+        .video-thumb { width: 100%; aspect-ratio: 9/16; background: #222; border-radius: 8px; overflow: hidden; position: relative; border: 1px solid #333; }
+        .video-thumb video { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
 <body>
 
     <div id="screen-home" class="screen active">
-        <h1 class="neon-title">PHOTO MOVIE</h1>
-        <div class="subtitle">colecionando momentos</div>
-        
-        <button id="btn-iniciar" class="btn-main" style="margin-top: 60px;" onclick="mostrarMenuEventos()">INICIAR</button>
+        <div class="brand-container">
+            <h1 class="neon-title">PHOTO MOVIE</h1>
+            <div class="subtitle">colecionando momentos</div>
+        </div>
 
-        <div id="event-menu" class="event-container">
-            <button class="btn-main" style="background: #fff; color: #000;" onclick="nav('screen-config')">NOVO EVENTO</button>
-            <div id="lista-eventos" style="width:100%; margin: 15px 0;">
-                </div>
+        <div class="menu-container">
+            <button class="btn-main" onclick="nav('screen-config')" style="background: #fff; color: #000;">+ NOVO EVENTO</button>
             <button class="btn-main" style="background: transparent; border: 1px solid var(--neon-purple);" onclick="nav('screen-gallery')">GALERIA</button>
+            
+            <div style="font-size: 12px; color: var(--neon-purple); margin-top: 10px;">EVENTOS DISPONÍVEIS:</div>
+            <div class="event-list-scroll" id="lista-eventos">
+                </div>
         </div>
     </div>
 
     <div id="screen-config" class="screen">
-        <div class="form-card">
-            <h2 style="color:var(--neon-purple); margin:0 0 20px 0">NOVO EVENTO</h2>
-            
+        <div style="width: 90%; max-width: 400px; background: #111; padding: 20px; border-radius: 15px;">
             <label>NOME DO EVENTO</label>
-            <input type="text" id="cfg-nome" placeholder="Ex: Casamento João e Maria">
+            <input type="text" id="cfg-nome" style="width:100%; padding:10px; margin: 10px 0; background:#000; border:1px solid #333; color:#fff;">
+            
+            <label>MOLDURA (1080x1920 PNG)</label>
+            <input type="file" id="cfg-file" accept="image/png" onchange="previewSelectedFrame(this)">
+            
+            <div id="frame-preview-box" class="frame-preview-container"></div>
 
-            <label>TEMPO</label>
-            <select id="cfg-tempo">
-                <option value="8">8 Segundos</option>
-                <option value="10">10 Segundos</option>
-                <option value="11">11 Segundos</option>
-            </select>
-
-            <label>MOLDURA (.PNG 1080x1920)</label>
-            <input type="file" id="cfg-frame" accept="image/png">
-
-            <label>MÚSICA DO VÍDEO</label>
-            <div class="music-editor">
-                <input type="file" id="cfg-music" accept="audio/*" onchange="previewMusic(this)">
-                <div id="music-controls" style="display:none; margin-top:10px">
-                    <audio id="audio-player" controls style="width:100%"></audio>
-                    <label>PONTO DE INÍCIO (OFFSET)</label>
-                    <input type="range" id="music-start" min="0" max="100" value="0" style="accent-color: var(--neon-purple)">
-                </div>
-            </div>
-
-            <button class="btn-main" style="width:100%; margin-top:20px" onclick="salvarEvento()">SALVAR EVENTO</button>
-            <button class="btn-main" style="width:100%; background:#333" onclick="nav('screen-home')">VOLTAR</button>
+            <button class="btn-main" style="width:100%;" onclick="salvarEvento()">SALVAR EVENTO</button>
+            <button class="btn-main" style="width:100%; background: #222; margin-top:10px" onclick="nav('screen-home')">VOLTAR</button>
         </div>
     </div>
 
-    <div id="screen-camera" class="screen">
+    <div id="screen-camera" class="screen" style="padding:0">
         <div class="camera-container">
             <video id="video-preview" autoplay playsinline muted></video>
             <div id="overlay-camera"></div>
         </div>
-        
-        <div id="timer" style="position:absolute; top:40px; font-size:2.5rem; font-weight:bold; z-index:15; text-shadow: 0 0 10px #000;">00s</div>
-        <button id="btn-shoot" class="btn-main" style="position:absolute; bottom:50px;" onclick="startRec()">REC</button>
+        <div id="timer" style="position:absolute; top:30px; font-size:2rem; z-index:10; font-weight:bold; text-shadow:0 0 10px #000">00s</div>
+        <button id="btn-rec" class="btn-main" style="position:absolute; bottom:40px; z-index:10" onclick="startRec()">GRAVAR</button>
 
         <div id="finish-overlay">
-            <div class="finish-text">FINALIZANDO...</div>
-            <button class="btn-main" style="margin-top:30px" onclick="finalizarProcesso()">OK / SALVAR VÍDEO</button>
+            <div class="warning-text">FINALIZANDO...</div>
+            <button class="btn-main" style="margin-top:20px" onclick="resetAfterRec()">OK / SALVAR</button>
         </div>
     </div>
 
     <div id="screen-gallery" class="screen">
-        <h2 class="neon-title" style="font-size:2rem">GALERIA</h2>
-        <div id="list-movies" style="width:90%; margin-top:20px"></div>
+        <h2 style="color:var(--neon-purple)">GALERIA DE MOVIES</h2>
+        <div class="gallery-grid" id="gallery-list"></div>
         <button class="btn-main" onclick="nav('screen-home')">VOLTAR</button>
     </div>
 
 <script>
-    let db = { eventos: [], movies: [] };
-    let activeEvent = null;
-    let mediaRecorder;
-    let chunks = [];
+    let state = { eventos: [], movies: [], activeEvent: null };
 
-    function nav(id) {
+    // 3. CONTROLE DE VOLTAR (Navegação via Hash para não fechar)
+    window.addEventListener('popstate', () => {
+        const screen = location.hash.replace('#','') || 'screen-home';
+        nav(screen, false);
+    });
+
+    function nav(id, updateHash = true) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
+        if(updateHash) location.hash = id;
     }
 
-    function mostrarMenuEventos() {
-        document.getElementById('btn-iniciar').style.display = 'none';
-        document.getElementById('event-menu').style.display = 'flex';
-    }
-
-    function previewMusic(input) {
+    function previewSelectedFrame(input) {
         if(input.files[0]) {
             const url = URL.createObjectURL(input.files[0]);
-            document.getElementById('audio-player').src = url;
-            document.getElementById('music-controls').style.display = 'block';
+            const box = document.getElementById('frame-preview-box');
+            box.style.backgroundImage = `url(${url})`;
+            box.style.display = 'block';
+            state.tempFrameUrl = url;
         }
     }
 
     function salvarEvento() {
         const nome = document.getElementById('cfg-nome').value;
-        const frame = document.getElementById('cfg-frame').files[0];
-        if(!nome || !frame) return alert("Nome e Moldura são obrigatórios!");
-
-        const novo = {
-            id: Date.now(),
-            nome: nome,
-            tempo: document.getElementById('cfg-tempo').value,
-            frameUrl: URL.createObjectURL(frame)
-        };
-
-        db.eventos.push(novo);
-        atualizarListaEventos();
+        if(!nome || !state.tempFrameUrl) return alert("Preencha nome e moldura!");
+        
+        state.eventos.push({ id: Date.now(), nome, frame: state.tempFrameUrl });
+        updateEventList();
         nav('screen-home');
     }
 
-    function atualizarListaEventos() {
-        const lista = document.getElementById('lista-eventos');
-        lista.innerHTML = db.eventos.map(ev => `
+    function updateEventList() {
+        const list = document.getElementById('lista-eventos');
+        list.innerHTML = state.eventos.map(ev => `
             <div class="event-card">
                 <span>${ev.nome}</span>
-                <button onclick="abrirEvento(${ev.id})" style="background:var(--neon-purple); border:none; color:white; padding:5px 15px; border-radius:10px">ABRIR</button>
+                <button onclick="openEvent(${ev.id})" style="background:var(--neon-purple); border:none; color:#fff; padding:5px 10px; border-radius:5px">ABRIR</button>
             </div>
         `).join('');
     }
 
-    async function abrirEvento(id) {
-        activeEvent = db.eventos.find(e => e.id === id);
+    async function openEvent(id) {
+        state.activeEvent = state.eventos.find(e => e.id === id);
         nav('screen-camera');
-        document.getElementById('overlay-camera').style.backgroundImage = `url(${activeEvent.frameUrl})`;
+        document.getElementById('overlay-camera').style.backgroundImage = `url(${state.activeEvent.frame})`;
         
+        // Otimização de câmera para não travar
         const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: "environment", width: 1920, height: 1080 } 
+            video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } } 
         });
         document.getElementById('video-preview').srcObject = stream;
-        window.currentStream = stream;
+        window.recorderStream = stream;
     }
 
     function startRec() {
-        chunks = [];
-        mediaRecorder = new MediaRecorder(window.currentStream);
-        mediaRecorder.ondataavailable = e => chunks.push(e.data);
-        mediaRecorder.start();
+        let chunks = [];
+        const recorder = new MediaRecorder(window.recorderStream);
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.onstop = () => {
+            const blob = new Blob(chunks, { type: 'video/mp4' });
+            state.movies.push({ id: Date.now(), url: URL.createObjectURL(blob) });
+            renderGallery();
+        };
 
-        const btn = document.getElementById('btn-shoot');
-        btn.disabled = true;
-        btn.innerText = "GRAVANDO...";
+        recorder.start();
+        document.getElementById('btn-rec').disabled = true;
 
-        let time = parseInt(activeEvent.tempo);
+        let time = 10; // Exemplo 10s
         let interval = setInterval(() => {
             time--;
-            document.getElementById('timer').innerText = time.toString().padStart(2, '0') + "s";
+            document.getElementById('timer').innerText = time.toString().padStart(2,'0')+"s";
+            
+            // 6. AVISO 3 SEGUNDOS ANTES
+            if(time <= 3 && time > 0) {
+                document.getElementById('finish-overlay').style.display = 'flex';
+            }
+
             if(time <= 0) {
                 clearInterval(interval);
-                mediaRecorder.stop();
-                document.getElementById('finish-overlay').style.display = 'flex';
+                recorder.stop();
             }
         }, 1000);
     }
 
-    function finalizarProcesso() {
-        const blob = new Blob(chunks, { type: 'video/mp4' });
-        db.movies.push({ id: Date.now(), url: URL.createObjectURL(blob) });
-        
-        // Reseta UI
+    function resetAfterRec() {
         document.getElementById('finish-overlay').style.display = 'none';
-        document.getElementById('btn-shoot').disabled = false;
-        document.getElementById('btn-shoot').innerText = "REC";
-        document.getElementById('timer').innerText = "00s";
-        
-        updateGalleryUI();
+        document.getElementById('btn-rec').disabled = false;
         nav('screen-home');
     }
 
-    function updateGalleryUI() {
-        const container = document.getElementById('list-movies');
-        container.innerHTML = db.movies.map(m => `
-            <div class="event-card">
-                <span>🎥 Movie #${m.id}</span>
-                <a href="${m.url}" download="photo-movie.mp4" style="color:var(--neon-purple)">BAIXAR</a>
+    // 7. GALERIA COM CAPA (VIDEO PREVIEW)
+    function renderGallery() {
+        const container = document.getElementById('gallery-list');
+        container.innerHTML = state.movies.map(m => `
+            <div class="video-thumb">
+                <video src="${m.url}" muted onmouseover="this.play()" onmouseout="this.pause()"></video>
+                <a href="${m.url}" download style="position:absolute; bottom:5px; right:5px; background:var(--neon-purple); color:#fff; font-size:10px; padding:3px; text-decoration:none; border-radius:3px">SALVAR</a>
             </div>
         `).join('');
     }
