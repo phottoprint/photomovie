@@ -170,30 +170,47 @@
     }
 
     async function irGaleria() {
-        nav('screen-gallery');
-        const container = document.getElementById('gallery-container');
-        container.innerHTML = "<p style='grid-column: 1/-1'>Buscando vídeos...</p>";
+    nav('screen-gallery');
+    const container = document.getElementById('gallery-container');
+    container.innerHTML = "<p style='grid-column: 1/-1'>Buscando vídeos...</p>";
 
-        try {
-            const res = await fetch(`${WORKER_URL}/list-videos`);
-            const videos = await res.json();
-            container.innerHTML = "";
+    try {
+        const res = await fetch(`${WORKER_URL}/list-videos`);
+        const videos = await res.json();
+        container.innerHTML = "";
+        
+        videos.forEach(vid => {
+            const card = document.createElement('div');
+            card.className = 'video-card';
             
-            videos.forEach(vid => {
-                const card = document.createElement('div');
-                card.className = 'video-card';
-                // URL que o cliente usará para baixar
-                // O './' garante que ele procure o download.html na mesma pasta do index.html
-const downloadUrl = `./download.html?id=${vid.uuid}&fx=${vid.preset_usado || 'boom'}`;
-                
-                card.innerHTML = `
-                    <div class="qr-placeholder">QR CODE<br>${vid.uuid}</div>
-                    <button onclick="window.open('${downloadUrl}', '_blank')" style="background:var(--neon); color:white; border:none; padding:8px; border-radius:5px; font-size:10px; width:100%; cursor:pointer;">VER VÍDEO</button>
-                `;
-                container.appendChild(card);
+            // Define o link que o cliente vai acessar
+            const downloadUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}download.html?id=${vid.uuid}&fx=${vid.preset_usado || 'boom'}`;
+            
+            // Cria o local onde o QR Code vai ser desenhado
+            const qrId = `qr-${vid.uuid}`;
+            
+            card.innerHTML = `
+                <div id="${qrId}" style="background:white; padding:10px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:center;"></div>
+                <div style="font-size:10px; margin-bottom:10px;">ID: ${vid.uuid}</div>
+                <button onclick="window.open('${downloadUrl}', '_blank')" style="background:var(--neon); color:white; border:none; padding:8px; border-radius:5px; font-size:10px; width:100%; cursor:pointer;">VER VÍDEO</button>
+            `;
+            container.appendChild(card);
+
+            // Gera o QR Code de fato para este card
+            new QRCode(document.getElementById(qrId), {
+                text: downloadUrl,
+                width: 120,
+                height: 120,
+                colorDark : "#000000",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
             });
-        } catch (e) { container.innerHTML = "<p>Erro ao carregar galeria.</p>"; }
+        });
+    } catch (e) { 
+        console.error(e);
+        container.innerHTML = "<p>Erro ao carregar galeria.</p>"; 
     }
+}
 
     function invert() { camMode = (camMode === 'environment') ? 'user' : 'environment'; ligar(); }
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
