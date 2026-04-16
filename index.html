@@ -3,222 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHOTO MOVIE - Purple Edition</title>
+    <title>PHOTO MOVIE - Ultimate Edition</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { 
             --neon-purple: #9200ff; 
-            --neon-glow: #4b0082;
+            --neon-purple-glow: #4b0082;
             --neon-orange: #ff8c00;
             --neon-red: #ff0000;
             --dark-bg: #000; 
         }
         
-        body { margin: 0; background: var(--dark-bg); font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden; }
+        body { margin: 0; background: var(--dark-bg); font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden; touch-action: manipulation; }
         .screen { display: none; min-height: 100vh; width: 100vw; flex-direction: column; align-items: center; position: absolute; padding: 20px; box-sizing: border-box; }
         .active { display: flex; }
 
-        /* 1. NOME TODO ROXO NEON */
+        /* 1. NOME E BOTÃO NO MEIO */
         .neon-title { 
             font-size: 3.5rem; font-weight: 900; color: var(--neon-purple);
-            text-shadow: 0 0 10px var(--neon-purple), 0 0 20px var(--neon-purple), 0 0 30px var(--neon-glow); 
+            text-shadow: 0 0 20px var(--neon-purple); 
             animation: pulse-border 1.5s infinite alternate; margin: 0; text-align: center;
         }
-        @keyframes pulse-border { 
-            from { text-shadow: 0 0 10px var(--neon-purple); transform: scale(1); } 
-            to { text-shadow: 0 0 20px var(--neon-purple), 0 0 40px var(--neon-purple); transform: scale(1.03); } 
-        }
+        @keyframes pulse-border { from { transform: scale(1); } to { transform: scale(1.05); } }
 
-        /* BOTÕES */
+        /* BOTÕES ESTILIZADOS */
         .btn-main { 
-            background: var(--neon-purple); color: white; border: none; padding: 18px 40px; 
-            border-radius: 40px; font-weight: bold; cursor: pointer; text-transform: uppercase; 
-            box-shadow: 0 0 20px var(--neon-purple); margin: 10px 0; width: 280px;
+            background: linear-gradient(45deg, var(--neon-purple), var(--neon-purple-glow)); 
+            color: white; border: none; padding: 18px 40px; border-radius: 40px; 
+            font-weight: bold; cursor: pointer; text-transform: uppercase; 
+            box-shadow: 0 0 15px var(--neon-purple); margin: 10px 0; width: 280px;
         }
-        .footer-btn { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; padding: 0 20px; box-sizing: border-box; }
 
-        /* LISTA DE EVENTOS */
+        /* 4. ESTILIZAÇÃO DOS EVENTOS SALVOS */
         .event-card { 
-            background: #0a0a0a; border: 1px solid var(--neon-purple); padding: 15px; 
-            border-radius: 12px; margin-bottom: 10px; width: 100%; display: flex; 
-            justify-content: space-between; align-items: center; box-sizing: border-box;
+            background: linear-gradient(135deg, #111 0%, #050505 100%); 
+            border: 1px solid #333; border-left: 5px solid var(--neon-purple);
+            padding: 20px; border-radius: 15px; margin-bottom: 15px; width: 100%; 
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); box-sizing: border-box;
         }
+        .event-info h3 { margin: 0; font-size: 1.2rem; color: #fff; }
+        .event-info p { margin: 5px 0 0; font-size: 0.8rem; color: #777; }
 
-        /* CÂMERA */
+        /* 6. CÂMERA E OBTURADOR */
         #video-preview { width: 100vw; height: 100vh; object-fit: cover; }
-        .btn-rec-circle {
-            width: 70px; height: 70px; border: 4px solid var(--neon-purple); border-radius: 50%;
-            box-shadow: 0 0 15px var(--neon-purple); animation: pulse-rec 1s infinite;
+        .controls-layer { position: absolute; bottom: 80px; width: 100%; display: flex; align-items: center; justify-content: center; z-index: 20; }
+        .btn-rec-circle { width: 75px; height: 75px; border: 5px solid var(--neon-purple); border-radius: 50%; box-shadow: 0 0 20px var(--neon-purple); }
+        
+        .arrow-indicator { 
+            width: 0; height: 0; 
+            border-top: 15px solid transparent; border-bottom: 15px solid transparent; 
+            border-right: 20px solid var(--neon-purple);
+            margin-right: 30px; animation: arrow-pulse 0.8s infinite;
         }
-        @keyframes pulse-rec { 0% { opacity: 0.6; } 50% { opacity: 1; transform: scale(1.1); } 100% { opacity: 0.6; } }
+        @keyframes arrow-pulse { 0% { opacity: 0.2; transform: translateX(0); } 50% { opacity: 1; transform: translateX(-10px); } 100% { opacity: 0.2; transform: translateX(0); } }
+
+        /* RODAPÉ */
+        .footer-fixed { position: absolute; bottom: 30px; width: 100%; display: flex; justify-content: center; z-index: 50; }
 
         /* GALERIA */
-        .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; overflow-y: auto; padding-bottom: 100px; }
-        .thumb-box { position: relative; aspect-ratio: 9/16; background: #111; border: 1px solid #333; border-radius: 8px; overflow: hidden; cursor: pointer; }
-        
-        /* MODAL QR CODE */
-        #modal-movie { 
-            position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 200; 
-            display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
-        }
-        #qrcode { background: white; padding: 10px; border-radius: 10px; margin-top: 20px; }
+        .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; padding-bottom: 120px; }
+        .thumb-box { aspect-ratio: 9/16; background: #0a0a0a; border-radius: 12px; border: 1px solid #222; overflow: hidden; position: relative; }
     </style>
 </head>
 <body>
 
-    <div id="screen-home" class="screen active">
-        <div style="margin-top: 100px;">
-            <h1 class="neon-title">PHOTO MOVIE</h1>
-            <div style="color:white; letter-spacing:4px; text-align:center; margin-top:20px">COLECIONANDO MOMENTOS</div>
-        </div>
-        <button class="btn-main" style="margin-top: 60px;" onclick="nav('screen-menu')">INICIAR</button>
+    <div id="screen-home" class="screen active" style="justify-content: center;">
+        <h1 class="neon-title">PHOTO MOVIE</h1>
+        <div style="color:white; letter-spacing:4px; margin-bottom: 40px;">COLECIONANDO MOMENTOS</div>
+        <button class="btn-main" onclick="nav('screen-menu')">INICIAR</button>
     </div>
 
     <div id="screen-menu" class="screen">
-        <h2 style="color:var(--neon-purple)">GERENCIAR</h2>
-        <button class="btn-main" style="background:#fff; color:#000" onclick="nav('screen-config')">NOVO EVENTO</button>
-        <button class="btn-main" style="background:transparent; border:1px solid var(--neon-purple)" onclick="nav('screen-gallery')">GALERIA</button>
+        <h2 style="color:var(--neon-purple); margin-top: 40px;">GERENCIAR</h2>
+        <button class="btn-main" style="background:#fff; color:#000" onclick="nav('screen-config')">+ NOVO EVENTO</button>
         
-        <div id="lista-eventos" style="width:100%; max-width:400px; margin-top:20px"></div>
+        <div style="width:100%; max-width:450px; margin-top:30px;">
+            <p style="color:#555; font-size: 12px; margin-left: 5px;">EVENTOS SALVOS:</p>
+            <div id="lista-eventos"></div>
+        </div>
 
-        <div class="footer-btn">
-            <button class="btn-main" style="background:#222" onclick="nav('screen-home')">VOLTAR</button>
+        <div class="footer-fixed">
+            <button class="btn-main" style="background:#1a1a1a; width: 200px;" onclick="nav('screen-home')">VOLTAR</button>
         </div>
     </div>
 
     <div id="screen-config" class="screen">
-        <h2 style="color:var(--neon-purple)">NOVO EVENTO</h2>
-        <div style="width:90%; max-width:400px">
-            <label>NOME</label>
-            <input type="text" id="cfg-nome" style="width:100%; padding:12px; background:#111; border:1px solid #333; color:white; margin:10px 0">
-            <label>MOLDURA (.PNG)</label>
-            <input type="file" id="cfg-frame" accept="image/png" style="margin-bottom:20px">
-            <button class="btn-main" style="width:100%" onclick="salvarEvento()">SALVAR EVENTO</button>
+        <h2 style="color:var(--neon-purple); margin-top: 40px;">NOVO EVENTO</h2>
+        <div style="width:90%; max-width:400px; background: #111; padding: 25px; border-radius: 20px;">
+            <label style="color:var(--neon-purple); font-weight: bold; font-size: 12px;">NOME DO EVENTO</label>
+            <input type="text" id="cfg-nome" style="width:100%; padding:15px; background:#000; border:1px solid #333; color:white; margin:10px 0; border-radius: 10px;">
+            
+            <label style="color:var(--neon-purple); font-weight: bold; font-size: 12px;">MOLDURA PNG (1080x1920)</label>
+            <input type="file" id="cfg-frame" accept="image/png" style="margin: 15px 0;">
+            
+            <button class="btn-main" style="width:100%; margin-top: 10px;" onclick="salvarEvento()">CRIAR AGORA</button>
         </div>
-        <div class="footer-btn">
-            <button class="btn-main" style="background:#222" onclick="nav('screen-menu')">VOLTAR</button>
+        <div class="footer-fixed">
+            <button class="btn-main" style="background:#1a1a1a; width: 200px;" onclick="nav('screen-menu')">VOLTAR</button>
         </div>
     </div>
 
     <div id="screen-camera" class="screen" style="padding:0">
         <video id="video-preview" autoplay playsinline muted></video>
-        <div style="position:absolute; bottom:40px; width:100%; display:flex; justify-content:center">
+        <div id="timer" style="position:absolute; top:40px; font-size:2.5rem; font-weight:bold;">00s</div>
+        
+        <div class="controls-layer">
+            <div class="arrow-indicator"></div>
             <div class="btn-rec-circle" onclick="startRec()"></div>
         </div>
-        <div id="finish-overlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.8); display:none; flex-direction:column; align-items:center; justify-content:center; z-index:100">
-            <div id="warning-msg" style="font-size:3rem; font-weight:900">FINALIZANDO...</div>
-            <button id="btn-ok-cam" class="btn-main" style="display:none; margin-top:30px" onclick="irParaGaleria()">OK / SALVAR</button>
+
+        <div id="finish-overlay" style="position:fixed; inset:0; background:rgba(0,0,0,0.85); display:none; flex-direction:column; align-items:center; justify-content:center; z-index:100">
+            <div id="warning-msg" style="font-size:3rem; font-weight:900; text-align: center;">FINALIZANDO...</div>
+            <button id="btn-ok-cam" class="btn-main" style="display:none; margin-top:30px" onclick="nav('screen-gallery')">VER GALERIA DO EVENTO</button>
         </div>
     </div>
 
     <div id="screen-gallery" class="screen">
-        <h2 style="color:var(--neon-purple)">GALERIA</h2>
+        <h2 id="gallery-title" style="color:var(--neon-purple); margin-top: 40px;">GALERIA</h2>
         <div id="gallery-container" class="gallery-grid"></div>
-        <div class="footer-btn">
-            <button class="btn-main" style="background:#222" onclick="nav('screen-menu')">VOLTAR</button>
+        <div class="footer-fixed">
+            <button class="btn-main" style="background:#1a1a1a; width: 200px;" onclick="nav('screen-menu')">VOLTAR</button>
         </div>
     </div>
 
-    <div id="modal-movie">
-        <video id="modal-video-player" style="width:100%; max-width:300px; aspect-ratio:9/16; border:1px solid var(--neon-purple)" controls></video>
-        <div id="qrcode"></div>
-        <p style="font-size:12px; margin-top:10px">Escaneie para acessar o vídeo</p>
-        <button class="btn-main" onclick="document.getElementById('modal-movie').style.display='none'">FECHAR</button>
-    </div>
-
 <script>
-    let app = { eventos: [], movies: [], activeEv: null };
+    let db;
+    let activeEventId = null;
+    const request = indexedDB.open("PhotoMovieDB", 1);
 
-    // CARREGAR DADOS DO DISCO
-    if(localStorage.getItem('photo_movie_db')) {
-        app = JSON.parse(localStorage.getItem('photo_movie_db'));
+    request.onupgradeneeded = e => {
+        db = e.target.result;
+        db.createObjectStore("eventos", { keyPath: "id" });
+        db.createObjectStore("movies", { keyPath: "id", autoIncrement: true }).createIndex("evId", "evId");
+    };
+
+    request.onsuccess = e => {
+        db = e.target.result;
         renderEventos();
-        renderGallery();
-    }
+    };
 
     function nav(id) {
         document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         if(id === 'screen-camera') startCamera();
+        if(id === 'screen-gallery') renderGallery();
     }
 
     function salvarEvento() {
         const nome = document.getElementById('cfg-nome').value;
         const file = document.getElementById('cfg-frame').files[0];
-        if(!nome || !file) return alert("Preencha tudo!");
+        if(!nome || !file) return alert("Preencha o nome e a moldura!");
 
         const reader = new FileReader();
-        reader.onload = function(e) {
-            app.eventos.push({ id: Date.now(), nome, frame: e.target.result });
-            sync();
-            nav('screen-menu');
+        reader.onload = e => {
+            const evento = { id: Date.now(), nome, frame: e.target.result };
+            db.transaction("eventos", "readwrite").objectStore("eventos").add(evento).onsuccess = () => {
+                renderEventos();
+                nav('screen-menu');
+            };
         };
         reader.readAsDataURL(file);
     }
 
-    function sync() {
-        localStorage.setItem('photo_movie_db', JSON.stringify(app));
-        renderEventos();
-        renderGallery();
-    }
-
     function renderEventos() {
-        const div = document.getElementById('lista-eventos');
-        div.innerHTML = app.eventos.map(ev => `
-            <div class="event-card">
-                <span>${ev.nome}</span>
-                <div>
-                    <button onclick="abrirEvento(${ev.id})" style="color:var(--neon-purple); background:none; border:none; margin-right:15px">ABRIR</button>
-                    <button onclick="deletarEvento(${ev.id})" style="color:red; background:none; border:none">X</button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function deletarEvento(id) {
-        if(confirm("Apagar evento e mídias?")) {
-            app.eventos = app.eventos.filter(e => e.id !== id);
-            app.movies = app.movies.filter(m => m.evId !== id);
-            sync();
-        }
+        const list = document.getElementById('lista-eventos');
+        list.innerHTML = "";
+        db.transaction("eventos", "readonly").objectStore("eventos").getAll().onsuccess = e => {
+            e.target.result.forEach(ev => {
+                list.innerHTML += `
+                    <div class="event-card">
+                        <div class="event-info">
+                            <h3>${ev.nome}</h3>
+                            <p>ID: ${ev.id}</p>
+                        </div>
+                        <div style="display:flex; gap:10px">
+                            <button onclick="abrirEvento(${ev.id})" style="background:var(--neon-purple); border:none; color:white; padding:8px 15px; border-radius:10px; font-weight:bold">ABRIR</button>
+                            <button onclick="deletarEvento(${ev.id})" style="background:#330000; border:none; color:red; padding:8px 15px; border-radius:10px">X</button>
+                        </div>
+                    </div>
+                `;
+            });
+        };
     }
 
     function abrirEvento(id) {
-        app.activeEv = app.eventos.find(e => e.id === id);
-        nav('screen-camera');
+        activeEventId = id;
+        db.transaction("eventos", "readonly").objectStore("eventos").get(id).onsuccess = e => {
+            window.activeFrame = e.target.result.frame;
+            document.getElementById('gallery-title').innerText = "GALERIA: " + e.target.result.nome;
+            nav('screen-camera');
+        };
+    }
+
+    function deletarEvento(id) {
+        if(confirm("Isso apagará o evento e TODOS os vídeos dele. Confirmar?")) {
+            db.transaction("eventos", "readwrite").objectStore("eventos").delete(id).onsuccess = () => {
+                // Limpar vídeos vinculados
+                const movieStore = db.transaction("movies", "readwrite").objectStore("movies");
+                movieStore.index("evId").openCursor(IDBKeyRange.only(id)).onsuccess = e => {
+                    const cursor = e.target.result;
+                    if (cursor) { movieStore.delete(cursor.primaryKey); cursor.continue(); }
+                };
+                renderEventos();
+            };
+        }
     }
 
     async function startCamera() {
-        const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: 1280 } });
+        const s = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment", width: 1280, frameRate: 30 } });
         document.getElementById('video-preview').srcObject = s;
         window.stream = s;
     }
 
     function startRec() {
         const chunks = [];
-        const rec = new MediaRecorder(window.stream);
+        const rec = new MediaRecorder(window.stream, { mimeType: 'video/webm;codecs=vp8' });
         rec.ondataavailable = e => chunks.push(e.data);
         rec.onstop = () => {
+            const blob = new Blob(chunks, { type: 'video/webm' });
             const reader = new FileReader();
-            reader.onload = function(e) {
-                app.movies.push({ id: Date.now(), evId: app.activeEv.id, video: e.target.result, frame: app.activeEv.frame });
-                sync();
+            reader.onload = e => {
+                db.transaction("movies", "readwrite").objectStore("movies").add({ evId: activeEventId, video: e.target.result });
             };
-            reader.readAsDataURL(new Blob(chunks, { type: 'video/mp4' }));
+            reader.readAsDataURL(blob);
         };
         rec.start();
-        
+
         let t = 10;
         const overlay = document.getElementById('finish-overlay');
         const msg = document.getElementById('warning-msg');
         overlay.style.display = 'flex';
+        document.getElementById('btn-ok-cam').style.display = 'none';
 
         let intv = setInterval(() => {
             t--;
+            document.getElementById('timer').innerText = t.toString().padStart(2,'0')+"s";
             if(t <= 3 && t > 0) { msg.innerText = "FINALIZANDO..."; msg.style.color = "var(--neon-orange)"; }
             if(t <= 0) {
                 clearInterval(intv); rec.stop();
-                msg.innerText = "CONCLUÍDO!"; msg.style.color = "var(--neon-red)";
+                msg.innerText = "VÍDEO SALVO!"; msg.style.color = "var(--neon-red)";
                 document.getElementById('btn-ok-cam').style.display = 'block';
             }
         }, 1000);
@@ -226,29 +250,28 @@
 
     function renderGallery() {
         const div = document.getElementById('gallery-container');
-        div.innerHTML = app.movies.map(m => `
-            <div class="thumb-box" onclick="verVideo('${m.video}')">
-                <video src="${m.video}" style="width:100%"></video>
-                <img src="${m.frame}" style="position:absolute; inset:0; width:100%">
-            </div>
-        `).join('');
+        div.innerHTML = "";
+        const index = db.transaction("movies", "readonly").objectStore("movies").index("evId");
+        index.openCursor(IDBKeyRange.only(activeEventId)).onsuccess = e => {
+            const cursor = e.target.result;
+            if (cursor) {
+                div.innerHTML += `
+                    <div class="thumb-box">
+                        <video src="${cursor.value.video}" style="width:100%"></video>
+                        <img src="${window.activeFrame}" style="position:absolute; inset:0; width:100%; pointer-events:none">
+                        <div style="position:absolute; bottom:5px; width:100%; display:flex; justify-content:center">
+                            <button onclick="baixarVideo('${cursor.value.video}')" style="background:var(--neon-purple); color:white; border:none; border-radius:5px; font-size:10px; padding:5px">BAIXAR</button>
+                        </div>
+                    </div>
+                `;
+                cursor.continue();
+            }
+        };
     }
 
-    function verVideo(url) {
-        const modal = document.getElementById('modal-movie');
-        const vid = document.getElementById('modal-video-player');
-        modal.style.display = 'flex';
-        vid.src = url;
-        vid.play();
-
-        document.getElementById('qrcode').innerHTML = "";
-        new QRCode(document.getElementById("qrcode"), { text: url, width: 128, height: 128 });
-    }
-
-    function irParaGaleria() {
-        document.getElementById('finish-overlay').style.display = 'none';
-        document.getElementById('btn-ok-cam').style.display = 'none';
-        nav('screen-gallery');
+    function baixarVideo(url) {
+        const a = document.createElement('a');
+        a.href = url; a.download = 'photo-movie.webm'; a.click();
     }
 </script>
 </body>
