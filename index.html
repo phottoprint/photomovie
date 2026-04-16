@@ -3,46 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHOTO MOVIE - Pro</title>
+    <title>PHOTO MOVIE - Purple Neon Edition</title>
     <style>
-        :root { --neon-purple: #bc13fe; --neon-red: #ff0033; --dark-bg: #000; }
-        body { margin: 0; background: var(--dark-bg); font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden; }
+        :root { 
+            --neon-purple: #bc13fe; 
+            --neon-purple-glow: #8a2be2;
+            --neon-red: #ff0033; 
+            --dark-bg: #050505; 
+        }
+        
+        body { margin: 0; background: var(--dark-bg); font-family: 'Segoe UI', sans-serif; color: white; overflow-x: hidden; }
 
         .screen { display: none; min-height: 100vh; width: 100vw; flex-direction: column; align-items: center; justify-content: center; position: absolute; }
         .active { display: flex; }
 
-        /* 1. TELA INICIAL */
-        .neon-title { font-size: 3.5rem; font-weight: 900; text-shadow: 0 0 20px var(--neon-purple); animation: pulse 1.5s infinite alternate; margin: 0; }
-        @keyframes pulse { from { transform: scale(1); opacity: 1; } to { transform: scale(1.05); opacity: 0.8; } }
-        .subtitle { font-size: 1.2rem; letter-spacing: 4px; color: white; margin-top: 40px; } /* 1.5cm aprox margin */
+        /* IDENTIDADE VISUAL */
+        .neon-title { 
+            font-size: 3.5rem; font-weight: 900; color: #fff;
+            text-shadow: 0 0 10px #fff, 0 0 20px var(--neon-purple), 0 0 40px var(--neon-purple-glow); 
+            animation: pulse 1.5s infinite alternate; margin: 0; 
+        }
+        @keyframes pulse { from { transform: scale(1); opacity: 1; } to { transform: scale(1.02); opacity: 0.9; } }
+        .subtitle { font-size: 1.2rem; letter-spacing: 4px; color: white; margin-top: 40px; text-transform: uppercase; }
 
-        /* BOTOES */
-        .btn-main { background: var(--neon-purple); color: white; border: none; padding: 18px 50px; border-radius: 40px; font-weight: bold; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 15px var(--neon-purple); z-index: 10; }
+        /* BOTÕES */
+        .btn-main { 
+            background: var(--neon-purple); color: white; border: none; padding: 18px 40px; 
+            border-radius: 40px; font-weight: bold; cursor: pointer; text-transform: uppercase; 
+            box-shadow: 0 0 20px var(--neon-purple); margin: 10px 0; width: 280px; transition: 0.3s;
+        }
+        .btn-main:active { transform: scale(0.95); box-shadow: 0 0 5px var(--neon-purple); }
 
-        /* 3. LAYOUT CONFIG */
-        .form-card { background: #111; width: 90%; max-width: 450px; padding: 20px; border-radius: 20px; border: 1px solid #333; overflow-y: auto; max-height: 80vh; }
+        /* LISTA DE EVENTOS E GALERIA */
+        .event-container { width: 90%; max-width: 400px; display: none; flex-direction: column; align-items: center; margin-top: 20px; }
+        .event-card { 
+            background: #111; border: 1px solid var(--neon-purple); width: 100%; 
+            padding: 15px; border-radius: 15px; margin-bottom: 10px; 
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* FORMULÁRIO */
+        .form-card { background: #111; width: 90%; max-width: 450px; padding: 25px; border-radius: 20px; border: 1px solid #333; }
         label { display: block; margin: 15px 0 5px; color: var(--neon-purple); font-weight: bold; font-size: 12px; }
         input, select { width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: white; border-radius: 10px; box-sizing: border-box; }
-        .grid-effects { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .opt-effect { background: #222; padding: 8px; border-radius: 5px; font-size: 11px; text-align: center; border: 1px solid #444; }
-        .opt-effect.selected { border-color: var(--neon-purple); background: #330044; }
+        
+        /* EDITOR DE MÚSICA */
+        .music-editor { background: #1a1a1a; padding: 15px; border-radius: 10px; margin-top: 10px; border: 1px dashed var(--neon-purple); }
 
-        /* 4. CÂMERA FULL SCREEN */
-        #screen-camera { padding: 0; justify-content: flex-start; }
+        /* CÂMERA FULL */
         .camera-container { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; overflow: hidden; }
         #video-preview { width: 100%; height: 100%; object-fit: cover; }
-        #overlay-camera { position: absolute; inset: 0; pointer-events: none; background-size: cover; background-position: center; z-index: 5; }
+        #overlay-camera { position: absolute; inset: 0; pointer-events: none; background-size: 100% 100%; z-index: 5; }
 
-        /* 6. AVISO VERMELHO PISCANTE */
-        #warning-finish { 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            color: var(--neon-red); font-size: 3rem; font-weight: 900; text-shadow: 0 0 20px #ff0000;
-            display: none; z-index: 20; animation: blink 0.5s infinite;
+        /* AVISO FINALIZAÇÃO FIXO */
+        #finish-overlay { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9); 
+            display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 100; 
         }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
-
-        /* 7. GALERIA */
-        .gallery-btn { position: fixed; bottom: 20px; background: #222; padding: 10px 20px; border-radius: 20px; font-size: 12px; border: 1px solid #444; }
+        .finish-text { color: var(--neon-red); font-size: 3rem; font-weight: 900; text-shadow: 0 0 20px #f00; animation: blink 0.5s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -50,40 +69,46 @@
     <div id="screen-home" class="screen active">
         <h1 class="neon-title">PHOTO MOVIE</h1>
         <div class="subtitle">colecionando momentos</div>
-        <button class="btn-main" style="margin-top: 60px;" onclick="nav('screen-config')">INICIAR</button>
-        <div class="gallery-btn" onclick="nav('screen-gallery')">📂 VER GALERIA</div>
+        
+        <button id="btn-iniciar" class="btn-main" style="margin-top: 60px;" onclick="mostrarMenuEventos()">INICIAR</button>
+
+        <div id="event-menu" class="event-container">
+            <button class="btn-main" style="background: #fff; color: #000;" onclick="nav('screen-config')">NOVO EVENTO</button>
+            <div id="lista-eventos" style="width:100%; margin: 15px 0;">
+                </div>
+            <button class="btn-main" style="background: transparent; border: 1px solid var(--neon-purple);" onclick="nav('screen-gallery')">GALERIA</button>
+        </div>
     </div>
 
     <div id="screen-config" class="screen">
         <div class="form-card">
-            <h2 style="color:var(--neon-purple); margin-top:0">NOVO EVENTO</h2>
-            <label>NOME</label>
-            <input type="text" id="cfg-nome" placeholder="Nome do Evento">
+            <h2 style="color:var(--neon-purple); margin:0 0 20px 0">NOVO EVENTO</h2>
             
+            <label>NOME DO EVENTO</label>
+            <input type="text" id="cfg-nome" placeholder="Ex: Casamento João e Maria">
+
             <label>TEMPO</label>
             <select id="cfg-tempo">
                 <option value="8">8 Segundos</option>
-                <option value="9">9 Segundos</option>
                 <option value="10">10 Segundos</option>
                 <option value="11">11 Segundos</option>
             </select>
 
-            <label>VELOCIDADES / EFEITOS</label>
-            <div class="grid-effects">
-                <div class="opt-effect" onclick="selEff(this, '2x-05x')">2x > 0.5x</div>
-                <div class="opt-effect" onclick="selEff(this, '05x-2x-05x')">0.5x > 2x > 0.5x</div>
-                <div class="opt-effect" onclick="selEff(this, '2x-05x-2x')">2x > 0.5x > 2x</div>
-                <div class="opt-effect" onclick="selEff(this, '1x-05x-1x')">1x > 0.5x > 1x</div>
+            <label>MOLDURA (.PNG 1080x1920)</label>
+            <input type="file" id="cfg-frame" accept="image/png">
+
+            <label>MÚSICA DO VÍDEO</label>
+            <div class="music-editor">
+                <input type="file" id="cfg-music" accept="audio/*" onchange="previewMusic(this)">
+                <div id="music-controls" style="display:none; margin-top:10px">
+                    <audio id="audio-player" controls style="width:100%"></audio>
+                    <label>PONTO DE INÍCIO (OFFSET)</label>
+                    <input type="range" id="music-start" min="0" max="100" value="0" style="accent-color: var(--neon-purple)">
+                </div>
             </div>
 
-            <label>MOLDURA (.PNG)</label>
-            <input type="file" accept="image/png" onchange="previewFrame(this)">
-
-            <label>MÚSICA (UPLOAD + OFFSET)</label>
-            <input type="file" accept="audio/*" onchange="loadMusic(this)">
-            <input type="range" id="music-offset" min="0" max="100" value="0" style="margin-top:10px">
-
-            <button class="btn-main" style="width:100%; margin-top:20px" onclick="abrirCamera()">GRAVAR VÍDEO</button>
+            <button class="btn-main" style="width:100%; margin-top:20px" onclick="salvarEvento()">SALVAR EVENTO</button>
+            <button class="btn-main" style="width:100%; background:#333" onclick="nav('screen-home')">VOLTAR</button>
         </div>
     </div>
 
@@ -92,19 +117,25 @@
             <video id="video-preview" autoplay playsinline muted></video>
             <div id="overlay-camera"></div>
         </div>
-        <div id="warning-finish">FINALIZANDO...</div>
-        <div id="timer" style="position:absolute; top:40px; font-size:2rem; font-weight:bold; z-index:15">00s</div>
+        
+        <div id="timer" style="position:absolute; top:40px; font-size:2.5rem; font-weight:bold; z-index:15; text-shadow: 0 0 10px #000;">00s</div>
         <button id="btn-shoot" class="btn-main" style="position:absolute; bottom:50px;" onclick="startRec()">REC</button>
+
+        <div id="finish-overlay">
+            <div class="finish-text">FINALIZANDO...</div>
+            <button class="btn-main" style="margin-top:30px" onclick="finalizarProcesso()">OK / SALVAR VÍDEO</button>
+        </div>
     </div>
 
     <div id="screen-gallery" class="screen">
-        <h2 style="color:var(--neon-purple)">MEUS MOVIES</h2>
-        <div id="list-movies" style="width:90%; overflow-y:auto"></div>
-        <button class="btn-main" onclick="nav('screen-home')" style="margin-top:20px">VOLTAR</button>
+        <h2 class="neon-title" style="font-size:2rem">GALERIA</h2>
+        <div id="list-movies" style="width:90%; margin-top:20px"></div>
+        <button class="btn-main" onclick="nav('screen-home')">VOLTAR</button>
     </div>
 
 <script>
-    let config = { efeito: '', moldura: null, movies: [] };
+    let db = { eventos: [], movies: [] };
+    let activeEvent = null;
     let mediaRecorder;
     let chunks = [];
 
@@ -113,65 +144,100 @@
         document.getElementById(id).classList.add('active');
     }
 
-    function selEff(el, val) {
-        document.querySelectorAll('.opt-effect').forEach(o => o.classList.remove('selected'));
-        el.classList.add('selected'); config.efeito = val;
+    function mostrarMenuEventos() {
+        document.getElementById('btn-iniciar').style.display = 'none';
+        document.getElementById('event-menu').style.display = 'flex';
     }
 
-    function previewFrame(i) {
-        if(i.files[0]) config.moldura = URL.createObjectURL(i.files[0]);
+    function previewMusic(input) {
+        if(input.files[0]) {
+            const url = URL.createObjectURL(input.files[0]);
+            document.getElementById('audio-player').src = url;
+            document.getElementById('music-controls').style.display = 'block';
+        }
     }
 
-    async function abrirCamera() {
+    function salvarEvento() {
+        const nome = document.getElementById('cfg-nome').value;
+        const frame = document.getElementById('cfg-frame').files[0];
+        if(!nome || !frame) return alert("Nome e Moldura são obrigatórios!");
+
+        const novo = {
+            id: Date.now(),
+            nome: nome,
+            tempo: document.getElementById('cfg-tempo').value,
+            frameUrl: URL.createObjectURL(frame)
+        };
+
+        db.eventos.push(novo);
+        atualizarListaEventos();
+        nav('screen-home');
+    }
+
+    function atualizarListaEventos() {
+        const lista = document.getElementById('lista-eventos');
+        lista.innerHTML = db.eventos.map(ev => `
+            <div class="event-card">
+                <span>${ev.nome}</span>
+                <button onclick="abrirEvento(${ev.id})" style="background:var(--neon-purple); border:none; color:white; padding:5px 15px; border-radius:10px">ABRIR</button>
+            </div>
+        `).join('');
+    }
+
+    async function abrirEvento(id) {
+        activeEvent = db.eventos.find(e => e.id === id);
         nav('screen-camera');
-        document.getElementById('overlay-camera').style.backgroundImage = `url(${config.moldura})`;
-        const s = await navigator.mediaDevices.getUserMedia({ 
-            video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } } 
+        document.getElementById('overlay-camera').style.backgroundImage = `url(${activeEvent.frameUrl})`;
+        
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: "environment", width: 1920, height: 1080 } 
         });
-        document.getElementById('video-preview').srcObject = s;
-        window.currentStream = s;
+        document.getElementById('video-preview').srcObject = stream;
+        window.currentStream = stream;
     }
 
     function startRec() {
         chunks = [];
         mediaRecorder = new MediaRecorder(window.currentStream);
         mediaRecorder.ondataavailable = e => chunks.push(e.data);
-        mediaRecorder.onstop = () => {
-            const blob = new Blob(chunks, { type: 'video/mp4' });
-            config.movies.push({ id: Date.now(), url: URL.createObjectURL(blob) });
-            updateGallery();
-            alert("Vídeo Salvo!");
-            nav('screen-home');
-        };
-
         mediaRecorder.start();
+
         const btn = document.getElementById('btn-shoot');
-        const warn = document.getElementById('warning-finish');
         btn.disabled = true;
-        
-        let time = parseInt(document.getElementById('cfg-tempo').value);
+        btn.innerText = "GRAVANDO...";
+
+        let time = parseInt(activeEvent.tempo);
         let interval = setInterval(() => {
             time--;
             document.getElementById('timer').innerText = time.toString().padStart(2, '0') + "s";
-            
-            // 6. Alerta nos últimos 3 segundos
-            if(time <= 3) warn.style.display = 'block';
-
             if(time <= 0) {
                 clearInterval(interval);
                 mediaRecorder.stop();
-                warn.style.display = 'none';
-                btn.disabled = false;
+                document.getElementById('finish-overlay').style.display = 'flex';
             }
         }, 1000);
     }
 
-    function updateGallery() {
-        const list = document.getElementById('list-movies');
-        list.innerHTML = config.movies.map(m => `
-            <div style="background:#111; padding:10px; margin:5px; border:1px solid #333; display:flex; justify-content:space-between">
+    function finalizarProcesso() {
+        const blob = new Blob(chunks, { type: 'video/mp4' });
+        db.movies.push({ id: Date.now(), url: URL.createObjectURL(blob) });
+        
+        // Reseta UI
+        document.getElementById('finish-overlay').style.display = 'none';
+        document.getElementById('btn-shoot').disabled = false;
+        document.getElementById('btn-shoot').innerText = "REC";
+        document.getElementById('timer').innerText = "00s";
+        
+        updateGalleryUI();
+        nav('screen-home');
+    }
+
+    function updateGalleryUI() {
+        const container = document.getElementById('list-movies');
+        container.innerHTML = db.movies.map(m => `
+            <div class="event-card">
                 <span>🎥 Movie #${m.id}</span>
-                <a href="${m.url}" download="video.mp4" style="color:var(--neon-purple)">Download</a>
+                <a href="${m.url}" download="photo-movie.mp4" style="color:var(--neon-purple)">BAIXAR</a>
             </div>
         `).join('');
     }
