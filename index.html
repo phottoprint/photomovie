@@ -6,57 +6,48 @@
     <title>PHOTO MOVIE Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        :root { --neon: #9200ff; --bg: #000; }
+        :root { --neon: #9200ff; }
         body { margin: 0; background: #000; color: white; font-family: sans-serif; overflow: hidden; }
-
-        .brand-header { position: fixed; top: 0; width: 100%; text-align: center; padding: 15px 0; z-index: 1000; background: linear-gradient(to bottom, black, transparent); }
-        .neon-title { font-size: 2rem; font-weight: 900; color: var(--neon); text-shadow: 0 0 10px var(--neon); margin: 0; }
 
         .screen { display: none; height: 100vh; width: 100vw; flex-direction: column; align-items: center; justify-content: center; position: absolute; }
         .active { display: flex; }
 
-        /* CAMERA CONTAINER - SEM FILTROS QUEBRADOS */
-        #cam-container { width: 100%; height: 100%; position: relative; background: #000; display: flex; align-items: center; justify-content: center; }
+        /* PREVIEW LIMPO - MOLDURA REMOVIDA DAQUI */
+        #cam-container { width: 100%; height: 100%; position: relative; background: #000; }
         #vid-preview { width: 100%; height: 100%; object-fit: cover; }
-        #moldura-layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; z-index: 10; }
         
-        /* CONTROLES */
         .controls { position: absolute; bottom: 50px; width: 100%; display: flex; justify-content: space-evenly; align-items: center; z-index: 100; }
-        .shutter { width: 70px; height: 70px; border: 4px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .shutter { width: 75px; height: 75px; border: 5px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
         .shutter-inner { width: 55px; height: 55px; background: red; border-radius: 50%; }
         
-        .btn-ui { background: rgba(0,0,0,0.5); border: 1px solid #555; color: white; width: 50px; height: 50px; border-radius: 50%; font-size: 1.2rem; }
+        .btn-ui { background: rgba(0,0,0,0.6); border: 1px solid #444; color: white; width: 55px; height: 55px; border-radius: 50%; font-size: 1.5rem; }
 
-        #status-msg { position: fixed; inset: 0; z-index: 1500; display: none; align-items: center; justify-content: center; font-size: 5rem; font-weight: 900; background: rgba(0,0,0,0.3); }
+        #status-msg { position: fixed; inset: 0; z-index: 1500; display: none; align-items: center; justify-content: center; font-size: 5rem; font-weight: 900; background: rgba(0,0,0,0.4); text-shadow: 2px 2px 10px #000; }
 
-        /* GALERIA */
-        .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 20px; padding-top: 100px; width: 100%; box-sizing: border-box; overflow-y: auto; }
-        .video-card { aspect-ratio: 9/16; background: #111; border-radius: 10px; overflow: hidden; border: 1px solid #333; }
+        .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 20px; width: 100%; box-sizing: border-box; overflow-y: auto; margin-top: 60px; }
+        .video-card { aspect-ratio: 9/16; background: #111; border-radius: 12px; overflow: hidden; border: 1px solid #333; }
         .video-card video { width: 100%; height: 100%; object-fit: cover; }
 
         #modal-zoom { position: fixed; inset: 0; background: #000; z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        .btn-main { background: var(--neon); color: white; border: none; padding: 15px 30px; border-radius: 25px; font-weight: bold; }
+        .btn-main { background: var(--neon); color: white; border: none; padding: 15px 30px; border-radius: 30px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div class="brand-header">
-        <h1 class="neon-title">PHOTO MOVIE</h1>
-    </div>
-
     <div id="screen-menu" class="screen active">
-        <div style="width: 80%; background: #111; padding: 20px; border-radius: 15px; border: 1px solid #333;">
-            <h3 style="margin:0 0 15px 0; color:var(--neon)">NOVO EVENTO</h3>
-            <input type="text" id="event-name" placeholder="Nome do Evento" style="width:100%; padding:12px; margin-bottom:10px; background:#000; border:1px solid #444; color:white; border-radius:8px;">
-            <input type="file" id="event-frame" accept="image/png" style="width:100%; margin-bottom:15px;">
-            <button class="btn-main" style="width:100%" onclick="configurarEvento()">INICIAR SISTEMA</button>
+        <div style="width: 85%; background: #111; padding: 25px; border-radius: 20px; border: 1px solid #333; text-align: center;">
+            <h2 style="color:var(--neon); margin-top:0;">PHOTO MOVIE</h2>
+            <input type="text" id="event-name" placeholder="Nome do Evento" style="width:100%; padding:15px; margin-bottom:15px; background:#000; border:1px solid #444; color:white; border-radius:10px; box-sizing:border-box;">
+            <label style="display:block; margin-bottom:10px; font-size:12px; color:#aaa;">MOLDURA PNG (720x1280)</label>
+            <input type="file" id="event-frame" accept="image/png" style="width:100%; margin-bottom:20px;">
+            <button class="btn-main" style="width:100%" onclick="configurarEvento()">INICIAR EVENTO</button>
         </div>
     </div>
 
     <div id="screen-camera" class="screen">
         <div id="cam-container">
             <video id="vid-preview" autoplay playsinline muted></video>
-            <img id="moldura-layer" src="" alt="">
+            <img id="moldura-hidden" src="" style="display:none;">
             <canvas id="record-canvas" width="720" height="1280" style="display:none"></canvas>
             
             <div id="status-msg"></div>
@@ -73,13 +64,18 @@
 
     <div id="screen-gallery" class="screen">
         <div id="gallery-container" class="gallery-grid"></div>
-        <button class="btn-main" style="margin: 20px 0; background:#222;" onclick="nav('screen-camera')">VOLTAR</button>
+        <button class="btn-main" style="margin: 20px 0; background:#222;" onclick="nav('screen-camera')">VOLTAR PARA CÂMERA</button>
     </div>
 
     <div id="modal-zoom">
-        <video id="zoom-video" style="width:85%; border-radius:10px;" controls autoplay loop></video>
-        <div id="qrcode-box" style="background:white; padding:10px; margin:20px 0; border-radius:10px;"></div>
-        <button class="btn-main" onclick="fecharZoom()">FECHAR</button>
+        <div style="width:100%; display:flex; justify-content:center; margin-bottom:20px;">
+            <video id="zoom-video" style="width:80%; border-radius:15px; border: 2px solid var(--neon);" controls playsinline loop></video>
+        </div>
+        <div id="qrcode-box" style="background:white; padding:10px; margin-bottom:20px; border-radius:10px;"></div>
+        <div style="display:flex; gap:10px;">
+            <button class="btn-main" onclick="fecharZoom()">FECHAR</button>
+            <a id="download-btn" class="btn-main" style="text-decoration:none; background:#00c853;">BAIXAR</a>
+        </div>
     </div>
 
 <script>
@@ -89,11 +85,8 @@
     const canvas = document.getElementById('record-canvas');
     const ctx = canvas.getContext('2d');
 
-    // DB
     const req = indexedDB.open("PhotoMovieDB", 1);
-    req.onupgradeneeded = e => {
-        e.target.result.createObjectStore("movies", { keyPath: "id", autoIncrement: true });
-    };
+    req.onupgradeneeded = e => { e.target.result.createObjectStore("movies", { keyPath: "id", autoIncrement: true }); };
     req.onsuccess = e => { db = e.target.result; };
 
     function nav(id) {
@@ -107,33 +100,21 @@
         if(!file) return alert("Selecione a moldura!");
         const reader = new FileReader();
         reader.onload = e => {
-            document.getElementById('moldura-layer').src = e.target.result;
+            document.getElementById('moldura-hidden').src = e.target.result;
             nav('screen-camera');
         };
         reader.readAsDataURL(file);
     }
 
-    // --- MOTOR DE CÂMERA DO ZERO ---
     async function ligarCamera() {
         if (stream) stream.getTracks().forEach(t => t.stop());
-
-        const constraints = {
-            video: {
-                facingMode: currentFacingMode,
-                width: { ideal: 1280 },
-                height: { ideal: 720 }
-            },
-            audio: false
-        };
-
         try {
-            stream = await navigator.mediaDevices.getUserMedia(constraints);
+            stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: currentFacingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
+                audio: false
+            });
             video.srcObject = stream;
-            // Força o vídeo a dar play caso o navegador pause
-            video.onloadedmetadata = () => video.play();
         } catch (err) {
-            console.error("Erro ao ligar câmera:", err);
-            // Fallback total: tenta qualquer câmera se a traseira falhar
             stream = await navigator.mediaDevices.getUserMedia({ video: true });
             video.srcObject = stream;
         }
@@ -158,8 +139,9 @@
 
     function gravar() {
         chunks = [];
-        const frameImg = document.getElementById('moldura-layer');
+        const frameImg = document.getElementById('moldura-hidden');
 
+        // O processo de desenho no canvas acontece só "por baixo dos panos"
         const drawLoop = () => {
             ctx.drawImage(video, 0, 0, 720, 1280);
             if(frameImg.src) ctx.drawImage(frameImg, 0, 0, 720, 1280);
@@ -169,7 +151,7 @@
         const recStream = canvas.captureStream(30);
         recorder = new MediaRecorder(recStream, { 
             mimeType: 'video/webm;codecs=vp8',
-            videoBitsPerSecond: 5000000 
+            videoBitsPerSecond: 6000000 
         });
 
         recorder.ondataavailable = e => chunks.push(e.data);
@@ -185,11 +167,10 @@
 
         recorder.start();
         drawLoop();
-
-        setTimeout(() => {
-            recorder.stop();
+        setTimeout(() => { 
+            recorder.stop(); 
             document.getElementById('status-msg').style.display = 'none';
-        }, 10000); // 10 segundos de vídeo
+        }, 8000); // 8 segundos para o vídeo não ficar gigante
     }
 
     function irGaleria() {
@@ -199,17 +180,29 @@
         db.transaction("movies", "readonly").objectStore("movies").openCursor(null, 'prev').onsuccess = e => {
             const cursor = e.target.result;
             if(cursor) {
-                cont.innerHTML += `<div class="video-card" onclick="abrirZoom('${cursor.value.video}')"><video src="${cursor.value.video}" muted></video></div>`;
+                const blobUrl = cursor.value.video;
+                cont.innerHTML += `<div class="video-card" onclick="abrirZoom('${blobUrl}')">
+                    <video src="${blobUrl}" muted playsinline></video>
+                </div>`;
                 cursor.continue();
             }
         };
     }
 
     function abrirZoom(url) {
-        document.getElementById('zoom-video').src = url;
+        const v = document.getElementById('zoom-video');
+        const dl = document.getElementById('download-btn');
+        v.src = url;
+        v.load(); // Força o carregamento
+        v.play(); // Tenta dar play automático
+        
+        dl.href = url;
+        dl.download = "video_evento.webm";
+        
         const qrb = document.getElementById('qrcode-box');
         qrb.innerHTML = "";
-        new QRCode(qrb, { text: url, width: 150, height: 150 });
+        new QRCode(qrb, { text: url, width: 140, height: 140 });
+        
         document.getElementById('modal-zoom').style.display = 'flex';
     }
 
