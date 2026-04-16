@@ -6,10 +6,10 @@
     <title>CENTRAL - Photo Movie</title>
     <style>
         :root { 
-            --turquesa-dark: #003333; /* Turquesa ainda mais profundo */
+            --turquesa-dark: #003333; 
             --dourado: #c5a059;      
-            --dourado-claro: #f1dca7;
             --bg-modal: rgba(0, 20, 20, 0.98);
+            --cinza-minimal: #7a7a7a; /* Cinza que orna com o turquesa e dourado */
         }
         
         body { 
@@ -24,7 +24,6 @@
             overflow: hidden;
         }
 
-        /* 1- Cabeçalho com nomes maiores */
         .header {
             margin-top: 1.8cm;
             text-align: center;
@@ -33,18 +32,17 @@
 
         .header h1 {
             color: var(--dourado);
-            font-size: 52px; /* Aumentado */
+            font-size: 52px; 
             font-weight: 900;
             letter-spacing: 3px;
             margin: 0;
             text-transform: uppercase;
-            /* Efeito Pulsante */
             animation: pulse-gold 3s infinite ease-in-out;
         }
 
         .header p {
-            color: var(--dourado); /* Agora dourado também */
-            font-size: 20px; /* Aumentado */
+            color: var(--dourado); 
+            font-size: 20px; 
             margin: -5px 0 0 0;
             letter-spacing: 4px;
             font-weight: 300;
@@ -52,7 +50,6 @@
             opacity: 0.9;
         }
 
-        /* Animação do Pulsar Dourado */
         @keyframes pulse-gold {
             0% { text-shadow: 0 0 5px rgba(197, 160, 89, 0.2); transform: scale(1); }
             50% { text-shadow: 0 0 25px rgba(197, 160, 89, 0.7); transform: scale(1.02); }
@@ -64,11 +61,13 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+            align-items: center;
             width: 85%;
             max-width: 350px;
         }
 
         .btn-central {
+            width: 100%;
             padding: 20px;
             margin: 12px 0;
             border-radius: 12px;
@@ -84,6 +83,7 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.4);
             display: none; 
             transition: all 0.3s ease;
+            box-sizing: border-box;
         }
 
         #btn-login {
@@ -94,14 +94,16 @@
             box-shadow: none;
         }
 
-        /* 3- Rodapé Ajustado (mais para cima para não sumir) */
-        .footer-status {
-            padding-bottom: 40px; /* Mais margem inferior */
-            font-size: 13px;
-            color: rgba(197, 160, 89, 0.6); /* Dourado suave */
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            font-weight: bold;
+        /* 3,5 cm abaixo do botão encerrar sessão */
+        .footer-minimal {
+            margin-top: 3.5cm;
+            font-size: 12px;
+            color: var(--cinza-minimal);
+            text-transform: none;
+            letter-spacing: 1px;
+            font-weight: 400;
+            opacity: 0.8;
+            text-align: center;
         }
 
         /* Modal de Senha */
@@ -125,10 +127,7 @@
             text-align: center;
             width: 85%;
             max-width: 320px;
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
         }
-
-        .modal-content h3 { color: var(--dourado); margin-bottom: 25px; font-size: 18px; letter-spacing: 2px; }
 
         .modal-content input {
             width: 100%;
@@ -154,7 +153,6 @@
             font-weight: 900;
             width: 100%;
             cursor: pointer;
-            font-size: 16px;
         }
     </style>
 </head>
@@ -168,17 +166,17 @@
     <div class="main-container">
         <button id="btn-login" class="btn-central" onclick="abrirModal()">🔓 ACESSAR SISTEMA</button>
 
-        <a href="https://maxsynk.github.io/photomovie/" class="btn-protected btn-central">📸 NOVO EVENTO</a>
-        <a href="https://maxsynk.github.io/photomovie/galeria.html" class="btn-protected btn-central">🎞️ ACESSAR GALERIA</a>
+        <a href="https://phottoprint.github.io/photomovie/" class="btn-protected btn-central">📸 NOVO EVENTO</a>
+        <a href="https://phottoprint.github.io/photomovie/galeria.html" class="btn-protected btn-central">🎞️ ACESSAR GALERIA</a>
         
         <button id="btn-lock" class="btn-protected btn-central" onclick="bloquear()" style="background: transparent; color: #ff5555; border-color: #444; margin-top: 20px; font-size: 12px;">ENCERRAR SESSÃO</button>
+        
+        <div class="footer-minimal">Sistema de gestão 360º</div>
     </div>
-
-    <div class="footer-status">sistema de gestao 360</div>
 
     <div id="modal-senha">
         <div class="modal-content">
-            <h3>DIGITE A SENHA</h3>
+            <h3 style="color:var(--dourado)">AUTENTICAÇÃO</h3>
             <input type="password" id="input-senha" inputmode="numeric" pattern="[0-9]*" placeholder="••••">
             <button class="btn-confirm" onclick="validarSenha()">CONFIRMAR</button>
             <p onclick="fecharModal()" style="margin-top:20px; font-size:13px; color:#999; cursor:pointer">Voltar</p>
