@@ -3,77 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHOTO MOVIE - Pro v4.1</title>
+    <title>PHOTO MOVIE Pro</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { --neon: #9200ff; --bg: #000; }
-        body { margin: 0; background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
+        body { margin: 0; background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
 
-        /* TITULO FIXO NO TOPO */
+        /* TÍTULO FIXO E PULSANTE */
         .brand-header {
             position: fixed; top: 0; width: 100%; text-align: center;
             padding: 20px 0; z-index: 1000; background: linear-gradient(to bottom, black, transparent);
+            pointer-events: none;
         }
         .neon-title { 
             font-size: 2.5rem; font-weight: 900; color: var(--neon); margin: 0;
             text-shadow: 0 0 15px var(--neon); animation: pulse 1s infinite alternate;
         }
-        .subtitle { letter-spacing: 4px; font-size: 0.7rem; text-transform: uppercase; }
         @keyframes pulse { from { opacity: 0.7; transform: scale(1); } to { opacity: 1; transform: scale(1.03); } }
 
-        /* TELAS */
-        .screen { display: none; min-height: 100vh; width: 100vw; flex-direction: column; align-items: center; }
+        .screen { display: none; min-height: 100vh; width: 100vw; flex-direction: column; align-items: center; position: absolute; }
         .active { display: flex; }
 
-        /* CAMERA FLUIDA */
-        #preview-container { width: 100vw; height: 100vh; position: relative; overflow: hidden; }
-        #vid-layer { width: 100%; height: 100%; object-fit: cover; }
-        #frame-layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; z-index: 10; }
-        #record-canvas { display: none; } /* Canvas oculto para não pesar o processador */
+        /* FORMULÁRIO DE EVENTO */
+        .form-container { margin-top: 120px; width: 90%; max-width: 400px; background: #111; padding: 20px; border-radius: 20px; border: 1px solid #333; }
+        input { width: 100%; padding: 15px; margin: 10px 0; background: #000; border: 1px solid #444; color: white; border-radius: 10px; box-sizing: border-box; }
 
-        /* CONTROLES */
-        .controls { position: absolute; bottom: 60px; width: 100%; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
+        /* CÂMERA */
+        #cam-container { width: 100vw; height: 100vh; position: relative; }
+        #vid-preview { width: 100%; height: 100%; object-fit: cover; }
+        #moldura-layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; pointer-events: none; z-index: 10; }
+        
+        /* BOTÕES E CONTROLES */
+        .controls { position: absolute; bottom: 80px; width: 100%; display: flex; justify-content: space-around; align-items: center; z-index: 100; }
         .shutter { width: 80px; height: 80px; border: 5px solid white; border-radius: 50%; box-shadow: 0 0 20px var(--neon); cursor: pointer; }
-        .btn-back { font-size: 2rem; color: var(--neon); background: none; border: none; cursor: pointer; }
+        .footer-nav { position: fixed; bottom: 60px; z-index: 500; }
+        .btn-main { background: var(--neon); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-weight: bold; cursor: pointer; }
 
-        /* GALERIA */
-        .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 20px; margin-top: 120px; padding-bottom: 150px; width: 100%; box-sizing: border-box; }
-        .video-card { aspect-ratio: 9/16; background: #111; border-radius: 12px; border: 1px solid #333; overflow: hidden; position: relative; }
-        .video-card video { width: 100%; height: 100%; object-fit: cover; }
-
-        /* MODAL ZOOM */
-        #modal-zoom { 
-            position: fixed; inset: 0; background: #000; z-index: 2000; display: none; 
-            flex-direction: column; align-items: center; justify-content: center; padding: 20px;
-        }
+        /* GALERIA E ZOOM */
+        .gallery-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 20px; margin-top: 120px; overflow-y: auto; width: 100%; box-sizing: border-box; }
+        #modal-zoom { position: fixed; inset: 0; background: #000; z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; }
+        #status-msg { position: fixed; inset: 0; z-index: 1500; display: none; align-items: center; justify-content: center; font-size: 6rem; font-weight: 900; background: rgba(0,0,0,0.5); }
         #qrcode-box { background: white; padding: 10px; border-radius: 10px; margin: 20px 0; }
-        
-        /* AVISOS */
-        #status-msg { position: fixed; inset: 0; z-index: 1500; display: none; align-items: center; justify-content: center; font-size: 6rem; font-weight: 900; background: rgba(0,0,0,0.4); }
-        
-        /* BOTÃO VOLTAR RODAPÉ (SUBIU) */
-        .footer-nav { position: fixed; bottom: 80px; width: 100%; display: flex; justify-content: center; z-index: 500; }
-        .btn-main { background: var(--neon); color: white; border: none; padding: 15px 40px; border-radius: 30px; font-weight: bold; text-transform: uppercase; cursor: pointer; min-width: 200px; }
     </style>
 </head>
 <body>
 
     <div class="brand-header">
         <h1 class="neon-title">PHOTO MOVIE</h1>
-        <div class="subtitle">Colecionando Momentos</div>
+        <div style="letter-spacing: 4px; font-size: 0.7rem;">COLECIONANDO MOMENTOS</div>
     </div>
 
-    <div id="screen-camera" class="screen active">
-        <div id="preview-container">
-            <video id="vid-layer" autoplay playsinline muted></video>
-            <img id="frame-layer" src="" alt=""> <canvas id="record-canvas" width="720" height="1280"></canvas>
-            
-            <div id="status-msg"></div>
+    <div id="screen-menu" class="screen active">
+        <div class="form-container">
+            <h3 style="color:var(--neon)">NOVO EVENTO</h3>
+            <input type="text" id="event-name" placeholder="Nome do Evento">
+            <label style="font-size: 10px; color: #888;">SELECIONE A MOLDURA (.PNG)</label>
+            <input type="file" id="event-frame" accept="image/png">
+            <button class="btn-main" style="width:100%" onclick="criarEvento()">CRIAR E ABRIR CÂMERA</button>
+        </div>
+        <div id="lista-eventos" style="margin-top: 20px; width: 90%;"></div>
+    </div>
 
+    <div id="screen-camera" class="screen">
+        <div id="cam-container">
+            <video id="vid-preview" autoplay playsinline muted></video>
+            <img id="moldura-layer" src="" alt="">
+            <canvas id="hidden-canvas" width="720" height="1280" style="display:none"></canvas>
+            <div id="status-msg"></div>
             <div class="controls">
-                <button class="btn-back" onclick="irParaGaleria()">🎞️</button>
-                <div class="shutter" onclick="iniciarFluxo()"></div>
-                <div style="width:40px"></div>
+                <button onclick="irGaleria()" style="background:none; border:none; font-size:2rem;">🎞️</button>
+                <div class="shutter" onclick="contagem()"></div>
+                <button onclick="nav('screen-menu')" style="background:none; border:none; color:white;">✖</button>
             </div>
         </div>
     </div>
@@ -81,141 +81,143 @@
     <div id="screen-gallery" class="screen">
         <div id="gallery-container" class="gallery-grid"></div>
         <div class="footer-nav">
-            <button class="btn-main" style="background:#222;" onclick="nav('screen-camera')">VOLTAR PARA CÂMERA</button>
+            <button class="btn-main" style="background:#222;" onclick="nav('screen-camera')">VOLTAR</button>
         </div>
     </div>
 
     <div id="modal-zoom">
-        <video id="zoom-video" style="width:100%; max-width:320px; border-radius:15px;" controls autoplay loop></video>
+        <video id="zoom-video" style="width:100%; max-width:320px; border: 2px solid var(--neon);" controls autoplay loop></video>
         <div id="qrcode-box"></div>
-        <a id="download-link" class="btn-main" style="text-align:center; text-decoration:none; display:block; margin-bottom:10px;">BAIXAR AGORA</a>
+        <a id="download-btn" class="btn-main" style="text-decoration:none; margin-bottom:10px;">BAIXAR VÍDEO</a>
         <button class="btn-main" style="background:#333;" onclick="fecharZoom()">FECHAR</button>
     </div>
 
 <script>
-    let db;
-    let stream, recorder, chunks = [];
-    const video = document.getElementById('vid-layer');
-    const canvas = document.getElementById('record-canvas');
+    let db, activeFrame, recorder, stream;
+    const canvas = document.getElementById('hidden-canvas');
     const ctx = canvas.getContext('2d');
-    const frame = document.getElementById('frame-layer');
-    const status = document.getElementById('status-msg');
+    const video = document.getElementById('vid-preview');
 
-    // 1. BANCO DE DADOS LOCAL
+    // BANCO DE DADOS
     const req = indexedDB.open("PhotoMovieDB", 1);
     req.onupgradeneeded = e => {
         db = e.target.result;
-        db.createObjectStore("movies", { keyPath: "id", autoIncrement: true });
+        db.createObjectStore("movies", { keyPath: "id", autoIncrement: true }).createIndex("ev", "ev");
     };
-    req.onsuccess = e => { db = e.target.result; initCamera(); };
+    req.onsuccess = e => { db = e.target.result; };
 
-    // 2. INICIAR CAMERA
-    async function initCamera() {
-        // PEGUE A MOLDURA (Simulação: use o link da sua moldura PNG aqui)
-        frame.src = "https://i.imgur.com/8f5N1mU.png"; // <-- COLOQUE SUA MOLDURA AQUI
+    function nav(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        if(id === 'screen-camera') iniciarCamera();
+    }
 
+    // 1- PUXAR MOLDURA AUTOMÁTICO
+    function criarEvento() {
+        const file = document.getElementById('event-frame').files[0];
+        const name = document.getElementById('event-name').value;
+        if(!file || !name) return alert("Coloque o nome e a moldura .png!");
+
+        const reader = new FileReader();
+        reader.onload = e => {
+            activeFrame = e.target.result;
+            document.getElementById('moldura-layer').src = activeFrame;
+            nav('screen-camera');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    async function iniciarCamera() {
+        if(stream) stream.getTracks().forEach(t => t.stop());
         try {
             stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "environment", width: 1280, height: 720 },
+                video: { facingMode: "environment", width: {ideal: 1280}, height: {ideal: 720} },
                 audio: false 
             });
             video.srcObject = stream;
-        } catch (err) { alert("Erro na câmera: " + err); }
+        } catch (err) {
+            alert("Erro na Câmera. Verifique as permissões.");
+        }
     }
 
-    // 3. FLUXO DE GRAVAÇÃO
-    function iniciarFluxo() {
+    function contagem() {
         let c = 3;
-        status.style.display = 'flex';
-        status.innerText = c;
-        
-        const timer = setInterval(() => {
+        const msg = document.getElementById('status-msg');
+        msg.style.display = 'flex';
+        msg.innerText = c;
+        let t = setInterval(() => {
             c--;
-            if(c > 0) status.innerText = c;
-            else { clearInterval(timer); status.innerText = ""; gravar(); }
+            if(c>0) msg.innerText = c;
+            else { clearInterval(t); msg.innerText = ""; gravar(); }
         }, 1000);
     }
 
     function gravar() {
-        chunks = [];
-        // O Canvas só desenha no REC para manter a fluidez do vídeo nativo
-        const recordLoop = () => {
+        let chunks = [];
+        const recLoop = () => {
             ctx.drawImage(video, 0, 0, 720, 1280);
-            if(frame.src) ctx.drawImage(frame, 0, 0, 720, 1280);
-            if(recorder && recorder.state === "recording") requestAnimationFrame(recordLoop);
+            const img = document.getElementById('moldura-layer');
+            if(img.src) ctx.drawImage(img, 0, 0, 720, 1280);
+            if(recorder && recorder.state === "recording") requestAnimationFrame(recLoop);
         };
 
         const recStream = canvas.captureStream(30);
         recorder = new MediaRecorder(recStream, { mimeType: 'video/webm;codecs=vp8' });
-        
         recorder.ondataavailable = e => chunks.push(e.data);
         recorder.onstop = () => {
             const blob = new Blob(chunks, { type: 'video/webm' });
-            salvarNoDB(blob);
+            salvarVideo(blob);
         };
 
         recorder.start();
-        recordLoop();
+        recLoop();
 
-        let t = 10;
-        const count = setInterval(() => {
-            t--;
-            status.innerText = t + "s";
-            if(t <= 3) status.style.color = "#ff8c00";
-            if(t <= 0) {
-                clearInterval(count); recorder.stop();
-                status.innerText = "FINALIZOU!";
-                status.style.color = "#ff0000";
-                setTimeout(() => { status.style.display = 'none'; status.style.color = 'white'; irParaGaleria(); }, 1200);
+        let tempo = 10;
+        const msg = document.getElementById('status-msg');
+        const countdown = setInterval(() => {
+            tempo--;
+            msg.innerText = tempo + "s";
+            if(tempo <= 3) msg.style.color = "#ff8c00";
+            if(tempo <= 0) {
+                clearInterval(countdown);
+                recorder.stop();
+                msg.innerText = "FINALIZOU!";
+                msg.style.color = "red";
+                setTimeout(() => { msg.style.display = 'none'; msg.style.color = 'white'; irGaleria(); }, 1200);
             }
         }, 1000);
     }
 
-    // 4. PERSISTÊNCIA E GALERIA
-    function salvarNoDB(blob) {
+    function salvarVideo(blob) {
         const reader = new FileReader();
         reader.onload = e => {
-            db.transaction("movies", "readwrite").objectStore("movies").add({
-                video: e.target.result,
-                date: Date.now()
-            });
+            db.transaction("movies", "readwrite").objectStore("movies").add({ video: e.target.result });
         };
         reader.readAsDataURL(blob);
     }
 
-    function irParaGaleria() {
+    function irGaleria() {
         nav('screen-gallery');
         const cont = document.getElementById('gallery-container');
         cont.innerHTML = "";
-        
         db.transaction("movies", "readonly").objectStore("movies").openCursor(null, 'prev').onsuccess = e => {
             const cursor = e.target.result;
             if(cursor) {
-                const data = cursor.value.video;
-                cont.innerHTML += `
-                    <div class="video-card" onclick="abrirZoom('${data}')">
-                        <video src="${data}" muted></video>
-                    </div>`;
+                cont.innerHTML += `<div class="video-card" onclick="abrirZoom('${cursor.value.video}')">
+                    <video src="${cursor.value.video}" muted></video>
+                </div>`;
                 cursor.continue();
             }
         };
     }
 
-    function nav(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
-
-    // 5. ZOOM, QR CODE E BAIXAR
     function abrirZoom(url) {
         document.getElementById('zoom-video').src = url;
         const qrb = document.getElementById('qrcode-box');
         qrb.innerHTML = "";
         new QRCode(qrb, { text: url, width: 180, height: 180 });
-        
-        const dl = document.getElementById('download-link');
-        dl.href = url; dl.download = "video_com_moldura.webm";
-
+        const dl = document.getElementById('download-btn');
+        dl.href = url; dl.download = "video.webm";
         document.getElementById('modal-zoom').style.display = 'flex';
     }
 
