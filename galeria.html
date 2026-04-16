@@ -20,97 +20,145 @@
             min-height: 100vh;
         }
 
+        /* 1 & 6 - Cabeçalho, Nome maior e Busca */
         .header { 
-            padding: 40px 20px; 
+            padding: 40px 20px 20px 20px; 
             text-align: center; 
             background: rgba(0,0,0,0.2); 
             border-bottom: 1px solid var(--dourado); 
         }
 
-        .header h2 { 
+        .header h1 { 
             margin: 0; 
-            font-size: 24px; 
+            font-size: 42px; /* Nome Maior */
             color: var(--dourado); 
             text-transform: uppercase;
-            letter-spacing: 3px;
+            letter-spacing: 4px;
             font-weight: 900;
         }
 
         .header p { 
-            font-size: 13px; 
-            color: #ccc; 
-            margin-top: 5px;
-            letter-spacing: 1px;
+            font-size: 14px; 
+            color: var(--dourado); 
+            margin: -5px 0 20px 0;
+            letter-spacing: 3px;
+            text-transform: lowercase;
+            opacity: 0.8;
         }
 
+        /* Barra de Busca com Lupa */
+        .search-container {
+            position: relative;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 12px 20px 12px 40px;
+            border-radius: 50px;
+            border: 1px solid var(--dourado);
+            background: rgba(0,0,0,0.3);
+            color: white;
+            outline: none;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        .search-container::before {
+            content: '🔍';
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            opacity: 0.6;
+        }
+
+        /* 7 - Grid e tamanho dos vídeos reduzido */
         .gallery-grid { 
             display: grid; 
             grid-template-columns: repeat(2, 1fr); 
-            gap: 15px; 
-            padding: 20px; 
+            gap: 12px; 
+            padding: 15px; 
         }
 
         .video-card { 
             background: rgba(0, 0, 0, 0.3); 
-            border: 1px solid rgba(197, 160, 89, 0.3); 
-            border-radius: 20px; 
-            padding: 10px; 
+            border: 1px solid rgba(197, 160, 89, 0.2); 
+            border-radius: 15px; 
+            padding: 8px; 
             text-align: center; 
-            transition: transform 0.3s ease;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        /* 4 - Vídeo Clicável */
+        .video-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
         }
 
         video.thumb { 
-            width: 100%; 
-            border-radius: 15px; 
-            margin-bottom: 10px; 
+            width: 95%; /* Reduzido um pouco */
+            border-radius: 12px; 
             background: #000; 
+            display: block;
+            margin: 0 auto 8px auto;
         }
 
         .btn-abrir { 
             background: linear-gradient(135deg, var(--dourado), var(--dourado-fosco)); 
             color: #000; 
             border: none; 
-            padding: 12px; 
+            padding: 10px; 
             border-radius: 50px; 
             width: 100%; 
             font-weight: 800; 
-            font-size: 11px;
-            cursor: pointer; 
-            text-decoration: none; 
-            display: block; 
-            box-sizing: border-box; 
+            font-size: 10px;
             text-transform: uppercase;
+            display: block;
         }
 
-        .video-id { 
+        /* 2 - Numeração e ID */
+        .video-info { 
+            display: flex;
+            justify-content: space-between;
+            padding: 0 5px;
             font-size: 9px; 
             color: var(--cinza-minimal); 
-            margin-bottom: 8px; 
+            margin-bottom: 5px; 
             text-transform: uppercase;
         }
 
         .loading { 
             grid-column: span 2; 
             text-align: center; 
-            padding: 100px 0; 
+            padding: 80px 0; 
             color: var(--dourado); 
+            letter-spacing: 2px;
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h2>PHOTO MOVIE</h2>
-        <p>Encontre seu vídeo 360°</p>
+        <h1>PHOTO MOVIE</h1>
+        <p>colecionando momentos</p>
+        
+        <div class="search-container">
+            <input type="text" id="videoSearch" placeholder="Buscar vídeo pelo ID..." onkeyup="filtrarGaleria()">
+        </div>
     </div>
 
     <div id="gallery-container" class="gallery-grid">
-        <div class="loading">SINCRONIZANDO VÍDEOS...</div>
+        <div class="loading">CARREGANDO GALERIA...</div>
     </div>
 
 <script>
     const WORKER_URL = 'https://photomovie.maxprimefotovideo.workers.dev';
+    let videosOriginais = [];
 
     async function carregarGaleria() {
         const container = document.getElementById('gallery-container');
@@ -123,33 +171,51 @@
                 return;
             }
 
-            container.innerHTML = "";
-            
-            videos.forEach(vid => {
-                const card = document.createElement('div');
-                card.className = 'video-card';
-                
-                // ATUALIZADO: Usando o novo caminho maxsynk
-                const downloadUrl = `https://maxsynk.github.io/photomovie/download.html?id=${vid.uuid}&fx=${vid.preset_usado || 'boom'}`;
-                
-                card.innerHTML = `
-                    <video class="thumb" 
-                           src="${WORKER_URL}/stream?id=${vid.uuid}" 
-                           preload="metadata" 
-                           muted playsinline autoplay loop>
-                    </video>
-                    <div class="video-id">VÍDEO #${vid.uuid.substring(0,6)}</div>
-                    <a href="${downloadUrl}" class="btn-abrir">BAIXAR / QR CODE</a>
-                `;
-                container.appendChild(card);
-            });
+            // 3 - Inverter a ordem (Últimos primeiro)
+            videosOriginais = videos.reverse();
+            renderizarVideos(videosOriginais);
+
         } catch (e) {
-            container.innerHTML = "<div class='loading' style='color:red'>ERRO DE CONEXÃO</div>";
+            container.innerHTML = "<div class='loading' style='color:red'>ERRO AO SINCRONIZAR</div>";
         }
     }
 
+    function renderizarVideos(lista) {
+        const container = document.getElementById('gallery-container');
+        container.innerHTML = "";
+        
+        lista.forEach((vid, index) => {
+            const card = document.createElement('div');
+            card.className = 'video-card';
+            
+            // 2 - Numeração (A lista já está invertida, então o primeiro é o último número)
+            const numeroVideo = lista.length - index;
+            const downloadUrl = `https://maxsynk.github.io/photomovie/download.html?id=${vid.uuid}&fx=${vid.preset_usado || 'boom'}`;
+            
+            card.innerHTML = `
+                <a href="${downloadUrl}" class="video-link">
+                    <div class="video-info">
+                        <span>#${numeroVideo}</span>
+                        <span>ID: ${vid.uuid.substring(0,6)}</span>
+                    </div>
+                    <video class="thumb" src="${WORKER_URL}/stream?id=${vid.uuid}#t=0.5" preload="metadata"></video>
+                    <div class="btn-abrir">QR CODE / BAIXAR</div>
+                </a>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // 6 - Função de busca
+    function filtrarGaleria() {
+        const termo = document.getElementById('videoSearch').value.toLowerCase();
+        const filtrados = videosOriginais.filter(v => v.uuid.toLowerCase().includes(termo));
+        renderizarVideos(filtrados);
+    }
+
     carregarGaleria();
-    setInterval(carregarGaleria, 20000);
+    // Atualiza a cada 30 segundos para não sobrecarregar
+    setInterval(carregarGaleria, 30000);
 </script>
 </body>
 </html>
