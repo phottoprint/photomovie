@@ -5,60 +5,117 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PHOTO MOVIE - Painel de Gravação</title>
     <style>
-        :root { --neon: #9200ff; --cyan: #00f2ff; }
-        body { margin: 0; background: #000; color: white; font-family: sans-serif; overflow-x: hidden; }
-        
-        #upload-overlay { 
-            position: fixed; inset: 0; background: rgba(0,0,0,0.9); 
-            z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; 
+        :root { 
+            --turquesa: #003333; 
+            --dourado: #c5a059; 
+            --dourado-fosco: #8e6d2d;
         }
-        .progress-bar { width: 70%; height: 6px; background: #222; border-radius: 3px; margin-top: 15px; overflow: hidden; }
-        #progress-fill { width: 0%; height: 100%; background: var(--cyan); transition: width 0.3s; }
+        
+        body { 
+            margin: 0; 
+            background: #000; 
+            color: white; 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            overflow: hidden; 
+        }
+        
+        /* Overlay de Upload */
+        #upload-overlay { 
+            position: fixed; inset: 0; 
+            background: rgba(0, 51, 51, 0.95); 
+            z-index: 5000; display: none; 
+            flex-direction: column; align-items: center; justify-content: center; 
+        }
+        .progress-bar { width: 70%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; margin-top: 15px; overflow: hidden; border: 1px solid var(--dourado); }
+        #progress-fill { width: 0%; height: 100%; background: var(--dourado); transition: width 0.3s; }
 
         .screen { display: none; min-height: 100vh; width: 100vw; flex-direction: column; align-items: center; position: absolute; top: 0; }
         .active { display: flex; }
 
-        #vid-preview { width: 100%; height: 100vh; object-fit: cover; background: #111; }
-        .shutter-group { position: absolute; bottom: 40px; width: 100%; display: flex; justify-content: space-evenly; align-items: center; z-index: 100; }
-        .shutter { width: 75px; height: 75px; border: 4px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-        .shutter-in { width: 55px; height: 55px; background: red; border-radius: 50%; }
+        /* Câmera */
+        #vid-preview { width: 100%; height: 100vh; object-fit: cover; background: #000; }
+        
+        .shutter-group { 
+            position: absolute; bottom: 40px; width: 100%; 
+            display: flex; justify-content: space-evenly; align-items: center; z-index: 100; 
+        }
+        
+        .shutter { 
+            width: 80px; height: 80px; border: 4px solid var(--dourado); 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            background: rgba(0,0,0,0.3);
+        }
+        .shutter-in { width: 60px; height: 60px; background: #ff0000; border-radius: 50%; transition: 0.3s; }
+        .shutter-in.recording { border-radius: 10px; transform: scale(0.7); }
 
-        .fx-selector { position: absolute; top: 20px; display: flex; gap: 8px; z-index: 100; }
-        .fx-btn { background: rgba(0,0,0,0.6); border: 1px solid #444; color: white; padding: 10px 15px; border-radius: 20px; font-size: 12px; border: 1px solid transparent; }
-        .fx-btn.active { border-color: var(--neon); color: var(--neon); font-weight: bold; background: rgba(146, 0, 255, 0.2); border: 1px solid var(--neon); }
+        /* Seleção de Efeitos */
+        .fx-selector { position: absolute; top: 20px; display: flex; gap: 10px; z-index: 100; }
+        .fx-btn { 
+            background: rgba(0,0,0,0.7); border: 1px solid var(--dourado); 
+            color: white; padding: 10px 20px; border-radius: 30px; 
+            font-size: 12px; font-weight: bold; text-transform: uppercase;
+        }
+        .fx-btn.active { background: var(--dourado); color: var(--turquesa); }
+
+        /* Timer */
+        #timer { 
+            position: absolute; top: 80px; font-size: 40px; 
+            font-weight: 900; color: var(--dourado); 
+            text-shadow: 2px 2px 10px rgba(0,0,0,0.8);
+            display: none;
+        }
+
+        /* Menu Inicial */
+        .menu-card {
+            width: 85%; max-width: 400px; background: var(--turquesa); 
+            padding: 30px; border-radius: 30px; border: 2px solid var(--dourado);
+            text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .menu-card h1 { color: var(--dourado); margin: 0 0 10px 0; letter-spacing: 3px; }
+        
+        .btn-main {
+            width: 100%; padding: 18px; background: linear-gradient(135deg, var(--dourado), var(--dourado-fosco));
+            border: none; border-radius: 15px; color: #000; font-weight: 900; 
+            text-transform: uppercase; cursor: pointer; margin-top: 20px;
+        }
     </style>
 </head>
 <body>
 
     <div id="upload-overlay">
-        <h3 id="status-text">ENVIANDO PARA NUVEM...</h3>
+        <h3 id="status-text" style="color: var(--dourado);">SUBINDO VÍDEO...</h3>
         <div class="progress-bar"><div id="progress-fill"></div></div>
     </div>
 
     <div id="screen-menu" class="screen active" style="justify-content: center;">
-        <div style="width: 85%; background: #111; padding: 25px; border-radius: 20px; border: 1px solid #333;">
-            <h2 style="color: var(--neon); margin: 0 0 20px 0;">PAINEL 360°</h2>
-            <input type="text" id="event-name" placeholder="Nome do Evento" style="width:100%; padding:15px; margin-bottom:15px; background:#000; border:1px solid #444; color:white; border-radius:10px; box-sizing:border-box;">
+        <div class="menu-card">
+            <h1>PHOTO MOVIE</h1>
+            <p style="color: var(--dourado); font-size: 12px; margin-top: -10px; opacity: 0.7;">CONTROL PANEL</p>
             
-            <button onclick="iniciar()" style="width:100%; padding:15px; background:var(--neon); border:none; border-radius:10px; color:white; font-weight:bold; cursor:pointer; margin-bottom: 12px;">ABRIR CÂMERA</button>
+            <input type="text" id="event-name" placeholder="Nome do Evento" value="Evento 360" style="width:100%; padding:15px; margin: 20px 0; background:rgba(0,0,0,0.3); border:1px solid var(--dourado); color:white; border-radius:10px; box-sizing:border-box; text-align:center;">
             
-            <button onclick="irGaleria()" style="width:100%; padding:12px; background:#222; border:1px solid #444; border-radius:10px; color:white; cursor:pointer;">ACESSAR GALERIA</button>
+            <button class="btn-main" onclick="iniciar()">ABRIR CÂMERA</button>
+            <button onclick="irGaleria()" style="background:none; border:none; color:white; margin-top:20px; opacity:0.6; cursor:pointer;">Acessar Galeria →</button>
         </div>
     </div>
 
     <div id="screen-camera" class="screen">
         <div class="fx-selector">
             <button class="fx-btn active" onclick="setFX('boom', this)">BOOMERANG</button>
-            <button class="fx-btn" onclick="setFX('slow', this)">SLOW</button>
+            <button class="fx-btn" onclick="setFX('slow', this)">SLOW MOTION</button>
         </div>
+
+        <div id="timer">06s</div>
 
         <video id="vid-preview" autoplay playsinline muted></video>
         <canvas id="rec-canvas" width="720" height="1280" style="display:none"></canvas>
 
         <div class="shutter-group">
-            <button onclick="nav('screen-menu')" style="background:none; border:none; font-size:30px; cursor:pointer; color:white;">⬅️</button>
-            <div class="shutter" onclick="record()" style="cursor:pointer;"><div class="shutter-in"></div></div>
-            <button onclick="invert()" style="background:none; border:none; font-size:30px; cursor:pointer; color:white;">🔄</button>
+            <button onclick="nav('screen-menu')" style="background:none; border:none; font-size:30px; color:white;">🏠</button>
+            <div class="shutter" onclick="record()">
+                <div id="shutter-dot" class="shutter-in"></div>
+            </div>
+            <button onclick="invert()" style="background:none; border:none; font-size:30px; color:white;">🔄</button>
         </div>
     </div>
 
@@ -89,33 +146,58 @@
         if(stream) stream.getTracks().forEach(t => t.stop());
         try {
             stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: camMode, width: {ideal: 1280}, height: {ideal: 720} }, audio: false
+                video: { facingMode: camMode, width: {ideal: 1280}, height: {ideal: 720} }, 
+                audio: false
             });
             video.srcObject = stream;
         } catch (err) { alert("Erro ao acessar câmera: " + err); }
     }
 
     function record() {
+        if(recorder && recorder.state === 'recording') return;
+
         chunks = [];
+        const timerEl = document.getElementById('timer');
+        const shutterDot = document.getElementById('shutter-dot');
+        
+        timerEl.style.display = 'block';
+        shutterDot.classList.add('recording');
+
         const loop = () => {
             ctx.drawImage(video, 0, 0, 720, 1280);
             if(recorder && recorder.state === 'recording') requestAnimationFrame(loop);
         };
+
         const recStream = canvas.captureStream(30);
         recorder = new MediaRecorder(recStream, { mimeType: 'video/webm;codecs=vp8' });
+        
         recorder.ondataavailable = e => chunks.push(e.data);
-        recorder.onstop = () => upload();
+        recorder.onstop = () => {
+            timerEl.style.display = 'none';
+            shutterDot.classList.remove('recording');
+            upload();
+        };
+
         recorder.start();
         loop();
-        // Tempo de gravação de 6 segundos
-        setTimeout(() => { if(recorder.state === 'recording') recorder.stop(); }, 6000);
+
+        // Cronômetro Visual de 6 segundos
+        let timeLeft = 6;
+        const countdown = setInterval(() => {
+            timeLeft--;
+            timerEl.innerText = `0${timeLeft}s`;
+            if(timeLeft <= 0) {
+                clearInterval(countdown);
+                if(recorder.state === 'recording') recorder.stop();
+            }
+        }, 1000);
     }
 
     async function upload() {
         document.getElementById('upload-overlay').style.display = 'flex';
         const blob = new Blob(chunks, { type: 'video/webm' });
-        const uuid = Math.random().toString(36).substring(2, 8);
-        const evento = document.getElementById('event-name').value || "Evento";
+        const uuid = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const evento = document.getElementById('event-name').value || "Evento 360";
 
         const fd = new FormData();
         fd.append('video', blob);
@@ -144,7 +226,6 @@
         xhr.send(fd);
     }
 
-    // Função que redireciona para a página da galeria separada
     function irGaleria() {
         window.location.href = './galeria.html';
     }
