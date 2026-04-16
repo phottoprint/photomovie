@@ -20,7 +20,6 @@
             min-height: 100vh;
         }
 
-        /* Cabeçalho Premium */
         .header { 
             padding: 40px 20px; 
             text-align: center; 
@@ -44,7 +43,6 @@
             letter-spacing: 1px;
         }
 
-        /* Grid da Galeria */
         .gallery-grid { 
             display: grid; 
             grid-template-columns: repeat(2, 1fr); 
@@ -52,7 +50,6 @@
             padding: 20px; 
         }
 
-        /* Cards de Vídeo */
         .video-card { 
             background: rgba(0, 0, 0, 0.3); 
             border: 1px solid rgba(197, 160, 89, 0.3); 
@@ -63,17 +60,13 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.3);
         }
 
-        .video-card:active { transform: scale(0.95); }
-
         video.thumb { 
             width: 100%; 
             border-radius: 15px; 
             margin-bottom: 10px; 
             background: #000; 
-            border: 1px solid rgba(255,255,255,0.05);
         }
 
-        /* Botão de Download Dourado */
         .btn-abrir { 
             background: linear-gradient(135deg, var(--dourado), var(--dourado-fosco)); 
             color: #000; 
@@ -88,7 +81,6 @@
             display: block; 
             box-sizing: border-box; 
             text-transform: uppercase;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
         }
 
         .video-id { 
@@ -96,7 +88,6 @@
             color: var(--cinza-minimal); 
             margin-bottom: 8px; 
             text-transform: uppercase;
-            letter-spacing: 1px;
         }
 
         .loading { 
@@ -104,8 +95,6 @@
             text-align: center; 
             padding: 100px 0; 
             color: var(--dourado); 
-            font-weight: bold;
-            letter-spacing: 2px;
         }
     </style>
 </head>
@@ -129,7 +118,6 @@
             const res = await fetch(`${WORKER_URL}/list-videos`);
             const videos = await res.json();
             
-            // Se não houver vídeos novos, não recarrega tudo para evitar "piscar" a tela
             if (videos.length === 0) {
                 container.innerHTML = "<div class='loading'>NENHUM VÍDEO ENCONTRADO</div>";
                 return;
@@ -141,9 +129,9 @@
                 const card = document.createElement('div');
                 card.className = 'video-card';
                 
-                const downloadUrl = `./download.html?id=${vid.uuid}&fx=${vid.preset_usado || 'boom'}`;
+                // ATUALIZADO: Usando o novo caminho maxsynk
+                const downloadUrl = `https://maxsynk.github.io/photomovie/download.html?id=${vid.uuid}&fx=${vid.preset_usado || 'boom'}`;
                 
-                // Note que adicionei autoplay e loop para a galeria ficar viva
                 card.innerHTML = `
                     <video class="thumb" 
                            src="${WORKER_URL}/stream?id=${vid.uuid}" 
@@ -161,7 +149,6 @@
     }
 
     carregarGaleria();
-    // Atualiza a cada 20 segundos
     setInterval(carregarGaleria, 20000);
 </script>
 </body>
