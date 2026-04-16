@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seu Vídeo 360 - Download</title>
+    <style>
+        body { margin: 0; background: #000; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; }
+        .container { width: 90%; max-width: 400px; text-align: center; }
+        video { width: 100%; border-radius: 15px; border: 2px solid #9200ff; box-shadow: 0 0 20px rgba(146, 0, 255, 0.5); }
+        .btn { display: inline-block; margin-top: 20px; padding: 15px 30px; background: #00f2ff; color: #000; text-decoration: none; border-radius: 30px; font-weight: bold; width: 100%; box-sizing: border-box; }
+        h2 { color: #9200ff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 id="status">PREPARANDO VÍDEO...</h2>
+        <video id="player" controls playsinline loop></video>
+        <a id="download-link" href="#" class="btn" style="display: none;" download>BAIXAR MEU VÍDEO</a>
+        <p style="font-size: 12px; color: #555; margin-top: 20px;">Dica: Se estiver no iPhone, segure o vídeo e clique em "Salvar em Fotos".</p>
+    </div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const videoId = urlParams.get('id');
+    const fx = urlParams.get('fx') || 'boom';
+    // Coloque a URL do seu worker aqui:
+    const WORKER_URL = 'https://photomovie.maxprimefotovideo.workers.dev';
+
+    async function carregarVideo() {
+        if (!videoId) {
+            document.getElementById('status').innerText = "VÍDEO NÃO ENCONTRADO";
+            return;
+        }
+
+        const videoSrc = `${WORKER_URL}/stream?id=${videoId}`;
+        const player = document.getElementById('player');
+        const dl = document.getElementById('download-link');
+
+        player.src = videoSrc;
+        dl.href = videoSrc;
+        dl.style.display = 'block';
+        document.getElementById('status').innerText = "VÍDEO PRONTO!";
+
+        // APLICAÇÃO DE EFEITOS VIA PLAYER (Sem re-renderizar)
+        if (fx === 'slow') {
+            player.playbackRate = 0.5; // Câmera lenta
+        } else if (fx === 'fast') {
+            player.playbackRate = 1.5; // Rápido
+        }
+    }
+
+    carregarVideo();
+</script>
+</body>
+</html>
