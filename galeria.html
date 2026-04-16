@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GALERIA DE VÍDEOS - 360°</title>
+    <title>DOWNLOAD - Photo Movie</title>
     <style>
         :root { 
             --turquesa-dark: #003333; 
             --dourado: #c5a059;      
             --dourado-fosco: #8e6d2d;
-            --cinza-minimal: #666666;
         }
         
         body { 
@@ -17,120 +16,72 @@
             background: var(--turquesa-dark); 
             color: white; 
             font-family: 'Segoe UI', Roboto, sans-serif;
-            min-height: 100vh;
-        }
-
-        .header { 
-            padding: 40px 20px 20px 20px; 
-            text-align: center; 
-            background: rgba(0,0,0,0.2); 
-            border-bottom: 1px solid var(--dourado); 
-        }
-
-        .header h1 { 
-            margin: 0; 
-            font-size: 42px; 
-            color: var(--dourado); 
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            font-weight: 900;
-        }
-
-        .header p { 
-            font-size: 14px; 
-            color: var(--dourado); 
-            margin: -5px 0 20px 0;
-            letter-spacing: 3px;
-            text-transform: lowercase;
-            opacity: 0.8;
-        }
-
-        /* 1 - Busca Arredondada */
-        .search-container {
-            position: relative;
-            max-width: 300px;
-            margin: 0 auto;
-        }
-
-        .search-container input {
-            width: 100%;
-            padding: 12px 20px 12px 40px;
-            border-radius: 50px;
-            border: 1px solid var(--dourado);
-            background: rgba(0,0,0,0.3);
-            color: white;
-            outline: none;
-            box-sizing: border-box;
-            font-size: 14px;
-        }
-
-        .search-container::before {
-            content: '🔍';
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 14px;
-            opacity: 0.6;
-        }
-
-        /* 7 - Grid e tamanho dos vídeos */
-        .gallery-grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 15px; 
-            padding: 20px; 
-        }
-
-        .video-card { 
-            background: rgba(0, 0, 0, 0.3); 
-            border: 1px solid rgba(197, 160, 89, 0.1); 
-            border-radius: 20px; 
-            padding: 10px; 
-            text-align: center; 
-            transition: all 0.3s ease;
-        }
-
-        .video-link {
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
-
-        video.thumb { 
-            width: 100%; 
-            border-radius: 15px; 
-            background: #000; 
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        /* 2 - Número bem mais visível */
-        .video-info { 
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
-            padding: 0 5px;
-            margin-bottom: 5px; 
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
-        .video-number {
-            font-size: 18px; /* Mais Visível */
-            font-weight: 900;
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            margin-top: 20px;
+        }
+
+        .header h1 {
             color: var(--dourado);
-        }
-
-        .video-id-text {
-            font-size: 9px;
-            color: var(--cinza-minimal);
+            font-size: 32px;
+            margin: 0;
             text-transform: uppercase;
+            letter-spacing: 3px;
         }
 
-        .loading { 
-            grid-column: span 2; 
-            text-align: center; 
-            padding: 80px 0; 
-            color: var(--dourado); 
+        /* Container do Vídeo */
+        .video-preview {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 2px solid var(--dourado);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            background: #000;
+        }
+
+        video {
+            width: 100%;
+            display: block;
+        }
+
+        /* Botão Dourado de Baixar */
+        .btn-download {
+            margin-top: 40px;
+            width: 100%;
+            max-width: 320px;
+            padding: 20px;
+            border-radius: 50px;
+            background: linear-gradient(135deg, var(--dourado), var(--dourado-fosco));
+            color: #000;
+            text-align: center;
+            text-decoration: none;
+            font-weight: 800;
+            text-transform: uppercase;
+            font-size: 16px;
+            letter-spacing: 1px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transition: transform 0.2s;
+        }
+
+        .btn-download:active {
+            transform: scale(0.95);
+        }
+
+        .info-text {
+            margin-top: 20px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+            text-align: center;
         }
     </style>
 </head>
@@ -138,82 +89,44 @@
 
     <div class="header">
         <h1>PHOTO MOVIE</h1>
-        <p>colecionando momentos</p>
-        
-        <div class="search-container">
-            <input type="number" id="videoSearch" placeholder="Buscar pelo NÚMERO..." onkeyup="filtrarGaleria()">
-        </div>
+        <p id="video-number" style="color: var(--dourado); letter-spacing: 2px;"></p>
     </div>
 
-    <div id="gallery-container" class="gallery-grid">
-        <div class="loading">SINCRONIZANDO...</div>
+    <div class="video-preview">
+        <video id="player" controls playsinline></video>
     </div>
+
+    <a href="#" id="link-download" download class="btn-download">BAIXAR VÍDEO</a>
+
+    <p class="info-text">Se o download não iniciar, clique e segure no vídeo.</p>
+    
+    <a href="galeria.html" style="color: white; margin-top: 30px; font-size: 14px; opacity: 0.7; text-decoration: none;">← Voltar para galeria</a>
 
 <script>
     const WORKER_URL = 'https://photomovie.maxprimefotovideo.workers.dev';
-    let videosComNumeracao = [];
+    
+    // Pegar parâmetros da URL
+    const params = new URLSearchParams(window.location.search);
+    const videoId = params.get('id');
+    const numero = params.get('n');
 
-    async function carregarGaleria() {
-        const container = document.getElementById('gallery-container');
-        try {
-            const res = await fetch(`${WORKER_URL}/list-videos`);
-            const videos = await res.json();
-            
-            if (videos.length === 0) {
-                container.innerHTML = "<div class='loading'>SEM VÍDEOS</div>";
-                return;
-            }
-
-            // 3 - Ordem Reversa e 2 - Criar numeração fixa
-            const total = videos.length;
-            videosComNumeracao = videos.reverse().map((vid, index) => ({
-                ...vid,
-                numero: total - index
-            }));
-
-            renderizarVideos(videosComNumeracao);
-
-        } catch (e) {
-            container.innerHTML = "<div class='loading' style='color:red'>ERRO AO CARREGAR</div>";
-        }
-    }
-
-    function renderizarVideos(lista) {
-        const container = document.getElementById('gallery-container');
-        container.innerHTML = "";
+    if (videoId) {
+        const videoSrc = `${WORKER_URL}/stream?id=${videoId}`;
+        const player = document.getElementById('player');
+        const downloadBtn = document.getElementById('link-download');
         
-        lista.forEach(vid => {
-            const card = document.createElement('div');
-            card.className = 'video-card';
-            
-            const downloadUrl = `https://maxsynk.github.io/photomovie/download.html?id=${vid.uuid}&n=${vid.numero}`;
-            
-            card.innerHTML = `
-                <a href="${downloadUrl}" class="video-link">
-                    <div class="video-info">
-                        <span class="video-number">#${vid.numero}</span>
-                        <span class="video-id-text">ID: ${vid.uuid.substring(0,6)}</span>
-                    </div>
-                    <video class="thumb" src="${WORKER_URL}/stream?id=${vid.uuid}#t=0.5" preload="metadata"></video>
-                    </a>
-            `;
-            container.appendChild(card);
-        });
-    }
-
-    // 1 - Busca apenas pelo número
-    function filtrarGaleria() {
-        const termo = document.getElementById('videoSearch').value;
-        if (!termo) {
-            renderizarVideos(videosComNumeracao);
-            return;
+        // Exibir número do vídeo
+        if (numero) {
+            document.getElementById('video-number').innerText = `VÍDEO #${numero}`;
         }
-        const filtrados = videosComNumeracao.filter(v => v.numero.toString() === termo);
-        renderizarVideos(filtrados);
-    }
 
-    carregarGaleria();
-    setInterval(carregarGaleria, 30000);
+        // Setar fontes
+        player.src = videoSrc;
+        downloadBtn.href = videoSrc;
+    } else {
+        alert("Vídeo não encontrado.");
+        window.location.href = 'galeria.html';
+    }
 </script>
 </body>
 </html>
