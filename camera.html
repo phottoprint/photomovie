@@ -7,7 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         :root { --neon: #00d1d1; --dourado: #c5a059; }
-        body { margin: 0; background: #000; color: white; font-family: sans-serif; overflow-x: hidden; }
+        body { margin: 0; background: #000; color: white; font-family: sans-serif; overflow: hidden; }
 
         .screen { display: none; min-height: 100vh; width: 100vw; flex-direction: column; align-items: center; position: absolute; }
         .active { display: flex; }
@@ -51,7 +51,6 @@
         
         .event-badge { position: fixed; top: 15px; left: 15px; background: rgba(0,0,0,0.7); padding: 8px 15px; border-radius: 20px; border: 1px solid var(--dourado); font-size: 12px; z-index: 1000; color: var(--dourado); font-weight: bold; }
         
-        /* Loading Overlay */
         #upload-loading { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; color: var(--neon); }
     </style>
 </head>
@@ -61,7 +60,7 @@
 
     <div id="upload-loading">
         <div style="font-size: 24px; margin-bottom: 10px;">Enviando Vídeo...</div>
-        <small>Organizando na pasta do evento</small>
+        <small>Processando efeitos e moldura</small>
     </div>
 
     <div id="screen-camera" class="screen active">
@@ -84,9 +83,12 @@
 
     <div id="screen-gallery" class="screen" style="background: #000;">
         <h3 style="margin-top: 40px; color: var(--neon);">GALERIA DO EVENTO</h3>
-        <button class="btn-danger" onclick="limparBanco()">🗑️ LIMPAR MEMÓRIA LOCAL</button>
+        <button class="btn-danger" onclick="limparBanco()">🗑️ LIMPAR VÍDEOS</button>
         <div id="gallery-container" class="gallery-grid"></div>
-        <button class="btn-main" style="margin: 20px 0; background:#333;" onclick="nav('screen-camera')">VOLTAR</button>
+        <div style="display:flex; gap:10px; margin: 20px 0;">
+            <button class="btn-main" style="background:#333;" onclick="nav('screen-camera')">VOLTAR CÂMERA</button>
+            <button class="btn-main" style="background:var(--dourado); color:black;" onclick="window.location.href='index.html'">SAIR DO EVENTO</button>
+        </div>
     </div>
 
     <div id="modal-zoom">
@@ -104,8 +106,11 @@
     const canvas = document.getElementById('record-canvas');
     const ctx = canvas.getContext('2d');
     const frameImg = document.getElementById('moldura-r2');
-    const WORKER_URL = "photomovie.maxprimefotovideo.workers.dev"; // Atualize aqui!
+    
+    // CORREÇÃO: URL com protocolo completo
+    const WORKER_URL = "https://photomovie.maxprimefotovideo.workers.dev"; 
 
+    // Inicializa Banco de Dados Local
     const req = indexedDB.open("PhotoMovieDB", 1);
     req.onupgradeneeded = e => { e.target.result.createObjectStore("movies", { keyPath: "id", autoIncrement: true }); };
     req.onsuccess = e => { db = e.target.result; };
@@ -117,7 +122,10 @@
         if(configSessao) {
             badge.innerText = "🎬 " + configSessao.nome;
             badge.style.display = 'block';
-            if(configSessao.moldura) frameImg.src = configSessao.moldura;
+            if(configSessao.moldura) {
+                frameImg.src = configSessao.moldura;
+                console.log("Moldura configurada:", configSessao.moldura);
+            }
         }
         ligarCamera();
     };
@@ -132,12 +140,12 @@
         if (stream) stream.getTracks().forEach(t => t.stop());
         try {
             stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: currentFacingMode, width: 1280, height: 720 },
+                video: { facingMode: currentFacingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
                 audio: false
             });
             video.srcObject = stream;
             video.play();
-        } catch (err) { alert("Câmera indisponível."); }
+        } catch (err) { alert("Erro ao acessar câmera. Verifique as permissões."); }
     }
 
     function girarCamera() {
@@ -163,9 +171,12 @@
         const tempoGravacao = configSessao ? parseInt(configSessao.tempo) : 10;
         const nomeEvento = configSessao ? configSessao.nome : "Geral";
         
+        // Loop para desenhar vídeo + moldura no canvas
         const drawLoop = () => {
             ctx.drawImage(video, 0, 0, 720, 1280);
-            if(frameImg.complete) ctx.drawImage(frameImg, 0, 0, 720, 1280);
+            if(frameImg.src && frameImg.complete) {
+                ctx.drawImage(frameImg, 0, 0, 720, 1280);
+            }
             if(recorder && recorder.state === "recording") requestAnimationFrame(drawLoop);
         };
 
@@ -181,7 +192,10 @@
 
         recorder.start();
         drawLoop();
-        setTimeout(() => { if(recorder.state === "recording") recorder.stop(); document.getElementById('status-msg').style.display = 'none'; }, tempoGravacao * 1000);
+        setTimeout(() => { 
+            if(recorder.state === "recording") recorder.stop(); 
+            document.getElementById('status-msg').style.display = 'none'; 
+        }, tempoGravacao * 1000);
     }
 
     async function realizarUpload(blob, evento) {
@@ -190,12 +204,11 @@
         const formData = new FormData();
         formData.append("video", blob);
         formData.append("uuid", uuid);
-        formData.append("evento", evento); // Este campo define a pasta no R2
+        formData.append("evento", evento);
 
         try {
             const res = await fetch(`${WORKER_URL}/upload`, { method: 'POST', body: formData });
             if(res.ok) {
-                // Salva no banco local para referência
                 db.transaction("movies", "readwrite").objectStore("movies").add({ 
                     video: blob, 
                     nome_evento: evento,
@@ -203,7 +216,7 @@
                     timestamp: new Date().getTime() 
                 });
             }
-        } catch (e) { console.error("Erro upload:", e); }
+        } catch (e) { console.error("Erro no upload:", e); }
         document.getElementById('upload-loading').style.display = 'none';
     }
 
@@ -227,9 +240,11 @@
         v.play();
         document.getElementById('download-btn').href = url;
         document.getElementById('download-btn').download = "photo_movie_" + Date.now() + ".webm";
+        
         const qrb = document.getElementById('qrcode-box');
         qrb.innerHTML = "";
         new QRCode(qrb, { text: url, width: 130, height: 130 });
+        
         document.getElementById('modal-zoom').style.display = 'flex';
     }
 
@@ -239,7 +254,7 @@
     }
 
     function limparBanco() {
-        if(confirm("Limpar vídeos locais desta sessão?")) {
+        if(confirm("Deseja apagar os vídeos da galeria local? Isso não apaga os vídeos salvos na nuvem.")) {
             const tx = db.transaction("movies", "readwrite");
             tx.objectStore("movies").clear();
             tx.oncomplete = () => irGaleria();

@@ -57,9 +57,21 @@
             box-shadow: 0 10px 20px rgba(0,0,0,0.3);
             border: none;
             cursor: pointer;
+            transition: transform 0.2s;
         }
 
-        .btn-back { color: white; margin-top: 40px; font-size: 13px; opacity: 0.6; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.2); }
+        .btn-download:active { transform: scale(0.96); }
+
+        .btn-back { 
+            color: white; 
+            margin-top: 40px; 
+            font-size: 14px; 
+            opacity: 0.7; 
+            text-decoration: none; 
+            padding: 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
@@ -70,19 +82,19 @@
     </div>
 
     <div class="video-preview">
-        <video id="player" controls playsinline autoplay loop muted></video>
+        <video id="player" controls playsinline autoplay loop muted crossorigin="anonymous"></video>
     </div>
 
     <button id="btn-download" class="btn-download">BAIXAR VÍDEO</button>
     
-    <a href="galeria.html" class="btn-back">← Voltar para galeria</a>
+    <a href="index.html" class="btn-back">← Voltar ao Início</a>
 
 <script>
-    // 1. Definições globais
+    // 1. Definições globais - Alinhado com seu Worker
     const WORKER_URL = 'https://photomovie.maxprimefotovideo.workers.dev';
     
     // 2. Função principal de carregamento
-    function carregarVideo() {
+    async function carregarVideo() {
         const params = new URLSearchParams(window.location.search);
         const videoId = params.get('id');
         const numero = params.get('n');
@@ -100,31 +112,46 @@
 
             downloadBtn.onclick = async () => {
                 const originalText = downloadBtn.innerText;
-                downloadBtn.innerText = "BAIXANDO...";
+                downloadBtn.innerText = "PREPARANDO...";
+                downloadBtn.disabled = true;
+
                 try {
+                    // Tenta baixar via Blob (mais profissional, renomeia o arquivo)
                     const response = await fetch(videoSrc);
+                    if (!response.ok) throw new Error("Erro no download");
+                    
                     const blob = await response.blob();
                     const urlBlob = window.URL.createObjectURL(blob);
+                    
                     const a = document.createElement('a');
                     a.href = urlBlob;
-                    a.download = `video-${numero || '360'}.mp4`;
+                    a.download = `photo-movie-${numero || Date.now()}.mp4`;
                     document.body.appendChild(a);
                     a.click();
-                    window.URL.revokeObjectURL(urlBlob);
+                    
+                    // Limpeza
+                    setTimeout(() => {
+                        window.URL.revokeObjectURL(urlBlob);
+                        document.body.removeChild(a);
+                    }, 100);
+
                 } catch (e) {
+                    console.error("Falha no blob, usando fallback:", e);
+                    // Fallback: Abre o link direto em nova aba para o usuário salvar
                     window.open(videoSrc, '_blank');
                 } finally {
                     downloadBtn.innerText = originalText;
+                    downloadBtn.disabled = false;
                 }
             };
         } else {
-            // SE DER ERRO, ELE NÃO VOLTA SOZINHO. ELE AVISA.
-            numLabel.innerText = "ID DO VÍDEO AUSENTE";
-            numLabel.style.color = "orange";
+            numLabel.innerText = "VÍDEO NÃO ENCONTRADO";
+            numLabel.style.color = "#ff4444";
+            downloadBtn.style.display = "none";
         }
     }
 
-    // Executa assim que o script for lido
+    // Inicializa
     carregarVideo();
 </script>
 </body>
