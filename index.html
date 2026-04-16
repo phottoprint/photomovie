@@ -8,35 +8,27 @@
     <style>
         :root { --neon: #9200ff; --cyan: #00f2ff; }
         body { margin: 0; background: #000; color: white; font-family: sans-serif; overflow-x: hidden; }
-
-        #upload-overlay { 
-            position: fixed; inset: 0; background: rgba(0,0,0,0.9); 
-            z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; 
-        }
+        #upload-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; }
         .progress-bar { width: 70%; height: 6px; background: #222; border-radius: 3px; margin-top: 15px; overflow: hidden; }
         #progress-fill { width: 0%; height: 100%; background: var(--cyan); transition: width 0.3s; }
-
         .screen { display: none; min-height: 100vh; width: 100vw; flex-direction: column; align-items: center; position: absolute; top: 0; }
         .active { display: flex; }
-
         #vid-preview { width: 100%; height: 100vh; object-fit: cover; background: #111; }
         .shutter-group { position: absolute; bottom: 40px; width: 100%; display: flex; justify-content: space-evenly; align-items: center; z-index: 100; }
         .shutter { width: 75px; height: 75px; border: 4px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
         .shutter-in { width: 55px; height: 55px; background: red; border-radius: 50%; }
-
         .fx-selector { position: absolute; top: 20px; display: flex; gap: 8px; z-index: 100; }
         .fx-btn { background: rgba(0,0,0,0.6); border: 1px solid #444; color: white; padding: 10px 15px; border-radius: 20px; font-size: 12px; }
         .fx-btn.active { border-color: var(--neon); color: var(--neon); font-weight: bold; background: rgba(146, 0, 255, 0.2); border: 1px solid var(--neon); }
-
         .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 20px; width: 100%; box-sizing: border-box; margin-top: 60px; }
-        .video-card { background: #111; border: 1px solid #333; border-radius: 12px; padding: 10px; text-align: center; color: white; }
-        canvas { max-width: 100%; }
+        .video-card { background: #111; border: 1px solid #333; border-radius: 12px; padding: 10px; text-align: center; }
+        video.thumb { width: 100%; border-radius: 8px; margin-bottom: 5px; pointer-events: none; }
     </style>
 </head>
 <body>
 
     <div id="upload-overlay">
-        <h3 id="status-text">ENVIANDO VÍDEO...</h3>
+        <h3 id="status-text">ENVIANDO...</h3>
         <div class="progress-bar"><div id="progress-fill"></div></div>
     </div>
 
@@ -44,9 +36,8 @@
         <div style="width: 85%; background: #111; padding: 25px; border-radius: 20px; border: 1px solid #333;">
             <h2 style="color: var(--neon); margin: 0 0 20px 0;">NOVO EVENTO</h2>
             <input type="text" id="event-name" placeholder="Nome do Evento" style="width:100%; padding:15px; margin-bottom:15px; background:#000; border:1px solid #444; color:white; border-radius:10px; box-sizing:border-box;">
-            <label style="font-size:12px; color:#888;">Moldura PNG (Opcional):</label>
-            <input type="file" id="event-frame" accept="image/png" style="width:100%; margin: 10px 0 20px 0; color: #888;">
-            <button onclick="iniciar()" style="width:100%; padding:15px; background:var(--neon); border:none; border-radius:10px; color:white; font-weight:bold; cursor:pointer;">ABRIR CÂMERA</button>
+            <button onclick="iniciar()" style="width:100%; padding:15px; background:var(--neon); border:none; border-radius:10px; color:white; font-weight:bold; cursor:pointer; margin-bottom: 10px;">ABRIR CÂMERA</button>
+            <button onclick="irGaleria()" style="width:100%; padding:12px; background:#222; border:1px solid #444; border-radius:10px; color:white; cursor:pointer;">VER GALERIA</button>
         </div>
     </div>
 
@@ -54,24 +45,20 @@
         <div class="fx-selector">
             <button class="fx-btn active" onclick="setFX('boom', this)">BOOMERANG</button>
             <button class="fx-btn" onclick="setFX('slow', this)">SLOW</button>
-            <button class="fx-btn" onclick="setFX('fsf', this)">FAST-SLOW</button>
         </div>
-
         <video id="vid-preview" autoplay playsinline muted></video>
         <canvas id="rec-canvas" width="720" height="1280" style="display:none"></canvas>
-        <img id="frame-img" style="display:none">
-
         <div class="shutter-group">
-            <button onclick="irGaleria()" style="background:none; border:none; font-size:30px; cursor:pointer;">🎞️</button>
+            <button onclick="nav('screen-menu')" style="background:none; border:none; font-size:30px; cursor:pointer; color:white;">⬅️</button>
             <div class="shutter" onclick="record()" style="cursor:pointer;"><div class="shutter-in"></div></div>
-            <button onclick="invert()" style="background:none; border:none; font-size:30px; cursor:pointer;">🔄</button>
+            <button onclick="invert()" style="background:none; border:none; font-size:30px; cursor:pointer; color:white;">🔄</button>
         </div>
     </div>
 
     <div id="screen-gallery" class="screen" style="background: #000; overflow-y: auto;">
-        <h3 style="margin-top: 30px; color: var(--cyan);">GALERIA DO EVENTO</h3>
+        <h3 style="margin-top: 30px; color: var(--cyan);">GALERIA</h3>
         <div id="gallery-container" class="gallery-grid"></div>
-        <button onclick="nav('screen-camera')" style="margin: 20px; padding: 15px 40px; border-radius: 30px; border:none; background:#222; color:white; font-weight:bold;">VOLTAR</button>
+        <button onclick="nav('screen-menu')" style="margin: 20px; padding: 15px 40px; border-radius: 30px; border:none; background:#222; color:white;">VOLTAR AO MENU</button>
     </div>
 
 <script>
@@ -79,7 +66,6 @@
     const canvas = document.getElementById('rec-canvas');
     const ctx = canvas.getContext('2d');
     const video = document.getElementById('vid-preview');
-    const frame = document.getElementById('frame-img');
     const WORKER_URL = 'https://photomovie.maxprimefotovideo.workers.dev';
 
     function nav(id) {
@@ -94,85 +80,53 @@
     }
 
     async function iniciar() {
-        const file = document.getElementById('event-frame').files[0];
-        if(file) {
-            const reader = new FileReader();
-            reader.onload = e => { 
-                frame.src = e.target.result; 
-                nav('screen-camera'); 
-                ligar(); 
-            };
-            reader.readAsDataURL(file);
-        } else {
-            nav('screen-camera');
-            ligar();
-        }
+        nav('screen-camera');
+        ligar();
     }
 
     async function ligar() {
         if(stream) stream.getTracks().forEach(t => t.stop());
         try {
             stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: camMode, width: {ideal: 1280}, height: {ideal: 720} }, 
-                audio: false
+                video: { facingMode: camMode, width: 1280, height: 720 }, audio: false
             });
             video.srcObject = stream;
-            video.play(); // Força o play
-        } catch (err) { 
-            alert("Erro ao acessar câmera. Verifique se deu permissão HTTPS."); 
-            console.error(err);
-        }
+        } catch (err) { alert("Erro câmera: " + err); }
     }
 
     function record() {
         chunks = [];
         const loop = () => {
             ctx.drawImage(video, 0, 0, 720, 1280);
-            if(frame.src) ctx.drawImage(frame, 0, 0, 720, 1280);
             if(recorder && recorder.state === 'recording') requestAnimationFrame(loop);
         };
         const recStream = canvas.captureStream(30);
-        recorder = new MediaRecorder(recStream, { mimeType: 'video/webm;codecs=vp8', videoBitsPerSecond: 4000000 });
+        recorder = new MediaRecorder(recStream, { mimeType: 'video/webm;codecs=vp8' });
         recorder.ondataavailable = e => chunks.push(e.data);
         recorder.onstop = () => upload();
         recorder.start();
         loop();
-        setTimeout(() => { if(recorder.state === 'recording') recorder.stop(); }, 8000);
+        setTimeout(() => { if(recorder.state === 'recording') recorder.stop(); }, 6000);
     }
 
     async function upload() {
-        const overlay = document.getElementById('upload-overlay');
-        const fill = document.getElementById('progress-fill');
-        overlay.style.display = 'flex';
-
+        document.getElementById('upload-overlay').style.display = 'flex';
         const blob = new Blob(chunks, { type: 'video/webm' });
         const uuid = Math.random().toString(36).substring(2, 8);
-        const evento = document.getElementById('event-name').value || "Evento";
-
         const fd = new FormData();
         fd.append('video', blob);
         fd.append('uuid', uuid);
-        fd.append('evento', evento);
+        fd.append('evento', document.getElementById('event-name').value || "Evento");
         fd.append('preset', currentFX);
 
         const xhr = new XMLHttpRequest();
         xhr.open('POST', `${WORKER_URL}/upload`, true);
-        
         xhr.upload.onprogress = (e) => {
-            if (e.lengthComputable) {
-                const percent = (e.loaded / e.total) * 100;
-                fill.style.width = percent + '%';
-            }
+            document.getElementById('progress-fill').style.width = (e.loaded / e.total * 100) + '%';
         };
-
         xhr.onload = () => {
-            overlay.style.display = 'none';
-            fill.style.width = '0%';
-            if(xhr.status === 200) {
-                irGaleria();
-            } else {
-                alert("Erro no envio: " + xhr.responseText);
-            }
+            document.getElementById('upload-overlay').style.display = 'none';
+            irGaleria();
         };
         xhr.send(fd);
     }
@@ -180,40 +134,22 @@
     async function irGaleria() {
         nav('screen-gallery');
         const container = document.getElementById('gallery-container');
-        container.innerHTML = "<p style='grid-column: 1/-1'>Buscando vídeos...</p>";
-
-        try {
-            const res = await fetch(`${WORKER_URL}/list-videos`);
-            const videos = await res.json();
-            container.innerHTML = "";
+        container.innerHTML = "Carregando...";
+        const res = await fetch(`${WORKER_URL}/list-videos`);
+        const videos = await res.json();
+        container.innerHTML = "";
+        
+        videos.forEach(vid => {
+            const card = document.createElement('div');
+            card.className = 'video-card';
+            const downloadUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}download.html?id=${vid.uuid}&fx=${vid.preset_usado}`;
             
-            videos.forEach(vid => {
-                const card = document.createElement('div');
-                card.className = 'video-card';
-                
-                // Ajuste do link para o QR Code
-                const downloadUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}download.html?id=${vid.uuid}&fx=${vid.preset_usado || 'boom'}`;
-                
-                const qrId = `qr-${vid.uuid}`;
-                
-                card.innerHTML = `
-                    <div id="${qrId}" style="background:white; padding:10px; border-radius:8px; margin-bottom:10px; display:flex; justify-content:center;"></div>
-                    <div style="font-size:10px; margin-bottom:10px; color:#aaa;">ID: ${vid.uuid}</div>
-                    <button onclick="window.open('${downloadUrl}', '_blank')" style="background:var(--neon); color:white; border:none; padding:8px; border-radius:5px; font-size:10px; width:100%; cursor:pointer;">VER VÍDEO</button>
-                `;
-                container.appendChild(card);
-
-                new QRCode(document.getElementById(qrId), {
-                    text: downloadUrl,
-                    width: 120,
-                    height: 120,
-                    colorDark : "#000000",
-                    colorLight : "#ffffff"
-                });
-            });
-        } catch (e) { 
-            container.innerHTML = "<p>Erro ao carregar galeria.</p>"; 
-        }
+            card.innerHTML = `
+                <video class="thumb" src="${WORKER_URL}/stream?id=${vid.uuid}#t=0.5"></video>
+                <button onclick="window.open('${downloadUrl}', '_blank')" style="background:var(--neon); color:white; border:none; padding:8px; border-radius:5px; width:100%; cursor:pointer;">ABRIR</button>
+            `;
+            container.appendChild(card);
+        });
     }
 
     function invert() { camMode = (camMode === 'environment') ? 'user' : 'environment'; ligar(); }
