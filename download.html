@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GALERIA DE VÍDEOS - 360°</title>
+    <title>DOWNLOAD - Photo Movie</title>
     <style>
         :root { 
             --turquesa-dark: #003333; 
             --dourado: #c5a059;      
             --dourado-fosco: #8e6d2d;
-            --cinza-minimal: #666666;
         }
         
         body { 
@@ -17,210 +16,116 @@
             background: var(--turquesa-dark); 
             color: white; 
             font-family: 'Segoe UI', Roboto, sans-serif;
-            min-height: 100vh;
-        }
-
-        /* Cabeçalho com Nome Maior e Subtítulo */
-        .header { 
-            padding: 40px 20px 20px 20px; 
-            text-align: center; 
-            background: rgba(0,0,0,0.2); 
-            border-bottom: 1px solid var(--dourado); 
-        }
-
-        .header h1 { 
-            margin: 0; 
-            font-size: 42px; 
-            color: var(--dourado); 
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            font-weight: 900;
-        }
-
-        .header p { 
-            font-size: 14px; 
-            color: var(--dourado); 
-            margin: -5px 0 20px 0;
-            letter-spacing: 3px;
-            text-transform: lowercase;
-            opacity: 0.8;
-        }
-
-        /* Barra de Busca Arredondada */
-        .search-container {
-            position: relative;
-            max-width: 300px;
-            margin: 0 auto;
-        }
-
-        .search-container input {
-            width: 100%;
-            padding: 12px 20px 12px 40px;
-            border-radius: 50px;
-            border: 1px solid var(--dourado);
-            background: rgba(0,0,0,0.3);
-            color: white;
-            outline: none;
-            box-sizing: border-box;
-            font-size: 14px;
-        }
-
-        .search-container::before {
-            content: '🔍';
-            position: absolute;
-            left: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 14px;
-            opacity: 0.6;
-        }
-
-        /* Grid da Galeria */
-        .gallery-grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr); 
-            gap: 15px; 
-            padding: 20px; 
-        }
-
-        .video-card { 
-            background: rgba(0, 0, 0, 0.3); 
-            border: 1px solid rgba(197, 160, 89, 0.1); 
-            border-radius: 20px; 
-            padding: 10px; 
-            text-align: center; 
-            transition: all 0.3s ease;
-        }
-
-        .video-card:active { transform: scale(0.98); }
-
-        .video-link {
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
-
-        video.thumb { 
-            width: 100%; 
-            border-radius: 15px; 
-            background: #000; 
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        /* Info do vídeo (Número bem visível) */
-        .video-info { 
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
-            padding: 0 5px;
-            margin-bottom: 5px; 
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
-        .video-number {
-            font-size: 20px; 
-            font-weight: 900;
-            color: var(--dourado);
+        .header { text-align: center; margin-bottom: 25px; margin-top: 10px; }
+        .header h1 { color: var(--dourado); font-size: 32px; margin: 0; text-transform: uppercase; letter-spacing: 3px; font-weight: 900; }
+        #video-number { color: var(--dourado); letter-spacing: 2px; font-weight: bold; display: block; margin-top: 5px; }
+
+        .video-preview {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 2px solid var(--dourado);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            background: #000;
+            line-height: 0;
         }
 
-        .video-id-text {
-            font-size: 9px;
-            color: var(--cinza-minimal);
+        video { width: 100%; display: block; }
+
+        .btn-download {
+            margin-top: 35px;
+            width: 100%;
+            max-width: 320px;
+            padding: 20px;
+            border-radius: 50px;
+            background: linear-gradient(135deg, var(--dourado), var(--dourado-fosco));
+            color: #000;
+            text-align: center;
+            text-decoration: none;
+            font-weight: 800;
             text-transform: uppercase;
+            font-size: 16px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            border: none;
+            cursor: pointer;
         }
 
-        .loading { 
-            grid-column: span 2; 
-            text-align: center; 
-            padding: 80px 0; 
-            color: var(--dourado); 
-            letter-spacing: 2px;
-        }
+        .btn-back { color: white; margin-top: 40px; font-size: 13px; opacity: 0.6; text-decoration: none; border-bottom: 1px solid rgba(255,255,255,0.2); }
     </style>
 </head>
 <body>
 
     <div class="header">
         <h1>PHOTO MOVIE</h1>
-        <p>colecionando momentos</p>
-        
-        <div class="search-container">
-            <input type="number" id="videoSearch" placeholder="Buscar pelo NÚMERO..." onkeyup="filtrarGaleria()">
-        </div>
+        <span id="video-number">CARREGANDO...</span>
     </div>
 
-    <div id="gallery-container" class="gallery-grid">
-        <div class="loading">SINCRONIZANDO...</div>
+    <div class="video-preview">
+        <video id="player" controls playsinline autoplay loop muted></video>
     </div>
+
+    <button id="btn-download" class="btn-download">BAIXAR VÍDEO</button>
+    
+    <a href="galeria.html" class="btn-back">← Voltar para galeria</a>
 
 <script>
+    // 1. Definições globais
     const WORKER_URL = 'https://photomovie.maxprimefotovideo.workers.dev';
-    let videosComNumeracao = [];
+    
+    // 2. Função principal de carregamento
+    function carregarVideo() {
+        const params = new URLSearchParams(window.location.search);
+        const videoId = params.get('id');
+        const numero = params.get('n');
 
-    async function carregarGaleria() {
-        const container = document.getElementById('gallery-container');
-        try {
-            const res = await fetch(`${WORKER_URL}/list-videos`);
-            const videos = await res.json();
+        const player = document.getElementById('player');
+        const downloadBtn = document.getElementById('btn-download');
+        const numLabel = document.getElementById('video-number');
+
+        // Se o ID existir na URL
+        if (videoId && videoId !== "null") {
+            const videoSrc = `${WORKER_URL}/stream?id=${videoId}`;
             
-            if (!videos || videos.length === 0) {
-                container.innerHTML = "<div class='loading'>NENHUM VÍDEO ENCONTRADO</div>";
-                return;
-            }
+            numLabel.innerText = numero ? `VÍDEO #${numero}` : `VÍDEO 360°`;
+            player.src = videoSrc;
 
-            // Ordem Reversa e Numeração Fixa
-            const total = videos.length;
-            videosComNumeracao = videos.reverse().map((vid, index) => ({
-                ...vid,
-                numero: total - index
-            }));
-
-            renderizarVideos(videosComNumeracao);
-
-        } catch (e) {
-            container.innerHTML = "<div class='loading' style='color:red'>ERRO AO CONECTAR</div>";
+            downloadBtn.onclick = async () => {
+                const originalText = downloadBtn.innerText;
+                downloadBtn.innerText = "BAIXANDO...";
+                try {
+                    const response = await fetch(videoSrc);
+                    const blob = await response.blob();
+                    const urlBlob = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = urlBlob;
+                    a.download = `video-${numero || '360'}.mp4`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(urlBlob);
+                } catch (e) {
+                    window.open(videoSrc, '_blank');
+                } finally {
+                    downloadBtn.innerText = originalText;
+                }
+            };
+        } else {
+            // SE DER ERRO, ELE NÃO VOLTA SOZINHO. ELE AVISA.
+            numLabel.innerText = "ID DO VÍDEO AUSENTE";
+            numLabel.style.color = "orange";
         }
     }
 
-    function renderizarVideos(lista) {
-        const container = document.getElementById('gallery-container');
-        container.innerHTML = "";
-        
-        lista.forEach(vid => {
-            const card = document.createElement('div');
-            card.className = 'video-card';
-            
-            // Link corrigido para o novo repositório maxsynk
-            const downloadUrl = `https://maxsynk.github.io/photomovie/download.html?id=${vid.uuid}&n=${vid.numero}`;
-            
-            card.innerHTML = `
-                <a href="${downloadUrl}" class="video-link">
-                    <div class="video-info">
-                        <span class="video-number">#${vid.numero}</span>
-                        <span class="video-id-text">ID: ${vid.uuid.substring(0,6)}</span>
-                    </div>
-                    <video class="thumb" src="${WORKER_URL}/stream?id=${vid.uuid}#t=0.5" preload="metadata"></video>
-                </a>
-            `;
-            container.appendChild(card);
-        });
-    }
-
-    // Filtra apenas pelo número do vídeo
-    function filtrarGaleria() {
-        const termo = document.getElementById('videoSearch').value;
-        if (!termo) {
-            renderizarVideos(videosComNumeracao);
-            return;
-        }
-        const filtrados = videosComNumeracao.filter(v => v.numero.toString() === termo);
-        renderizarVideos(filtrados);
-    }
-
-    // Inicializa
-    carregarGaleria();
-    // Atualização automática suave
-    setInterval(carregarGaleria, 30000);
+    // Executa assim que o script for lido
+    carregarVideo();
 </script>
 </body>
 </html>
