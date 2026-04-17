@@ -9,6 +9,8 @@
             --turquesa-dark: #008b8b; 
             --dourado: #c5a059; 
             --laranja: #ff8c00;
+            --verde-neon: #39ff14;
+            --vermelho-neon: #ff0000;
         }
         
         body { margin: 0; background: #000; color: white; font-family: sans-serif; overflow: hidden; }
@@ -20,102 +22,70 @@
         #vid-preview { width: 100%; height: 100%; object-fit: cover; }
         
         .event-badge { 
-            position: fixed; 
-            top: 30px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            background: rgba(0,0,0,0.6); 
-            padding: 10px 25px; 
-            border-radius: 30px; 
-            border: 1px solid var(--dourado); 
-            font-size: 14px; 
-            z-index: 1000; 
-            color: var(--dourado); 
-            font-weight: bold;
-            text-transform: uppercase;
-            backdrop-filter: blur(5px);
-            white-space: nowrap;
+            position: fixed; top: 30px; left: 50%; transform: translateX(-50%); 
+            background: rgba(0,0,0,0.6); padding: 10px 25px; border-radius: 30px; 
+            border: 1px solid var(--dourado); font-size: 14px; z-index: 1000; 
+            color: var(--dourado); font-weight: bold; text-transform: uppercase;
+            backdrop-filter: blur(5px); white-space: nowrap;
         }
 
-        .controls { 
-            position: absolute; 
-            bottom: 80px; 
-            width: 100%; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            z-index: 100; 
-        }
+        .controls { position: absolute; bottom: 80px; width: 100%; display: flex; justify-content: center; align-items: center; z-index: 100; }
 
-        /* Obturador Turquesa Escuro */
+        /* Novo Obturador: Dourado com Pulso Verde */
         .shutter { 
-            width: 90px; 
-            height: 90px; 
-            background: var(--turquesa-dark); 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            cursor: pointer;
-            border: 4px solid white;
-            animation: pulse-gold 2s infinite;
+            width: 90px; height: 90px; background: var(--dourado); 
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
+            cursor: pointer; border: 4px solid white;
+            animation: pulse-verde 2s infinite;
         }
 
-        @keyframes pulse-gold {
-            0% { box-shadow: 0 0 0 0 rgba(197, 160, 89, 0.7); }
-            70% { box-shadow: 0 0 0 20px rgba(197, 160, 89, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(197, 160, 89, 0); }
+        @keyframes pulse-verde {
+            0% { box-shadow: 0 0 0 0 rgba(57, 255, 20, 0.8); }
+            70% { box-shadow: 0 0 0 20px rgba(57, 255, 20, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(57, 255, 20, 0); }
         }
 
-        /* Botão Girar Afastado à Direita */
         .btn-ui-flip { 
-            position: absolute;
-            right: 30px;
-            background: rgba(0,0,0,0.5); 
-            border: 1px solid rgba(255,255,255,0.3); 
-            color: white; 
-            width: 55px; 
-            height: 55px; 
-            border-radius: 50%; 
-            font-size: 1.5rem; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            backdrop-filter: blur(5px);
+            position: absolute; right: 30px; background: rgba(0,0,0,0.5); 
+            border: 1px solid rgba(255,255,255,0.3); color: white; 
+            width: 55px; height: 55px; border-radius: 50%; font-size: 1.5rem; 
+            display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px);
         }
 
-        /* Mensagens de Status */
+        /* Status de Mensagens */
         #status-msg { 
-            position: fixed; 
-            inset: 0; 
-            z-index: 1500; 
-            display: none; 
-            flex-direction: column;
-            align-items: center; 
-            justify-content: center; 
-            font-size: 6rem; 
-            font-weight: 900; 
-            background: rgba(0,0,0,0.2); 
-            text-shadow: 0 0 30px #000; 
-            pointer-events: none; 
+            position: fixed; inset: 0; z-index: 1500; display: none; flex-direction: column;
+            align-items: center; justify-content: center; font-weight: 900; 
+            background: rgba(0,0,0,0.4); pointer-events: none; text-align: center;
         }
 
-        .piscando { animation: blink 0.6s infinite; }
+        .msg-contagem { font-size: 8rem; color: white; }
+        .msg-finalizando { font-size: 3rem; color: var(--laranja); animation: blink 0.6s infinite; }
+        
+        /* Vermelho Neon Pulsante */
+        .msg-finalizado { 
+            font-size: 4rem; color: var(--vermelho-neon); 
+            text-shadow: 0 0 10px var(--vermelho-neon), 0 0 20px var(--vermelho-neon);
+            animation: pulse-red 0.5s infinite alternate; 
+        }
+
+        @keyframes pulse-red { from { transform: scale(1); opacity: 0.8; } to { transform: scale(1.1); opacity: 1; } }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
 
-        .pulsando { animation: pulse-final 0.5s infinite alternate; }
-        @keyframes pulse-final { from { transform: scale(1); } to { transform: scale(1.1); } }
-
         #upload-loading { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; color: var(--turquesa-dark); }
+        
+        /* Overlay invisível para capturar o toque final */
+        #tap-to-continue { position: fixed; inset: 0; z-index: 2000; display: none; }
     </style>
 </head>
-<body>
+<body onclick="checarToqueFinal()">
 
     <div id="evento-info-badge" class="event-badge" style="display:none;"></div>
+    <div id="tap-to-continue"></div>
 
     <div id="upload-loading">
-        <div style="font-size: 24px; margin-bottom: 10px; font-weight: bold;">ENVIANDO...</div>
-        <small style="color: white;">Salvando na pasta do evento</small>
+        <div style="font-size: 24px; margin-bottom: 10px; font-weight: bold;">ENVIANDO VÍDEO...</div>
+        <small style="color: white;">Aguarde o processamento</small>
     </div>
 
     <div id="screen-camera" class="screen active">
@@ -128,7 +98,7 @@
             
             <div class="controls">
                 <div class="shutter" onclick="iniciarContagem()">
-                    <div style="width: 25px; height: 25px; background: white; border-radius: 4px;"></div>
+                    <div style="width: 25px; height: 25px; background: #000; border-radius: 4px;"></div>
                 </div>
                 <button class="btn-ui-flip" onclick="girarCamera()">🔄</button>
             </div>
@@ -136,7 +106,7 @@
     </div>
 
 <script>
-    let stream, recorder, chunks = [], currentFacingMode = "environment";
+    let stream, recorder, chunks = [], currentFacingMode = "environment", prontoParaSair = false;
     const video = document.getElementById('vid-preview');
     const canvas = document.getElementById('record-canvas');
     const ctx = canvas.getContext('2d');
@@ -157,13 +127,19 @@
 
     async function ligarCamera() {
         if (stream) stream.getTracks().forEach(t => t.stop());
+        const constraints = {
+            video: { facingMode: currentFacingMode, width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } },
+            audio: false
+        };
         try {
-            stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: currentFacingMode, width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } },
-                audio: false
-            });
+            stream = await navigator.mediaDevices.getUserMedia(constraints);
             video.srcObject = stream;
-        } catch (err) { alert("Erro ao acessar câmera."); }
+            await video.play();
+        } catch (err) {
+            // Fallback para câmeras que não suportam ideal 720p
+            stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+            video.srcObject = stream;
+        }
     }
 
     function girarCamera() {
@@ -173,16 +149,14 @@
 
     function iniciarContagem() {
         let c = 3;
-        msg.className = ""; 
+        msg.className = "msg-contagem"; 
         msg.style.display = 'flex';
-        msg.style.color = "white";
         msg.innerText = c;
 
         let t = setInterval(() => {
             c--;
-            if(c > 0) {
-                msg.innerText = c;
-            } else { 
+            if(c > 0) msg.innerText = c;
+            else { 
                 clearInterval(t); 
                 msg.style.display = 'none';
                 gravar(); 
@@ -208,44 +182,31 @@
         recorder.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
         
         recorder.onstop = async () => {
-            msg.innerText = "FINALIZADO";
-            msg.style.color = "var(--turquesa-dark)";
-            msg.classList.add("pulsando");
-            
             const blob = new Blob(chunks, { type: 'video/webm' });
-            setTimeout(async () => {
-                await realizarUpload(blob, nomeEvento);
-            }, 1200);
+            await realizarUpload(blob, nomeEvento);
         };
 
         recorder.start();
         drawLoop();
 
-        // Lógica de avisos de tempo
-        let segundosDecorridos = 0;
-        let timerGravacao = setInterval(() => {
-            segundosDecorridos++;
-            
-            // Faltando 3 segundos
-            if (segundosDecorridos === (tempoTotal - 3)) {
+        let segundos = 0;
+        let timer = setInterval(() => {
+            segundos++;
+            if (segundos === (tempoTotal - 3)) {
                 msg.style.display = 'flex';
                 msg.innerText = "FINALIZANDO";
-                msg.style.color = "var(--laranja)";
-                msg.style.fontSize = "3rem";
-                msg.classList.add("piscando");
+                msg.className = "msg-finalizando";
             }
-
-            if (segundosDecorridos >= tempoTotal) {
-                clearInterval(timerGravacao);
+            if (segundos >= tempoTotal) {
+                clearInterval(timer);
                 if(recorder.state === "recording") recorder.stop();
             }
         }, 1000);
     }
 
     async function realizarUpload(blob, evento) {
-        msg.style.display = 'none';
-        msg.classList.remove("pulsando", "piscando");
         document.getElementById('upload-loading').style.display = 'flex';
+        msg.style.display = 'none';
         
         const uuid = "vid_" + Date.now();
         const formData = new FormData();
@@ -255,13 +216,25 @@
 
         try {
             const res = await fetch(`${WORKER_URL}/upload`, { method: 'POST', body: formData });
-            if(res.ok) window.location.href = 'galeria.html';
-            else {
-                alert("Falha no upload");
+            if(res.ok) {
                 document.getElementById('upload-loading').style.display = 'none';
+                // Exibe o aviso Neon e habilita o toque para sair
+                msg.innerText = "FINALIZADO\n(toque para continuar)";
+                msg.className = "msg-finalizado";
+                msg.style.display = 'flex';
+                msg.style.whiteSpace = "pre-line";
+                prontoParaSair = true;
+                document.getElementById('tap-to-continue').style.display = 'block';
             }
         } catch (e) { 
+            alert("Erro na rede. Tente novamente.");
             document.getElementById('upload-loading').style.display = 'none';
+        }
+    }
+
+    function checarToqueFinal() {
+        if(prontoParaSair) {
+            window.location.href = 'galeria.html';
         }
     }
 </script>
