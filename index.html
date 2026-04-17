@@ -6,13 +6,11 @@
     <title>CENTRAL - Photo Movie</title>
     <style>
         :root { 
+            --turquesa: #00d1d1; 
             --turquesa-dark: #003333; 
             --dourado: #c5a059;      
-            --dourado-dark: #8e6d2d;
-            --bg-modal: rgba(0, 20, 20, 0.98);
-            --cinza-minimal: #666666; 
+            --bg-card: rgba(0, 40, 40, 0.6);
             --danger: #ff5555;
-            --success: #00d1d1;
         }
         
         body { 
@@ -21,204 +19,173 @@
             display: flex; flex-direction: column; align-items: center; min-height: 100vh;
         }
 
-        .header { margin-top: 1.8cm; text-align: center; margin-bottom: 40px; }
-        .header h1 { color: var(--dourado); font-size: 52px; font-weight: 900; letter-spacing: 3px; margin: 0; text-transform: uppercase; }
-        .header p { color: var(--dourado); font-size: 20px; margin: -5px 0 0 0; letter-spacing: 4px; font-weight: 300; text-transform: lowercase; }
+        .header { margin-top: 1.5cm; text-align: center; margin-bottom: 30px; }
+        .header h1 { color: var(--dourado); font-size: 48px; font-weight: 900; margin: 0; text-transform: uppercase; }
 
-        .main-container { flex: 1; display: flex; flex-direction: column; align-items: center; width: 95%; max-width: 450px; }
+        .main-container { width: 95%; max-width: 500px; } /* 1. Aumentado conforme pedido */
 
         .btn-central {
             width: 100%; padding: 18px; margin: 8px 0; border-radius: 12px;
             text-transform: uppercase; font-weight: 800; font-size: 14px;
             cursor: pointer; text-decoration: none; text-align: center;
-            display: none; box-sizing: border-box; transition: all 0.3s;
+            display: none; box-sizing: border-box; transition: 0.3s;
         }
 
-        .btn-create { background: linear-gradient(135deg, var(--dourado), var(--dourado-dark)); color: #1a1a1a; border: none; }
+        .btn-create { background: linear-gradient(135deg, var(--dourado), #8e6d2d); color: #1a1a1a; border: none; }
         #btn-galeria { background: rgba(197, 160, 89, 0.05); color: var(--dourado); border: 1px solid var(--dourado); }
         #btn-login { display: block; background: transparent; color: var(--dourado); border: 2px solid var(--dourado); margin-top: 50px; }
 
-        .event-list-container { width: 100%; margin-top: 30px; display: none; }
-
+        /* 2. Modal do Evento (Card) com a Cor do Sistema */
         .event-card {
-            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(197, 160, 89, 0.2);
-            padding: 15px; border-radius: 15px; margin-bottom: 15px; position: relative;
+            background: var(--bg-card); 
+            border: 1px solid rgba(0, 209, 209, 0.3); /* Turquesa do sistema */
+            padding: 22px; border-radius: 18px; margin-bottom: 15px; position: relative;
+            transition: 0.3s;
         }
         
-        /* Destaque para o evento que está ATIVO */
-        .event-card.active { border: 2px solid var(--success); background: rgba(0, 209, 209, 0.05); }
+        /* 3. Estilo do Card quando Ativo */
+        .event-card.active { border: 2px solid var(--turquesa); box-shadow: 0 0 15px rgba(0, 209, 209, 0.2); }
         .status-badge { 
-            position: absolute; top: 10px; right: 10px; font-size: 9px; 
-            background: var(--success); color: #000; padding: 2px 8px; border-radius: 10px; 
-            display: none; font-weight: bold;
+            position: absolute; top: 12px; right: 12px; font-size: 10px; 
+            background: var(--turquesa); color: #000; padding: 3px 10px; border-radius: 20px; 
+            display: none; font-weight: 900;
         }
         .event-card.active .status-badge { display: block; }
 
-        .event-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; cursor: pointer; }
-        .event-info h4 { margin: 0; color: var(--dourado); text-transform: uppercase; font-size: 16px; }
-        .event-info span { font-size: 11px; color: #aaa; }
+        .event-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; cursor: pointer; }
+        .event-info h4 { margin: 0; color: var(--turquesa); text-transform: uppercase; font-size: 18px; }
+        .event-info span { font-size: 12px; color: #aaa; }
 
-        .event-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-        .btn-mini { padding: 8px 2px; border-radius: 6px; font-size: 10px; font-weight: bold; border: none; cursor: pointer; text-transform: uppercase; }
-        .btn-activate { background: #222; color: var(--success); border: 1px solid var(--success); }
+        .event-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .btn-mini { padding: 10px 2px; border-radius: 8px; font-size: 11px; font-weight: bold; border: none; cursor: pointer; text-transform: uppercase; }
+        
+        /* Botão Ativar Dinâmico */
+        .btn-activate { background: transparent; color: var(--turquesa); border: 1px solid var(--turquesa); }
+        .event-card.active .btn-activate { background: var(--turquesa); color: #000; }
+
         .btn-edit { background: #444; color: #fff; }
         .btn-delete { background: rgba(255, 85, 85, 0.1); color: var(--danger); border: 1px solid var(--danger); }
 
-        #modal-senha { position: fixed; inset: 0; background: var(--bg-modal); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(15px); }
+        #modal-senha { position: fixed; inset: 0; background: rgba(0,20,20,0.98); display: none; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(15px); }
         .modal-content { background: #002222; padding: 35px; border-radius: 25px; border: 1px solid var(--dourado); text-align: center; width: 85%; max-width: 320px; }
-        .modal-content input { width: 100%; padding: 18px; background: #000; border: 1px solid var(--dourado); color: var(--dourado); border-radius: 12px; text-align: center; font-size: 28px; margin-bottom: 25px; box-sizing: border-box; outline: none; }
-        .btn-confirm { background: var(--dourado); color: #000; border: none; padding: 15px; border-radius: 10px; font-weight: 900; width: 100%; cursor: pointer; }
-
-        .footer-minimal { padding: 40px 0; font-size: 11px; color: var(--cinza-minimal); text-align: center; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <h1>PHOTO MOVIE</h1>
-        <p>colecionando momentos</p>
+        <p>central de eventos</p>
     </div>
 
     <div class="main-container">
         <button id="btn-login" class="btn-central" onclick="abrirModal()">🔓 ACESSAR SISTEMA</button>
-
         <a href="config_evento.html" id="btn-create" class="btn-protected btn-central btn-create">➕ CRIAR NOVO EVENTO</a>
         <button id="btn-galeria" class="btn-protected btn-central" onclick="irParaGaleria()">🎞️ ACESSAR GALERIA</button>
         
         <div id="container-eventos" class="event-list-container">
-            <h3 style="font-size: 11px; color: var(--dourado); text-transform: uppercase; text-align: center; opacity: 0.6;">Eventos Salvos</h3>
             <div id="lista-eventos"></div>
         </div>
 
-        <button id="btn-lock" class="btn-protected btn-central" onclick="bloquear()" style="background: transparent; color: var(--danger); border: 1px solid rgba(255,85,85,0.2); margin-top: 30px; font-size: 11px;">ENCERRAR SESSÃO</button>
-    </div>
-
-    <div class="footer-minimal">Sistema de gestão 360º</div>
-
-    <div id="modal-senha">
-        <div class="modal-content">
-            <h3 style="color:var(--dourado); margin-top: 0;">AUTENTICAÇÃO</h3>
-            <input type="password" id="input-senha" inputmode="numeric" placeholder="••••">
-            <button class="btn-confirm" onclick="validarSenha()">CONFIRMAR</button>
-            <p onclick="fecharModal()" style="margin-top:20px; font-size:13px; color:#999; cursor:pointer">Voltar</p>
-        </div>
+        <button id="btn-lock" class="btn-protected btn-central" onclick="bloquear()" style="background: transparent; color: var(--danger); border: 1px solid rgba(255,85,85,0.2); margin-top: 30px; font-size: 11px;">SAIR</button>
     </div>
 
 <script>
-    const SENHA_MESTRA = "1234"; 
     const WORKER_URL = "https://photomovie.maxprimefotovideo.workers.dev"; 
 
     window.onload = () => {
         if(sessionStorage.getItem('logado') === 'true') liberarSistema();
     }
 
-    function abrirModal() {
-        document.getElementById('modal-senha').style.display = 'flex';
-        setTimeout(() => document.getElementById('input-senha').focus(), 100);
-    }
-
-    function fecharModal() { document.getElementById('modal-senha').style.display = 'none'; }
-
-    function validarSenha() {
-        const input = document.getElementById('input-senha');
-        if (input.value === SENHA_MESTRA) {
-            sessionStorage.setItem('logado', 'true');
-            fecharModal();
-            liberarSistema();
-        } else { alert("Senha Incorreta"); input.value = ''; }
-    }
-
     function liberarSistema() {
         document.getElementById('btn-login').style.display = 'none';
         document.querySelectorAll('.btn-protected').forEach(b => b.style.display = 'block');
-        document.getElementById('container-eventos').style.display = 'block';
         renderEventos();
     }
 
     async function renderEventos() {
         const container = document.getElementById('lista-eventos');
-        container.innerHTML = '<p style="text-align:center; font-size:11px; color:var(--dourado);">Sincronizando...</p>';
+        container.innerHTML = '<p style="text-align:center; color:var(--turquesa);">Sincronizando...</p>';
 
         try {
             const res = await fetch(`${WORKER_URL}/listar-eventos`);
             const eventos = await res.json();
-            const eventoAtivoID = JSON.parse(localStorage.getItem('evento_ativo'))?.id;
             
-            if(!eventos || eventos.length === 0) {
-                container.innerHTML = '<p style="font-size:11px; color:#666; text-align:center;">Nenhum evento.</p>';
-                return;
-            }
+            // Pega o ID do evento que foi ativado por último
+            const ativoRaw = localStorage.getItem('evento_ativo');
+            const eventoAtivoID = ativoRaw ? JSON.parse(ativoRaw).id : null;
 
             container.innerHTML = '';
             eventos.forEach((ev) => {
-                const isActive = ev.id === eventoAtivoID ? 'active' : '';
-                const evDataStr = btoa(unescape(encodeURIComponent(JSON.stringify(ev))));
+                const isActive = String(ev.id) === String(eventoAtivoID);
+                // Serialização segura para o botão editar
+                const evDataStr = btoa(encodeURIComponent(JSON.stringify(ev)));
 
                 container.innerHTML += `
-                    <div class="event-card ${isActive}" id="card-${ev.id}">
-                        <div class="status-badge">ATIVO</div>
+                    <div class="event-card ${isActive ? 'active' : ''}">
+                        <div class="status-badge">ATIVO NO SISTEMA</div>
                         <div class="event-header" onclick="acessarCamera('${ev.id}')">
                             <div class="event-info">
                                 <h4>${ev.nome}</h4>
-                                <span>📅 ${ev.data || ''}</span>
+                                <span>📅 ${ev.data || 'Sem data'}</span>
                             </div>
-                            <span style="color:var(--dourado); font-size:20px;">📷</span>
+                            <span style="font-size:24px;">📸</span>
                         </div>
                         <div class="event-actions">
-                            <button class="btn-mini btn-activate" onclick="setAtivo('${ev.id}', '${ev.nome}')">Ativar</button>
-                            <button class="btn-mini btn-edit" onclick="editarEvento('${evDataStr}')">Editar</button>
-                            <button class="btn-mini btn-delete" onclick="excluirEvento('${ev.id}', '${ev.nome}')">Excluir</button>
+                            <button class="btn-mini btn-activate" onclick="setAtivo('${ev.id}', '${ev.nome}')">
+                                ${isActive ? 'EM USO' : 'ATIVAR'}
+                            </button>
+                            <button class="btn-mini btn-edit" onclick="editarEvento('${evDataStr}')">EDITAR</button>
+                            <button class="btn-mini btn-delete" onclick="excluirEvento('${ev.id}', '${ev.nome}')">EXCLUIR</button>
                         </div>
                     </div>`;
             });
-        } catch (e) { container.innerHTML = '<p style="color:red; font-size:11px;">Erro de conexão.</p>'; }
+        } catch (e) { container.innerHTML = '<p>Erro ao carregar.</p>'; }
     }
 
-    // --- LOGICA SOLICITADA ---
-
-    // 1. Acessar Câmera (Clicando no topo do card)
-    async function acessarCamera(id) {
-        try {
-            const res = await fetch(`${WORKER_URL}/listar-eventos`);
-            const eventos = await res.json();
-            const config = eventos.find(e => e.id === id);
-            if(config) {
-                localStorage.setItem('config_atual', JSON.stringify(config));
-                window.location.href = 'camera.html';
-            }
-        } catch (e) { alert("Erro ao abrir câmera."); }
-    }
-
-    // 2. Apenas ATIVA o evento (sem sair da página)
+    // 4. CORREÇÃO DO ATIVAR: Agora força o salvamento e recarrega a lista
     function setAtivo(id, nome) {
-        localStorage.setItem('evento_ativo', JSON.stringify({id, nome}));
-        alert(`Evento "${nome}" agora é o principal!`);
-        renderEventos(); // Atualiza o visual para mostrar a borda turquesa
+        const obj = { id: String(id), nome: nome };
+        localStorage.setItem('evento_ativo', JSON.stringify(obj));
+        localStorage.setItem('evento_selecionado', JSON.stringify(obj)); // Para compatibilidade com a galeria
+        renderEventos(); // Atualiza os botões na hora
     }
 
-    // 3. Galeria puxa o Ativo
     function irParaGaleria() {
-        const ativo = localStorage.getItem('evento_ativo');
-        if(!ativo) {
-            alert("Por favor, clique em 'ATIVAR' em um evento da lista primeiro.");
-            return;
-        }
+        if(!localStorage.getItem('evento_ativo')) return alert("Ative um evento primeiro!");
         window.location.href = 'galeria.html';
     }
 
-    // 4. Editar (Leva os dados preenchidos)
+    // 5. CORREÇÃO DO EDITAR: Envia o objeto limpo
     function editarEvento(evDataStr) {
-        const ev = JSON.parse(decodeURIComponent(escape(atob(evDataStr))));
+        const ev = JSON.parse(decodeURIComponent(atob(evDataStr)));
         localStorage.setItem('evento_para_editar', JSON.stringify(ev));
         window.location.href = 'config_evento.html';
     }
 
-    async function excluirEvento(id, nome) {
-        if(!confirm(`Excluir "${nome}" e todas as mídias?`)) return;
-        const res = await fetch(`${WORKER_URL}/excluir-evento?id=${id}&evento=${encodeURIComponent(nome)}`, { method: 'DELETE' });
-        if(res.ok) renderEventos();
+    async function acessarCamera(id) {
+        const res = await fetch(`${WORKER_URL}/listar-eventos`);
+        const eventos = await res.json();
+        const config = eventos.find(e => String(e.id) === String(id));
+        if(config) {
+            localStorage.setItem('config_atual', JSON.stringify(config));
+            window.location.href = 'camera.html';
+        }
     }
 
+    async function excluirEvento(id, nome) {
+        if(!confirm(`Excluir permanentemente "${nome}"?`)) return;
+        await fetch(`${WORKER_URL}/excluir-evento?id=${id}&evento=${encodeURIComponent(nome)}`, { method: 'DELETE' });
+        renderEventos();
+    }
+
+    // Funções de Modal (Sua lógica de senha original)
+    function abrirModal() { document.getElementById('modal-senha').style.display = 'flex'; }
+    function fecharModal() { document.getElementById('modal-senha').style.display = 'none'; }
+    function validarSenha() { 
+        if (document.getElementById('input-senha').value === "1234") { 
+            sessionStorage.setItem('logado', 'true'); fecharModal(); liberarSistema(); 
+        } 
+    }
     function bloquear() { sessionStorage.removeItem('logado'); location.reload(); }
 </script>
 </body>
