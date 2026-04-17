@@ -19,8 +19,24 @@
             display: flex; flex-direction: column; align-items: center; min-height: 100vh;
         }
 
-        .header { margin-top: 1.5cm; text-align: center; margin-bottom: 30px; }
-        .header h1 { color: var(--dourado); font-size: 48px; font-weight: 900; margin: 0; text-transform: uppercase; }
+        /* 1. Ajuste do Título Centralizado no Estilo do Layout */
+        .header { margin-top: 1.5cm; text-align: center; margin-bottom: 40px; }
+        .header h1 { 
+            color: var(--dourado); 
+            font-size: 42px; 
+            font-weight: 900; 
+            margin: 0; 
+            text-transform: uppercase; 
+            letter-spacing: 5px; 
+        }
+        .header p { 
+            color: var(--dourado); 
+            font-size: 14px; 
+            letter-spacing: 10px; 
+            text-transform: uppercase; 
+            opacity: 0.8;
+            margin-top: 5px;
+        }
 
         .main-container { width: 95%; max-width: 500px; }
 
@@ -35,10 +51,14 @@
         #btn-galeria { background: rgba(197, 160, 89, 0.05); color: var(--dourado); border: 1px solid var(--dourado); }
         #btn-login { display: block; background: transparent; color: var(--dourado); border: 2px solid var(--dourado); margin-top: 50px; }
 
+        /* 3. Mais espaço entre os cards (modais) de eventos */
         .event-card {
             background: var(--bg-card); 
             border: 1px solid rgba(0, 209, 209, 0.3);
-            padding: 22px; border-radius: 18px; margin-bottom: 15px; position: relative;
+            padding: 25px; 
+            border-radius: 20px; 
+            margin-bottom: 30px; /* Aumentado para 30px como solicitado */
+            position: relative;
             transition: 0.3s;
         }
         
@@ -63,7 +83,6 @@
         .btn-edit { background: #444; color: #fff; }
         .btn-delete { background: rgba(255, 85, 85, 0.1); color: var(--danger); border: 1px solid var(--danger); }
 
-        /* Modal Senha Estilizado */
         #modal-senha { position: fixed; inset: 0; background: rgba(0,20,20,0.98); display: none; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(15px); }
         .modal-content { background: #002222; padding: 35px; border-radius: 25px; border: 1px solid var(--dourado); text-align: center; width: 85%; max-width: 320px; }
         .modal-content input { width: 100%; padding: 18px; background: #000; border: 1px solid var(--dourado); color: var(--dourado); border-radius: 12px; text-align: center; font-size: 28px; margin-bottom: 25px; box-sizing: border-box; outline: none; letter-spacing: 5px; }
@@ -74,8 +93,8 @@
 <body>
 
     <div class="header">
-        <h1>PHOTO MOVIE</h1>
-        <p>central de eventos</p>
+        <h1>CENTRAL</h1>
+        <p>Eventos & Gestão</p>
     </div>
 
     <div class="main-container">
@@ -103,7 +122,7 @@
 
 <script>
     const WORKER_URL = "https://photomovie.maxprimefotovideo.workers.dev"; 
-    const SENHA_MESTRA = "1234"; // Definindo a senha para validação
+    const SENHA_MESTRA = "1234";
 
     window.onload = () => {
         if(sessionStorage.getItem('logado') === 'true') liberarSistema();
@@ -116,12 +135,9 @@
 
     function fecharModal() { document.getElementById('modal-senha').style.display = 'none'; }
 
-    // CORREÇÃO 2: Função de Validação Corrigida
     function validarSenha() {
         const campo = document.getElementById('input-senha');
-        const senhaDigitada = campo.value;
-
-        if (senhaDigitada === SENHA_MESTRA) {
+        if (campo.value === SENHA_MESTRA) {
             sessionStorage.setItem('logado', 'true');
             fecharModal();
             liberarSistema();
@@ -152,6 +168,7 @@
             container.innerHTML = '';
             eventos.forEach((ev) => {
                 const isActive = String(ev.id) === String(eventoAtivoID);
+                // Serialização para transporte seguro
                 const evDataStr = btoa(encodeURIComponent(JSON.stringify(ev)));
 
                 container.innerHTML += `
@@ -173,7 +190,7 @@
                         </div>
                     </div>`;
             });
-        } catch (e) { container.innerHTML = '<p>Erro ao carregar.</p>'; }
+        } catch (e) { container.innerHTML = '<p>Erro ao carregar lista.</p>'; }
     }
 
     function setAtivo(id, nome) {
@@ -188,6 +205,7 @@
         window.location.href = 'galeria.html';
     }
 
+    // 2. CORREÇÃO EDITAR: Salva os dados para preenchimento na próxima página
     function editarEvento(evDataStr) {
         const ev = JSON.parse(decodeURIComponent(atob(evDataStr)));
         localStorage.setItem('evento_para_editar', JSON.stringify(ev));

@@ -139,11 +139,13 @@
 <body>
 
     <div class="header">
-        <h1>PHOTO MOVIE</h1>
+        <h1 id="titulo-pagina">PHOTO MOVIE</h1>
         <p>colecionando momentos</p>
     </div>
 
     <div class="container">
+        <input type="hidden" id="conf-id" value="">
+
         <div class="section">
             <h3>1. O Evento</h3>
             <label>NOME DO EVENTO</label>
@@ -155,9 +157,9 @@
         <div class="section">
             <h3>2. Tempo de Gravação</h3>
             <div class="time-selector">
-                <button class="time-btn" onclick="setTime(8, this)">8s</button>
-                <button class="time-btn active" onclick="setTime(10, this)">10s</button>
-                <button class="time-btn" onclick="setTime(12, this)">12s</button>
+                <button class="time-btn" id="time-8" onclick="setTime(8, this)">8s</button>
+                <button class="time-btn active" id="time-10" onclick="setTime(10, this)">10s</button>
+                <button class="time-btn" id="time-12" onclick="setTime(12, this)">12s</button>
             </div>
             <input type="hidden" id="conf-tempo" value="10">
         </div>
@@ -165,10 +167,10 @@
         <div class="section">
             <h3>3. Timeline de Velocidade</h3>
             <div class="vizz-presets">
-                <button class="preset-btn" onclick="applyVizzPreset('vizz-classic', this)"><span>⚡ Classic</span></button>
-                <button class="preset-btn" onclick="applyVizzPreset('vizz-ultra', this)"><span>🐢 Ultra Slow</span></button>
+                <button class="preset-btn" id="btn-classic" onclick="applyVizzPreset('vizz-classic', this)"><span>⚡ Classic</span></button>
+                <button class="preset-btn" id="btn-ultra" onclick="applyVizzPreset('vizz-ultra', this)"><span>🐢 Ultra Slow</span></button>
                 <button class="preset-btn special" id="btn-reverse" onclick="toggleReverse()"><span>🔄 Reverse FX</span></button>
-                <button class="preset-btn" onclick="applyVizzPreset('vizz-linear', this)"><span>⚖️ Normal</span></button>
+                <button class="preset-btn" id="btn-linear" onclick="applyVizzPreset('vizz-linear', this)"><span>⚖️ Normal</span></button>
             </div>
             
             <div class="speed-grid">
@@ -234,6 +236,39 @@
     const WORKER_URL = "https://photomovie.maxprimefotovideo.workers.dev";
     let reverseActive = false;
 
+    window.onload = () => {
+        const editData = localStorage.getItem('evento_para_editar');
+        if (editData) {
+            const ev = JSON.parse(editData);
+            
+            // Preenchimento dos campos (IDs corrigidos conforme o HTML acima)
+            if(ev.id) document.getElementById('conf-id').value = ev.id;
+            if(ev.nome) document.getElementById('conf-nome').value = ev.nome;
+            if(ev.data) document.getElementById('conf-data').value = ev.data;
+            if(ev.tempo) setTime(parseInt(ev.tempo), document.getElementById('time-'+ev.tempo));
+            if(ev.reverse) { reverseActive = true; document.getElementById('btn-reverse').classList.add('active'); }
+            
+            if(ev.moldura) {
+                document.getElementById('conf-moldura-url').value = ev.moldura;
+                const preview = document.getElementById('frame-preview');
+                preview.src = ev.moldura; preview.style.display = "block";
+                document.getElementById('upload-label').innerText = "📸 MOLDURA OK";
+            }
+            
+            if(ev.musicaUrl) {
+                document.getElementById('conf-musica-url').value = ev.musicaUrl;
+                document.getElementById('music-status-text').innerText = "🎵 MÚSICA OK";
+                if(ev.musicaOffset) document.getElementById('conf-musica-offset').value = ev.musicaOffset;
+            }
+
+            // Alterar visual para indicar Edição
+            document.getElementById('titulo-pagina').innerText = "EDITAR EVENTO";
+            
+            // Limpa para não interferir em novos eventos
+            localStorage.removeItem('evento_para_editar');
+        }
+    }
+
     function toggleModal(id, show) { 
         document.getElementById(id).style.display = show ? 'flex' : 'none'; 
         if(show && id === 'music-modal') carregarSomNoPlayer();
@@ -258,6 +293,7 @@
     }
 
     function setTime(val, btn) {
+        if(!btn) return;
         document.getElementById('conf-tempo').value = val;
         document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
@@ -290,7 +326,6 @@
 
         try {
             const res = await fetch(`${WORKER_URL}/upload`, { method: 'POST', body: formData });
-            if(!res.ok) throw new Error("Falha no upload");
             const data = await res.json();
             const urlFinal = `${WORKER_URL}/stream?id=${data.path}`;
 
@@ -302,6 +337,7 @@
             } else {
                 document.getElementById('conf-musica-url').value = urlFinal;
                 label.innerText = "🎵 MP3 OK";
+                document.getElementById('music-status-text').innerText = "🎵 MÚSICA OK";
                 carregarSomNoPlayer();
             }
         } catch (e) { 
@@ -312,10 +348,12 @@
 
     async function salvarConfig() {
         const nomeEvento = document.getElementById('conf-nome').value.trim();
+        const idExistente = document.getElementById('conf-id').value;
+
         if(!nomeEvento) return alert("Por favor, digite o nome do evento.");
 
         const config = {
-            id: String(Date.now()), // Garantir ID como String para o D1
+            id: idExistente || String(Date.now()), // Se tiver ID, mantém. Se não, gera novo.
             nome: nomeEvento,
             data: document.getElementById('conf-data').value,
             tempo: String(document.getElementById('conf-tempo').value),
@@ -328,46 +366,21 @@
         try {
             const res = await fetch(`${WORKER_URL}/salvar-evento`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' }, // Essencial para o Worker reconhecer o JSON
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(config)
             });
 
             if(res.ok) {
-                localStorage.setItem('config_atual', JSON.stringify(config));
-                alert("Evento '" + nomeEvento + "' salvo na nuvem com sucesso!");
+                alert("Evento salvo com sucesso!");
                 window.location.href = 'index.html';
             } else {
                 const erroTexto = await res.text();
                 throw new Error(erroTexto);
             }
         } catch (e) { 
-            console.error("Erro ao salvar:", e);
-            alert("Erro ao salvar no banco de dados: " + e.message); 
+            alert("Erro ao salvar: " + e.message); 
         }
     }
-
-    window.onload = () => {
-    const editData = localStorage.getItem('evento_para_editar');
-    if (editData) {
-        const ev = JSON.parse(editData);
-        
-        // Use os IDs que estão nos seus <input> da página config_evento.html
-        if(document.getElementById('nome')) document.getElementById('nome').value = ev.nome;
-        if(document.getElementById('data')) document.getElementById('data').value = ev.data;
-        if(document.getElementById('tempo')) document.getElementById('tempo').value = ev.tempo;
-        if(document.getElementById('musicaUrl')) document.getElementById('musicaUrl').value = ev.musicaUrl;
-        
-        // IMPORTANTE: Preencher o ID escondido (hidden) para o Worker saber que é uma edição
-        // Se você não tiver um input hidden para o ID, crie um no seu formulário:
-        // <input type="hidden" id="evento_id">
-        if(document.getElementById('evento_id')) {
-            document.getElementById('evento_id').value = ev.id;
-        }
-
-        // Limpa a memória para a próxima vez não vir preenchido errado
-        localStorage.removeItem('evento_para_editar');
-    }
-}
 </script>
 </body>
 </html>
