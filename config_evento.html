@@ -345,6 +345,21 @@
             alert("Erro ao salvar no banco de dados: " + e.message); 
         }
     }
+
+    window.onload = () => {
+    const dadosEdicao = localStorage.getItem('evento_para_editar');
+    if (dadosEdicao) {
+        const ev = JSON.parse(dadosEdicao);
+        // Preencha os campos usando os IDs que você tem lá
+        document.getElementById('id_evento').value = ev.id;
+        document.getElementById('nome_evento').value = ev.nome;
+        document.getElementById('tempo_video').value = ev.tempo;
+        // ... repita para musica e moldura ...
+        
+        // Limpa o dado após carregar para não dar conflito em novas criações
+        localStorage.removeItem('evento_para_editar');
+    }
+}
 </script>
 </body>
 </html>
