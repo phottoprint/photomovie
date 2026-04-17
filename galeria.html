@@ -31,7 +31,6 @@
             cursor: pointer;
         }
 
-        /* Mudado para img ou video dependendo do que você está subindo */
         .video-card img, .video-card video { width: 100%; height: 100%; object-fit: cover; }
 
         #modal-zoom {
@@ -71,7 +70,7 @@
         
         <div class="modal-controls">
             <button class="btn-action btn-close" onclick="fecharZoom()">FECHAR</button>
-            <a id="link-download-pg" href="#" class="btn-action btn-download">DOWNLOAD</a>
+            <button id="btn-download-force" class="btn-action btn-download">BAIXAR AGORA</button>
         </div>
     </div>
 
@@ -85,11 +84,9 @@
 
     async function popularFiltro() {
         try {
-            // Busca eventos da nuvem em vez do localStorage para garantir sincronia
             const res = await fetch(`${WORKER_URL}/listar-eventos`);
             const eventos = await res.json();
             const select = document.getElementById('select-evento');
-            
             eventos.forEach(ev => {
                 let opt = document.createElement('option');
                 opt.value = ev.nome;
@@ -102,19 +99,16 @@
     async function carregarArquivos() {
         const eventoSelecionado = document.getElementById('select-evento').value;
         const container = document.getElementById('gallery-container');
-        
         if(!eventoSelecionado) {
-            container.innerHTML = "<p style='grid-column: 1/-1; color:#666;'>Selecione um evento para ver as fotos.</p>";
+            container.innerHTML = "<p style='grid-column: 1/-1; color:#666;'>Selecione um evento.</p>";
             return;
         }
 
-        container.innerHTML = "<p style='grid-column: 1/-1'>Buscando arquivos na nuvem...</p>";
+        container.innerHTML = "<p style='grid-column: 1/-1'>Sincronizando Galeria...</p>";
 
         try {
-            // CORREÇÃO: Nome da rota corrigido para /listar-galeria
             const res = await fetch(`${WORKER_URL}/listar-galeria?evento=${encodeURIComponent(eventoSelecionado)}`);
             const arquivos = await res.json();
-
             container.innerHTML = "";
             
             if(!arquivos || arquivos.length === 0) {
@@ -122,14 +116,17 @@
                 return;
             }
 
-            arquivos.forEach((file, index) => {
-                // CORREÇÃO: Usando file.path que é o nome da coluna no D1
+            arquivos.forEach((file) => {
                 const streamUrl = `${WORKER_URL}/stream?id=${encodeURIComponent(file.path)}`;
                 const card = document.createElement('div');
                 card.className = 'video-card';
                 
-                // Verifica se é mp3 ou imagem para renderizar preview
-                if(file.path.toLowerCase().endsWith('.mp3')) {
+                const isVideo = file.path.toLowerCase().endsWith('.mp4') || file.path.toLowerCase().endsWith('.webm');
+                
+                if(isVideo) {
+                    // Adicionado #t=0.1 para carregar o primeiro frame do vídeo
+                    card.innerHTML = `<video src="${streamUrl}#t=0.1" muted playsinline preload="metadata"></video>`;
+                } else if(file.path.toLowerCase().endsWith('.mp3')) {
                     card.innerHTML = `<div style="display:flex; height:100%; align-items:center; justify-content:center; background:#111; color:var(--dourado)">🎵 MP3</div>`;
                 } else {
                     card.innerHTML = `<img src="${streamUrl}" loading="lazy">`;
@@ -139,7 +136,7 @@
                 container.appendChild(card);
             });
         } catch (e) {
-            container.innerHTML = "<p style='grid-column: 1/-1; color: #ff6b6b;'>Erro de conexão com a galeria.</p>";
+            container.innerHTML = "<p style='grid-column: 1/-1; color: #ff6b6b;'>Erro de conexão.</p>";
         }
     }
 
@@ -147,11 +144,12 @@
         const modal = document.getElementById('modal-zoom');
         const video = document.getElementById('media-full');
         const img = document.getElementById('img-full');
-        const downloadLink = document.getElementById('link-download-pg');
+        const btnDownload = document.getElementById('btn-download-force');
         
         modal.style.display = 'flex';
-        downloadLink.href = url; // Link direto para o arquivo
-        downloadLink.download = path.split('/').pop();
+        
+        // Função de download forçado
+        btnDownload.onclick = () => forcarDownload(url, path.split('/').pop());
 
         if(path.toLowerCase().endsWith('.mp4') || path.toLowerCase().endsWith('.webm')) {
             video.src = url;
@@ -162,6 +160,30 @@
             img.src = url;
             img.style.display = 'block';
             video.style.display = 'none';
+        }
+    }
+
+    // Função que garante o download do arquivo
+    async function forcarDownload(url, filename) {
+        const btn = document.getElementById('btn-download-force');
+        const originalText = btn.innerText;
+        btn.innerText = "BAIXANDO...";
+        
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(blobUrl);
+            a.remove();
+        } catch (e) {
+            alert("Erro ao baixar. Tente segurar na imagem e 'Salvar Como'.");
+        } finally {
+            btn.innerText = originalText;
         }
     }
 
