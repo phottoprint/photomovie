@@ -132,19 +132,20 @@
             gap: 10px; 
         }
 
-        /* --- NOVO: ESTILO DO PLAYER REAL NO MODAL --- */
         .player-container {
             background: #111;
             padding: 15px;
             border-radius: 20px;
             border: 1px solid #333;
-            margin-top: 5px;
+            margin-top: 10px;
+            text-align: center;
         }
         
         audio {
             width: 100%;
             height: 40px;
-            filter: invert(100%) hue-rotate(180deg) brightness(1.5); /* Ajusta a cor para combinar com o tema escuro */
+            margin-top: 10px;
+            filter: invert(100%) hue-rotate(180deg) brightness(1.5);
         }
 
         .sync-btn {
@@ -239,6 +240,7 @@
                 <input type="file" id="file-moldura" accept="image/png" style="display:none" onchange="subirArquivo(this, 'MOLDURA')">
             </div>
             <input type="hidden" id="conf-moldura-url">
+            <input type="hidden" id="conf-musica-url">
             <center><img id="frame-preview"></center>
         </div>
 
@@ -250,21 +252,16 @@
         <div class="modal-content">
             <h4 style="color:var(--dourado); text-align:center; letter-spacing: 2px;">STUDIO MUSICAL</h4>
             
-            <label>YOUTUBE URL</label>
-            <input type="text" id="conf-musica-url" placeholder="Cole o link aqui" oninput="atualizarSinalMusica()">
-            
-            <p style="text-align:center; font-size: 10px; color: #444; margin: 5px 0;">- OU -</p>
-
-            <div class="action-box" id="btn-mp3-box" style="font-size: 12px; padding: 15px;" onclick="document.getElementById('file-musica').click()">
-                <span id="music-file-label">📤 UPAR MP3</span>
+            <div class="action-box" id="btn-mp3-box" style="font-size: 14px; padding: 30px;" onclick="document.getElementById('file-musica').click()">
+                <span id="music-file-label">📤 CLIQUE PARA UPAR MP3</span>
                 <input type="file" id="file-musica" accept="audio/*" style="display:none" onchange="subirArquivo(this, 'MUSICA')">
             </div>
 
-            <label>INÍCIO (SEG)</label>
+            <label>INÍCIO DA MÚSICA (SEG)</label>
             <input type="number" id="conf-musica-offset" value="0" oninput="sincronizarTempoPlayer()">
 
             <div class="player-container">
-                <button class="sync-btn" onclick="carregarSomNoPlayer()">🔄 Carregar Som / Sincronizar</button>
+                <span style="font-size: 10px; color: var(--dourado); font-weight: bold;">PRÉVIA DO ÁUDIO</span>
                 <audio id="main-audio-player" controls></audio>
             </div>
 
@@ -290,15 +287,13 @@
         toggleModal('music-modal', false);
     }
     
-    // CARREGA A MÚSICA (LINK YT OU MP3) E PULA PARA O OFFSET
     function carregarSomNoPlayer() {
         const url = document.getElementById('conf-musica-url').value;
         const offset = parseFloat(document.getElementById('conf-musica-offset').value) || 0;
         const player = document.getElementById('main-audio-player');
 
-        if(!url) return alert("Insira um link ou suba um arquivo primeiro!");
+        if(!url) return;
 
-        // Se for Youtube, o worker faz o stream. Se for arquivo direto, ele carrega.
         player.src = url;
         player.load();
         
@@ -308,11 +303,10 @@
         };
     }
 
-    // Se o usuário mudar o segundo enquanto ouve, o player pula na hora
     function sincronizarTempoPlayer() {
         const offset = parseFloat(document.getElementById('conf-musica-offset').value) || 0;
         const player = document.getElementById('main-audio-player');
-        if(!player.paused) {
+        if(player.src && !player.paused) {
             player.currentTime = offset;
         }
     }
@@ -350,7 +344,7 @@
         label.innerText = "⏳ ENVIANDO...";
         
         const formData = new FormData();
-        formData.append("video", file);
+        formData.append("video", file); // O worker espera a chave "video"
         formData.append("uuid", tipo.toLowerCase() + "_" + Date.now());
         formData.append("evento", tipo === 'MOLDURA' ? "MOLDURAS_SISTEMA" : "MUSICAS_SISTEMA");
 
@@ -372,7 +366,7 @@
                 label.innerText = "MP3 CARREGADO";
                 box.classList.add('active-config');
                 atualizarSinalMusica();
-                carregarSomNoPlayer(); // Já carrega automaticamente após subir
+                carregarSomNoPlayer();
             }
         } catch (e) { 
             label.innerText = "❌ ERRO AO SUBIR";
@@ -381,7 +375,7 @@
 
     function atualizarSinalMusica() {
         const url = document.getElementById('conf-musica-url').value;
-        if(url && url.length > 5) {
+        if(url) {
             document.getElementById('btn-modal-musica').classList.add('active-config');
             document.getElementById('music-status-text').innerText = "MÚSICA OK"; 
         }
