@@ -94,13 +94,6 @@
             box-sizing: border-box;
         }
         
-        .action-box.active-config { 
-            border: 2px solid var(--dourado); 
-            color: var(--dourado); 
-            background: rgba(197, 160, 89, 0.1); 
-            box-shadow: 0 0 15px rgba(197, 160, 89, 0.15);
-        }
-
         #frame-preview { 
             width: 100%; 
             aspect-ratio: 9/16; 
@@ -133,18 +126,12 @@
         }
 
         .player-container {
-            background: #111;
-            padding: 15px;
-            border-radius: 20px;
-            border: 1px solid #333;
-            margin-top: 10px;
-            text-align: center;
+            background: #111; padding: 15px; border-radius: 20px;
+            border: 1px solid #333; margin-top: 10px; text-align: center;
         }
         
         audio {
-            width: 100%;
-            height: 40px;
-            margin-top: 10px;
+            width: 100%; height: 40px; margin-top: 10px;
             filter: invert(100%) hue-rotate(180deg) brightness(1.5);
         }
     </style>
@@ -178,18 +165,10 @@
         <div class="section">
             <h3>3. Timeline de Velocidade</h3>
             <div class="vizz-presets">
-                <button class="preset-btn" onclick="applyVizzPreset('vizz-classic', this)">
-                    <span>⚡ Classic</span>
-                </button>
-                <button class="preset-btn" onclick="applyVizzPreset('vizz-ultra', this)">
-                    <span>🐢 Ultra Slow</span>
-                </button>
-                <button class="preset-btn special" id="btn-reverse" onclick="toggleReverse()">
-                    <span>🔄 Reverse FX</span>
-                </button>
-                <button class="preset-btn" onclick="applyVizzPreset('vizz-linear', this)">
-                    <span>⚖️ Normal</span>
-                </button>
+                <button class="preset-btn" onclick="applyVizzPreset('vizz-classic', this)"><span>⚡ Classic</span></button>
+                <button class="preset-btn" onclick="applyVizzPreset('vizz-ultra', this)"><span>🐢 Ultra Slow</span></button>
+                <button class="preset-btn special" id="btn-reverse" onclick="toggleReverse()"><span>🔄 Reverse FX</span></button>
+                <button class="preset-btn" onclick="applyVizzPreset('vizz-linear', this)"><span>⚖️ Normal</span></button>
             </div>
             
             <div class="speed-grid">
@@ -219,15 +198,15 @@
 
         <div class="section">
             <h3>4. Estética</h3>
-            <div class="action-box" id="btn-modal-musica" onclick="toggleModal('music-modal', true)" style="margin-bottom: 10px;">
+            <div class="action-box" onclick="toggleModal('music-modal', true)" style="margin-bottom: 10px;">
                 <span id="music-status-text">🎵 CONFIGURAR MÚSICA</span>
             </div>
             <div class="action-box" id="btn-moldura-box" onclick="document.getElementById('file-moldura').click()">
                 <span id="upload-label">📸 UPAR MOLDURA (PNG)</span>
                 <input type="file" id="file-moldura" accept="image/png" style="display:none" onchange="subirArquivo(this, 'MOLDURA')">
             </div>
-            <input type="hidden" id="conf-moldura-url">
-            <input type="hidden" id="conf-musica-url">
+            <input type="hidden" id="conf-moldura-url" value="">
+            <input type="hidden" id="conf-musica-url" value="">
             <center><img id="frame-preview"></center>
         </div>
 
@@ -238,7 +217,7 @@
     <div id="music-modal" class="modal">
         <div class="modal-content">
             <h4 style="color:var(--dourado); text-align:center;">STUDIO MUSICAL</h4>
-            <div class="action-box" id="btn-mp3-box" onclick="document.getElementById('file-musica').click()">
+            <div class="action-box" onclick="document.getElementById('file-musica').click()">
                 <span id="music-file-label">📤 UPAR MP3</span>
                 <input type="file" id="file-musica" accept="audio/mpeg, audio/mp3" style="display:none" onchange="subirArquivo(this, 'MUSICA')">
             </div>
@@ -301,6 +280,7 @@
     async function subirArquivo(input, tipo) {
         if(!input.files[0]) return;
         const label = tipo === 'MOLDURA' ? document.getElementById('upload-label') : document.getElementById('music-file-label');
+        const originalText = label.innerText;
         label.innerText = "⏳ ENVIANDO...";
         
         const formData = new FormData();
@@ -310,6 +290,7 @@
 
         try {
             const res = await fetch(`${WORKER_URL}/upload`, { method: 'POST', body: formData });
+            if(!res.ok) throw new Error("Falha no upload");
             const data = await res.json();
             const urlFinal = `${WORKER_URL}/stream?id=${data.path}`;
 
@@ -317,38 +298,52 @@
                 document.getElementById('conf-moldura-url').value = urlFinal;
                 const preview = document.getElementById('frame-preview');
                 preview.src = urlFinal; preview.style.display = "block";
-                label.innerText = "MOLDURA OK";
+                label.innerText = "📸 MOLDURA OK";
             } else {
                 document.getElementById('conf-musica-url').value = urlFinal;
-                label.innerText = "MP3 OK";
+                label.innerText = "🎵 MP3 OK";
                 carregarSomNoPlayer();
             }
-        } catch (e) { alert("Erro upload"); label.innerText = "ERRO"; }
+        } catch (e) { 
+            alert("Erro no upload do arquivo."); 
+            label.innerText = originalText; 
+        }
     }
 
     async function salvarConfig() {
+        const nomeEvento = document.getElementById('conf-nome').value.trim();
+        if(!nomeEvento) return alert("Por favor, digite o nome do evento.");
+
         const config = {
-            id: Date.now(),
-            nome: document.getElementById('conf-nome').value,
+            id: String(Date.now()), // Garantir ID como String para o D1
+            nome: nomeEvento,
             data: document.getElementById('conf-data').value,
-            tempo: document.getElementById('conf-tempo').value,
+            tempo: String(document.getElementById('conf-tempo').value),
             reverse: reverseActive,
-            moldura: document.getElementById('conf-moldura-url').value,
-            musicaUrl: document.getElementById('conf-musica-url').value,
-            musicaOffset: document.getElementById('conf-musica-offset').value
+            moldura: document.getElementById('conf-moldura-url').value || "",
+            musicaUrl: document.getElementById('conf-musica-url').value || "",
+            musicaOffset: document.getElementById('conf-musica-offset').value || "0"
         };
 
         try {
             const res = await fetch(`${WORKER_URL}/salvar-evento`, {
                 method: 'POST',
+                headers: { 'Content-Type': 'application/json' }, // Essencial para o Worker reconhecer o JSON
                 body: JSON.stringify(config)
             });
+
             if(res.ok) {
                 localStorage.setItem('config_atual', JSON.stringify(config));
-                alert("Evento Salvo na Nuvem!");
+                alert("Evento '" + nomeEvento + "' salvo na nuvem com sucesso!");
                 window.location.href = 'index.html';
+            } else {
+                const erroTexto = await res.text();
+                throw new Error(erroTexto);
             }
-        } catch (e) { alert("Erro ao salvar no D1"); }
+        } catch (e) { 
+            console.error("Erro ao salvar:", e);
+            alert("Erro ao salvar no banco de dados: " + e.message); 
+        }
     }
 </script>
 </body>
