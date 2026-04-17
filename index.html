@@ -90,21 +90,11 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
-        .btn-create:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(197, 160, 89, 0.4);
-        }
-
         #btn-galeria {
             background: rgba(197, 160, 89, 0.05);
             color: var(--dourado);
             border: 1px solid var(--dourado);
             margin-bottom: 25px;
-        }
-
-        #btn-galeria:hover {
-            background: rgba(197, 160, 89, 0.15);
-            box-shadow: 0 0 15px rgba(197, 160, 89, 0.2);
         }
 
         #btn-login {
@@ -130,29 +120,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: background 0.3s;
-        }
-        
-        .event-card:hover {
-            background: rgba(255, 255, 255, 0.07);
         }
 
         .event-info h4 { margin: 0; color: var(--dourado); text-transform: uppercase; font-size: 16px; }
         .event-info span { font-size: 11px; color: #aaa; margin-top: 4px; display: block; }
 
-        .btn-action {
-            background: rgba(255,59,48,0.1);
-            border: 1px solid rgba(255,59,48,0.3);
-            color: #ff3b30;
-            width: 42px; height: 42px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-action:hover { background: rgba(255,59,48,0.25); }
-
-        /* MODAL SENHA */
         #modal-senha {
             position: fixed; inset: 0;
             background: var(--bg-modal);
@@ -172,7 +144,6 @@
             text-align: center;
             width: 85%;
             max-width: 320px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
 
         .modal-content input {
@@ -187,19 +158,9 @@
             background: var(--dourado); color: #000;
             border: none; padding: 15px; border-radius: 10px;
             font-weight: 900; width: 100%; cursor: pointer;
-            transition: opacity 0.2s;
         }
 
-        .btn-confirm:active { opacity: 0.8; }
-
-        .footer-minimal {
-            padding: 40px 0;
-            font-size: 11px;
-            color: var(--cinza-minimal);
-            letter-spacing: 2px;
-            text-align: center;
-            text-transform: uppercase;
-        }
+        .footer-minimal { padding: 40px 0; font-size: 11px; color: var(--cinza-minimal); letter-spacing: 2px; text-align: center; }
     </style>
 </head>
 <body>
@@ -213,7 +174,6 @@
         <button id="btn-login" class="btn-central" onclick="abrirModal()">🔓 ACESSAR SISTEMA</button>
 
         <a href="config_evento.html" id="btn-create" class="btn-protected btn-central btn-create">➕ CRIAR NOVO EVENTO</a>
-        
         <a href="galeria.html" id="btn-galeria" class="btn-protected btn-central">🎞️ ACESSAR GALERIA</a>
         
         <div id="container-eventos" class="event-list-container">
@@ -221,7 +181,7 @@
             <div id="lista-eventos"></div>
         </div>
 
-        <button id="btn-lock" class="btn-protected btn-central" onclick="bloquear()" style="background: transparent; color: #ff5555; border: 1px solid rgba(255,85,85,0.3); margin-top: 30px; font-size: 12px; padding: 10px;">ENCERRAR SESSÃO</button>
+        <button id="btn-lock" class="btn-protected btn-central" onclick="bloquear()" style="background: transparent; color: #ff5555; border: 1px solid rgba(255,85,85,0.3); margin-top: 30px; font-size: 12px;">ENCERRAR SESSÃO</button>
     </div>
 
     <div class="footer-minimal">Sistema de gestão 360º</div>
@@ -229,7 +189,7 @@
     <div id="modal-senha">
         <div class="modal-content">
             <h3 style="color:var(--dourado); letter-spacing: 2px; margin-top: 0;">AUTENTICAÇÃO</h3>
-            <input type="password" id="input-senha" inputmode="numeric" pattern="[0-9]*" placeholder="••••">
+            <input type="password" id="input-senha" inputmode="numeric" placeholder="••••">
             <button class="btn-confirm" onclick="validarSenha()">CONFIRMAR</button>
             <p onclick="fecharModal()" style="margin-top:20px; font-size:13px; color:#999; cursor:pointer">Voltar</p>
         </div>
@@ -237,28 +197,18 @@
 
 <script>
     const SENHA_MESTRA = "1234"; 
+    const WORKER_URL = "SUA_URL_DO_WORKER_AQUI"; // <--- COLOQUE A URL DO SEU WORKER AQUI
 
     window.onload = () => {
-        if(sessionStorage.getItem('logado') === 'true') {
-            liberarSistema();
-        }
-        
-        // Atalho: Apertar Enter no campo de senha
-        document.getElementById('input-senha').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') validarSenha();
-        });
+        if(sessionStorage.getItem('logado') === 'true') liberarSistema();
     }
 
     function abrirModal() {
         document.getElementById('modal-senha').style.display = 'flex';
-        const input = document.getElementById('input-senha');
-        setTimeout(() => input.focus(), 100);
+        setTimeout(() => document.getElementById('input-senha').focus(), 100);
     }
 
-    function fecharModal() {
-        document.getElementById('modal-senha').style.display = 'none';
-        document.getElementById('input-senha').value = '';
-    }
+    function fecharModal() { document.getElementById('modal-senha').style.display = 'none'; }
 
     function validarSenha() {
         const input = document.getElementById('input-senha');
@@ -266,12 +216,9 @@
             sessionStorage.setItem('logado', 'true');
             fecharModal();
             liberarSistema();
-        } else if (input.value === "") {
-            // Silencioso se vazio
         } else {
             alert("Senha Incorreta");
             input.value = '';
-            input.focus();
         }
     }
 
@@ -282,55 +229,50 @@
         renderEventos();
     }
 
-    function renderEventos() {
-        const eventos = JSON.parse(localStorage.getItem('meus_eventos')) || [];
+    async function renderEventos() {
         const container = document.getElementById('lista-eventos');
-        
-        if(eventos.length === 0) {
-            container.innerHTML = '<p style="font-size:12px; color:#666; text-align:center; padding: 20px; border: 1px dashed #333; border-radius: 10px;">Nenhum evento ativo.</p>';
-            return;
-        }
+        container.innerHTML = '<p style="text-align:center; font-size:11px; color:var(--dourado);">Sincronizando...</p>';
 
-        container.innerHTML = '';
-        eventos.forEach((ev, index) => {
-            container.innerHTML += `
-                <div class="event-card">
-                    <div class="event-info" onclick="abrirEvento('${ev.nome}')" style="cursor:pointer; flex:1;">
-                        <h4>${ev.nome}</h4>
-                        <span>📅 ${ev.data}</span>
-                    </div>
-                    <div>
-                        <button class="btn-action" onclick="excluirEvento(${index})" title="Excluir">🗑️</button>
-                    </div>
-                </div>
-            `;
-        });
-    }
+        try {
+            const res = await fetch(`${WORKER_URL}/listar-eventos`);
+            const eventos = await res.json();
+            
+            if(!eventos || eventos.length === 0) {
+                container.innerHTML = '<p style="font-size:11px; color:#666; text-align:center;">Nenhum evento ativo.</p>';
+                return;
+            }
 
-    function abrirEvento(nome) {
-        const todos = JSON.parse(localStorage.getItem('meus_eventos')) || [];
-        const config = todos.find(e => e.nome === nome);
-        
-        if(config) {
-            localStorage.setItem('config_atual', JSON.stringify(config));
-            window.location.href = 'camera.html'; 
+            container.innerHTML = '';
+            eventos.forEach((ev) => {
+                container.innerHTML += `
+                    <div class="event-card" onclick="abrirEvento('${ev.id}')" style="cursor:pointer">
+                        <div class="event-info">
+                            <h4>${ev.nome}</h4>
+                            <span>📅 ${ev.data}</span>
+                        </div>
+                        <span style="color:var(--dourado)">➔</span>
+                    </div>`;
+            });
+        } catch (e) {
+            container.innerHTML = '<p style="color:red; font-size:11px;">Erro de conexão com a nuvem.</p>';
         }
     }
 
-    function excluirEvento(index) {
-        if(confirm("Deseja realmente excluir este evento?")) {
-            let eventos = JSON.parse(localStorage.getItem('meus_eventos'));
-            eventos.splice(index, 1);
-            localStorage.setItem('meus_eventos', JSON.stringify(eventos));
-            renderEventos();
-        }
+    async function abrirEvento(id) {
+        try {
+            const res = await fetch(`${WORKER_URL}/listar-eventos`);
+            const eventos = await res.json();
+            const config = eventos.find(e => e.id === id);
+            if(config) {
+                localStorage.setItem('config_atual', JSON.stringify(config));
+                window.location.href = 'camera.html';
+            }
+        } catch (e) { alert("Erro ao carregar evento"); }
     }
 
     function bloquear() {
-        if(confirm("Encerrar sessão?")) {
-            sessionStorage.removeItem('logado');
-            location.reload();
-        }
+        sessionStorage.removeItem('logado');
+        location.reload();
     }
 </script>
 </body>
