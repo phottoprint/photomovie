@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>PHOTO MOVIE Pro - Camera</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        :root { --neon: #00d1d1; --dourado: #c5a059; }
+        :root { 
+            --turquesa-dark: #008b8b; 
+            --dourado: #c5a059; 
+            --laranja: #ff8c00;
+        }
+        
         body { margin: 0; background: #000; color: white; font-family: sans-serif; overflow: hidden; }
 
         .screen { display: none; min-height: 100vh; width: 100vw; flex-direction: column; align-items: center; position: absolute; }
@@ -15,43 +19,94 @@
         #cam-container { width: 100%; height: 100vh; position: relative; background: #000; overflow: hidden; }
         #vid-preview { width: 100%; height: 100%; object-fit: cover; }
         
-        .controls { position: absolute; bottom: 40px; width: 100%; display: flex; justify-content: space-evenly; align-items: center; z-index: 100; }
-        .shutter { width: 70px; height: 70px; border: 4px solid white; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .shutter-inner { width: 55px; height: 55px; background: red; border-radius: 50%; }
-        .btn-ui { background: rgba(0,0,0,0.6); border: 1px solid #555; color: white; width: 50px; height: 50px; border-radius: 50%; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; }
+        .event-badge { 
+            position: fixed; 
+            top: 30px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            background: rgba(0,0,0,0.6); 
+            padding: 10px 25px; 
+            border-radius: 30px; 
+            border: 1px solid var(--dourado); 
+            font-size: 14px; 
+            z-index: 1000; 
+            color: var(--dourado); 
+            font-weight: bold;
+            text-transform: uppercase;
+            backdrop-filter: blur(5px);
+            white-space: nowrap;
+        }
 
-        #status-msg { position: fixed; inset: 0; z-index: 1500; display: none; align-items: center; justify-content: center; font-size: 4rem; font-weight: 900; background: rgba(0,0,0,0.4); text-shadow: 2px 2px 10px #000; pointer-events: none; }
-
-        .gallery-grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px; 
-            padding: 15px; 
+        .controls { 
+            position: absolute; 
+            bottom: 80px; 
             width: 100%; 
-            box-sizing: border-box; 
-            margin-top: 20px;
-            overflow-y: auto;
-            max-height: 70vh;
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 100; 
         }
-        .video-card { 
-            aspect-ratio: 9/16; 
-            background: #111; 
-            border-radius: 8px; 
-            overflow: hidden; 
-            border: 1px solid #333; 
-            position: relative;
-        }
-        .video-card video { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 
-        #modal-zoom { position: fixed; inset: 0; background: #000; z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; }
-        #zoom-video { width: 85%; max-height: 60vh; border-radius: 12px; border: 2px solid var(--neon); }
-        
-        .btn-main { background: var(--neon); color: white; border: none; padding: 12px 25px; border-radius: 20px; font-weight: bold; cursor: pointer; }
-        .btn-danger { background: #ff3b30; color: white; border: none; padding: 10px; border-radius: 10px; margin-bottom: 10px; cursor: pointer; font-size: 11px; }
-        
-        .event-badge { position: fixed; top: 15px; left: 15px; background: rgba(0,0,0,0.7); padding: 8px 15px; border-radius: 20px; border: 1px solid var(--dourado); font-size: 12px; z-index: 1000; color: var(--dourado); font-weight: bold; }
-        
-        #upload-loading { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; color: var(--neon); }
+        /* Obturador Turquesa Escuro */
+        .shutter { 
+            width: 90px; 
+            height: 90px; 
+            background: var(--turquesa-dark); 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer;
+            border: 4px solid white;
+            animation: pulse-gold 2s infinite;
+        }
+
+        @keyframes pulse-gold {
+            0% { box-shadow: 0 0 0 0 rgba(197, 160, 89, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(197, 160, 89, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(197, 160, 89, 0); }
+        }
+
+        /* Botão Girar Afastado à Direita */
+        .btn-ui-flip { 
+            position: absolute;
+            right: 30px;
+            background: rgba(0,0,0,0.5); 
+            border: 1px solid rgba(255,255,255,0.3); 
+            color: white; 
+            width: 55px; 
+            height: 55px; 
+            border-radius: 50%; 
+            font-size: 1.5rem; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            backdrop-filter: blur(5px);
+        }
+
+        /* Mensagens de Status */
+        #status-msg { 
+            position: fixed; 
+            inset: 0; 
+            z-index: 1500; 
+            display: none; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center; 
+            font-size: 6rem; 
+            font-weight: 900; 
+            background: rgba(0,0,0,0.2); 
+            text-shadow: 0 0 30px #000; 
+            pointer-events: none; 
+        }
+
+        .piscando { animation: blink 0.6s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
+
+        .pulsando { animation: pulse-final 0.5s infinite alternate; }
+        @keyframes pulse-final { from { transform: scale(1); } to { transform: scale(1.1); } }
+
+        #upload-loading { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; color: var(--turquesa-dark); }
     </style>
 </head>
 <body>
@@ -59,93 +114,56 @@
     <div id="evento-info-badge" class="event-badge" style="display:none;"></div>
 
     <div id="upload-loading">
-        <div style="font-size: 24px; margin-bottom: 10px;">Enviando Vídeo...</div>
-        <small>Processando efeitos e moldura</small>
+        <div style="font-size: 24px; margin-bottom: 10px; font-weight: bold;">ENVIANDO...</div>
+        <small style="color: white;">Salvando na pasta do evento</small>
     </div>
 
     <div id="screen-camera" class="screen active">
         <div id="cam-container">
             <video id="vid-preview" autoplay playsinline muted></video>
             <img id="moldura-r2" src="" style="display:none;" crossorigin="anonymous">
-            <canvas id="record-canvas" width="720" height="1280" style="display:none"></canvas>
+            <canvas id="record-canvas" width="720" height="1280" style="display:none;"></canvas>
             
             <div id="status-msg"></div>
             
             <div class="controls">
-                <button class="btn-ui" onclick="irGaleria()">🎞️</button>
                 <div class="shutter" onclick="iniciarContagem()">
-                    <div class="shutter-inner"></div>
+                    <div style="width: 25px; height: 25px; background: white; border-radius: 4px;"></div>
                 </div>
-                <button class="btn-ui" onclick="girarCamera()">🔄</button>
+                <button class="btn-ui-flip" onclick="girarCamera()">🔄</button>
             </div>
         </div>
     </div>
 
-    <div id="screen-gallery" class="screen" style="background: #000;">
-        <h3 style="margin-top: 40px; color: var(--neon);">GALERIA DO EVENTO</h3>
-        <button class="btn-danger" onclick="limparBanco()">🗑️ LIMPAR VÍDEOS</button>
-        <div id="gallery-container" class="gallery-grid"></div>
-        <div style="display:flex; gap:10px; margin: 20px 0;">
-            <button class="btn-main" style="background:#333;" onclick="nav('screen-camera')">VOLTAR CÂMERA</button>
-            <button class="btn-main" style="background:var(--dourado); color:black;" onclick="window.location.href='index.html'">SAIR DO EVENTO</button>
-        </div>
-    </div>
-
-    <div id="modal-zoom">
-        <video id="zoom-video" controls playsinline loop></video>
-        <div id="qrcode-box" style="background:white; padding:10px; margin:15px 0; border-radius:10px;"></div>
-        <div style="display:flex; gap:10px;">
-            <button class="btn-main" onclick="fecharZoom()">FECHAR</button>
-            <a id="download-btn" class="btn-main" style="text-decoration:none; background:#00c853;">BAIXAR</a>
-        </div>
-    </div>
-
 <script>
-    let db, stream, recorder, chunks = [], currentFacingMode = "environment";
+    let stream, recorder, chunks = [], currentFacingMode = "environment";
     const video = document.getElementById('vid-preview');
     const canvas = document.getElementById('record-canvas');
     const ctx = canvas.getContext('2d');
     const frameImg = document.getElementById('moldura-r2');
+    const msg = document.getElementById('status-msg');
     
-    // CORREÇÃO: URL com protocolo completo
     const WORKER_URL = "https://photomovie.maxprimefotovideo.workers.dev"; 
-
-    // Inicializa Banco de Dados Local
-    const req = indexedDB.open("PhotoMovieDB", 1);
-    req.onupgradeneeded = e => { e.target.result.createObjectStore("movies", { keyPath: "id", autoIncrement: true }); };
-    req.onsuccess = e => { db = e.target.result; };
 
     window.onload = () => {
         const configSessao = JSON.parse(localStorage.getItem('config_atual'));
-        const badge = document.getElementById('evento-info-badge');
-
         if(configSessao) {
-            badge.innerText = "🎬 " + configSessao.nome;
-            badge.style.display = 'block';
-            if(configSessao.moldura) {
-                frameImg.src = configSessao.moldura;
-                console.log("Moldura configurada:", configSessao.moldura);
-            }
+            document.getElementById('evento-info-badge').innerText = configSessao.nome;
+            document.getElementById('evento-info-badge').style.display = 'block';
+            if(configSessao.moldura) frameImg.src = configSessao.moldura;
         }
         ligarCamera();
     };
-
-    function nav(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        document.getElementById('evento-info-badge').style.display = (id === 'screen-camera') ? 'block' : 'none';
-    }
 
     async function ligarCamera() {
         if (stream) stream.getTracks().forEach(t => t.stop());
         try {
             stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: currentFacingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
+                video: { facingMode: currentFacingMode, width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 } },
                 audio: false
             });
             video.srcObject = stream;
-            video.play();
-        } catch (err) { alert("Erro ao acessar câmera. Verifique as permissões."); }
+        } catch (err) { alert("Erro ao acessar câmera."); }
     }
 
     function girarCamera() {
@@ -155,51 +173,80 @@
 
     function iniciarContagem() {
         let c = 3;
-        const msg = document.getElementById('status-msg');
+        msg.className = ""; 
         msg.style.display = 'flex';
+        msg.style.color = "white";
         msg.innerText = c;
+
         let t = setInterval(() => {
             c--;
-            if(c > 0) msg.innerText = c;
-            else { clearInterval(t); msg.innerText = "GRAVANDO"; gravar(); }
+            if(c > 0) {
+                msg.innerText = c;
+            } else { 
+                clearInterval(t); 
+                msg.style.display = 'none';
+                gravar(); 
+            }
         }, 1000);
     }
 
     function gravar() {
         chunks = [];
         const configSessao = JSON.parse(localStorage.getItem('config_atual'));
-        const tempoGravacao = configSessao ? parseInt(configSessao.tempo) : 10;
+        const tempoTotal = configSessao ? parseInt(configSessao.tempo) : 10;
         const nomeEvento = configSessao ? configSessao.nome : "Geral";
         
-        // Loop para desenhar vídeo + moldura no canvas
         const drawLoop = () => {
             ctx.drawImage(video, 0, 0, 720, 1280);
-            if(frameImg.src && frameImg.complete) {
-                ctx.drawImage(frameImg, 0, 0, 720, 1280);
-            }
+            if(frameImg.complete && frameImg.src !== "") ctx.drawImage(frameImg, 0, 0, 720, 1280);
             if(recorder && recorder.state === "recording") requestAnimationFrame(drawLoop);
         };
 
         const recStream = canvas.captureStream(30);
-        recorder = new MediaRecorder(recStream, { mimeType: 'video/webm;codecs=vp8', videoBitsPerSecond: 5000000 });
+        recorder = new MediaRecorder(recStream, { mimeType: 'video/webm;codecs=vp8', videoBitsPerSecond: 3500000 });
         
-        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
+        
         recorder.onstop = async () => {
+            msg.innerText = "FINALIZADO";
+            msg.style.color = "var(--turquesa-dark)";
+            msg.classList.add("pulsando");
+            
             const blob = new Blob(chunks, { type: 'video/webm' });
-            await realizarUpload(blob, nomeEvento);
-            irGaleria();
+            setTimeout(async () => {
+                await realizarUpload(blob, nomeEvento);
+            }, 1200);
         };
 
         recorder.start();
         drawLoop();
-        setTimeout(() => { 
-            if(recorder.state === "recording") recorder.stop(); 
-            document.getElementById('status-msg').style.display = 'none'; 
-        }, tempoGravacao * 1000);
+
+        // Lógica de avisos de tempo
+        let segundosDecorridos = 0;
+        let timerGravacao = setInterval(() => {
+            segundosDecorridos++;
+            
+            // Faltando 3 segundos
+            if (segundosDecorridos === (tempoTotal - 3)) {
+                msg.style.display = 'flex';
+                msg.innerText = "FINALIZANDO";
+                msg.style.color = "var(--laranja)";
+                msg.style.fontSize = "3rem";
+                msg.classList.add("piscando");
+            }
+
+            if (segundosDecorridos >= tempoTotal) {
+                clearInterval(timerGravacao);
+                if(recorder.state === "recording") recorder.stop();
+            }
+        }, 1000);
     }
 
     async function realizarUpload(blob, evento) {
+        msg.style.display = 'none';
+        msg.classList.remove("pulsando", "piscando");
         document.getElementById('upload-loading').style.display = 'flex';
+        
         const uuid = "vid_" + Date.now();
         const formData = new FormData();
         formData.append("video", blob);
@@ -208,56 +255,13 @@
 
         try {
             const res = await fetch(`${WORKER_URL}/upload`, { method: 'POST', body: formData });
-            if(res.ok) {
-                db.transaction("movies", "readwrite").objectStore("movies").add({ 
-                    video: blob, 
-                    nome_evento: evento,
-                    uuid: uuid,
-                    timestamp: new Date().getTime() 
-                });
+            if(res.ok) window.location.href = 'galeria.html';
+            else {
+                alert("Falha no upload");
+                document.getElementById('upload-loading').style.display = 'none';
             }
-        } catch (e) { console.error("Erro no upload:", e); }
-        document.getElementById('upload-loading').style.display = 'none';
-    }
-
-    function irGaleria() {
-        nav('screen-gallery');
-        const cont = document.getElementById('gallery-container');
-        cont.innerHTML = "";
-        db.transaction("movies", "readonly").objectStore("movies").openCursor(null, 'prev').onsuccess = e => {
-            const cursor = e.target.result;
-            if(cursor) {
-                const url = URL.createObjectURL(cursor.value.video);
-                cont.innerHTML += `<div class="video-card" onclick="abrirZoom('${url}')"><video src="${url}" muted playsinline></video></div>`;
-                cursor.continue();
-            }
-        };
-    }
-
-    function abrirZoom(url) {
-        const v = document.getElementById('zoom-video');
-        v.src = url;
-        v.play();
-        document.getElementById('download-btn').href = url;
-        document.getElementById('download-btn').download = "photo_movie_" + Date.now() + ".webm";
-        
-        const qrb = document.getElementById('qrcode-box');
-        qrb.innerHTML = "";
-        new QRCode(qrb, { text: url, width: 130, height: 130 });
-        
-        document.getElementById('modal-zoom').style.display = 'flex';
-    }
-
-    function fecharZoom() {
-        document.getElementById('modal-zoom').style.display = 'none';
-        document.getElementById('zoom-video').pause();
-    }
-
-    function limparBanco() {
-        if(confirm("Deseja apagar os vídeos da galeria local? Isso não apaga os vídeos salvos na nuvem.")) {
-            const tx = db.transaction("movies", "readwrite");
-            tx.objectStore("movies").clear();
-            tx.oncomplete = () => irGaleria();
+        } catch (e) { 
+            document.getElementById('upload-loading').style.display = 'none';
         }
     }
 </script>
