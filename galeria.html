@@ -43,7 +43,9 @@
     </div>
 
 <script>
-    const WORKER_URL = "https://photomovie.maxprimefotovideo.workers.dev"; 
+    // Onde você cria o elemento <video> ou define o src:
+const videoUrl = `https://photomovie.maxprimefotovideo.workers.dev/stream?id=${item.path}`;
+videoElement.src = videoUrl; 
 
     window.onload = () => {
         const eventoAtivo = JSON.parse(localStorage.getItem('evento_selecionado'));
