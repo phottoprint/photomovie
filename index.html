@@ -12,7 +12,7 @@
             --bg-modal: rgba(0, 20, 20, 0.98);
             --cinza-minimal: #666666; 
             --ativo: #28a745;
-            --inativo: #555;
+            --inativo: #ff3b30;
         }
         
         body { 
@@ -31,11 +31,11 @@
             50% { text-shadow: 0 0 25px rgba(197, 160, 89, 0.7); transform: scale(1.02); }
         }
 
-        .main-container { flex: 1; display: flex; flex-direction: column; align-items: center; width: 90%; max-width: 450px; }
+        .main-container { flex: 1; display: flex; flex-direction: column; align-items: center; width: 92%; max-width: 500px; }
 
         .btn-central {
-            width: 100%; padding: 20px; margin: 10px 0; border-radius: 12px;
-            text-transform: uppercase; font-weight: 800; font-size: 15px;
+            width: 100%; padding: 22px; margin: 10px 0; border-radius: 12px;
+            text-transform: uppercase; font-weight: 800; font-size: 16px;
             cursor: pointer; text-decoration: none; text-align: center;
             display: none; box-sizing: border-box; transition: all 0.3s ease;
         }
@@ -46,38 +46,32 @@
 
         .event-list-container { width: 100%; margin-top: 30px; display: none; }
 
-        /* CARDS MAIORES CONFORME PEDIDO */
+        /* CARDS E BOTOES MAIORES CONFORME PEDIDO */
         .event-card {
-            background: rgba(0,0,0,0.5); border: 1px solid rgba(197, 160, 89, 0.2);
-            padding: 22px; border-radius: 18px; margin-bottom: 15px;
-            display: flex; justify-content: space-between; align-items: center;
-            transition: 0.3s; position: relative;
+            background: rgba(0,0,0,0.5); border: 2px solid rgba(197, 160, 89, 0.2);
+            padding: 25px; border-radius: 20px; margin-bottom: 18px;
+            display: flex; flex-direction: column; gap: 15px;
+            transition: 0.3s;
         }
         
-        .event-card.card-inativo { opacity: 0.6; border-color: transparent; }
+        .event-card.active-border { border-color: var(--ativo); background: rgba(40, 167, 69, 0.05); }
 
-        .event-info h4 { margin: 0; color: var(--dourado); text-transform: uppercase; font-size: 18px; }
-        .event-info span { font-size: 12px; color: #aaa; display: block; margin-top: 4px; }
+        .event-info h4 { margin: 0; color: var(--dourado); text-transform: uppercase; font-size: 22px; }
+        .event-info span { font-size: 13px; color: #aaa; display: block; margin-top: 6px; }
 
-        .group-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+        .group-actions-row { display: flex; gap: 10px; width: 100%; }
 
-        /* BOTAO ATIVO / INATIVO */
-        .status-toggle {
-            padding: 6px 12px; border-radius: 20px; font-size: 10px; font-weight: 900;
+        /* BOTAO DE STATUS GRANDE E FUNCIONAL */
+        .status-btn {
+            flex: 2; padding: 18px; border-radius: 12px; font-size: 14px; font-weight: 900;
             cursor: pointer; text-transform: uppercase; border: none; transition: 0.3s;
         }
-        .status-on { background: var(--ativo); color: white; box-shadow: 0 0 10px rgba(40, 167, 69, 0.4); }
-        .status-off { background: var(--inativo); color: #ccc; }
+        .btn-is-on { background: var(--ativo); color: white; box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3); }
+        .btn-is-off { background: #333; color: #777; }
 
-        .action-links { display: flex; gap: 8px; }
-        .btn-action-small {
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(197, 160, 89, 0.3);
-            color: var(--dourado); padding: 6px 10px; border-radius: 6px;
-            cursor: pointer; font-size: 10px; font-weight: bold;
-        }
-        .btn-delete { border-color: rgba(255,59,48,0.4); color: #ff3b30; }
+        .btn-edit-big { flex: 1; background: #444; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        .btn-del-big { flex: 0.5; background: rgba(255,59,48,0.2); color: #ff3b30; border: 1px solid #ff3b30; border-radius: 12px; cursor: pointer; font-size: 18px; }
 
-        /* MODAL SENHA */
         #modal-senha { position: fixed; inset: 0; background: var(--bg-modal); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(15px); }
         .modal-content { background: #002222; padding: 35px; border-radius: 25px; border: 1px solid var(--dourado); text-align: center; width: 85%; max-width: 320px; }
         .modal-content input { width: 100%; padding: 18px; background: #000; border: 1px solid var(--dourado); color: var(--dourado); border-radius: 12px; text-align: center; font-size: 28px; letter-spacing: 12px; margin-bottom: 25px; box-sizing: border-box; outline: none; }
@@ -94,21 +88,21 @@
     <div class="main-container">
         <button id="btn-login" class="btn-central" onclick="abrirModal()">🔓 ACESSAR SISTEMA</button>
         <a href="config_evento.html" id="btn-create" class="btn-protected btn-central btn-create">➕ CRIAR NOVO EVENTO</a>
-        <a href="galeria.html" id="btn-galeria" class="btn-protected btn-central">🎞️ ACESSAR GALERIA</a>
+        <a href="galeria.html" id="btn-galeria" class="btn-protected btn-central">🎞️ ABRIR GALERIA</a>
         
         <div id="container-eventos" class="event-list-container">
-            <h3 style="font-size: 11px; color: var(--dourado); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; opacity: 0.6;">Gerenciamento de Eventos</h3>
+            <h3 style="font-size: 12px; color: var(--dourado); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; text-align: center;">Painel de Eventos</h3>
             <div id="lista-eventos"></div>
         </div>
 
-        <button id="btn-lock" class="btn-protected btn-central" onclick="bloquear()" style="background: transparent; color: #ff5555; border: 1px solid rgba(255,85,85,0.3); margin-top: 30px; font-size: 12px;">ENCERRAR SESSÃO</button>
+        <button id="btn-lock" class="btn-protected btn-central" onclick="bloquear()" style="background: transparent; color: #ff5555; border: 1px solid rgba(255,85,85,0.3); margin-top: 40px; font-size: 12px;">SAIR DO SISTEMA</button>
     </div>
 
     <div id="modal-senha">
         <div class="modal-content">
-            <h3 style="color:var(--dourado); letter-spacing: 2px;">AUTENTICAÇÃO</h3>
+            <h3 style="color:var(--dourado); letter-spacing: 2px;">SENHA MESTRA</h3>
             <input type="password" id="input-senha" inputmode="numeric" placeholder="••••">
-            <button class="btn-confirm" onclick="validarSenha()">CONFIRMAR</button>
+            <button class="btn-confirm" onclick="validarSenha()">ENTRAR</button>
             <p onclick="fecharModal()" style="margin-top:20px; font-size:13px; color:#999; cursor:pointer">Voltar</p>
         </div>
     </div>
@@ -139,68 +133,68 @@
 
     async function renderEventos() {
         const container = document.getElementById('lista-eventos');
+        const eventoAtivoConfig = JSON.parse(localStorage.getItem('config_atual'));
+
         try {
             const res = await fetch(`${WORKER_URL}/listar-eventos`);
             const eventos = await res.json();
-            if(!eventos || eventos.length === 0) { container.innerHTML = '<p style="font-size:12px; color:#444; text-align:center;">Nenhum evento.</p>'; return; }
+            if(!eventos || eventos.length === 0) { container.innerHTML = '<p style="text-align:center; opacity:0.5;">Vazio.</p>'; return; }
 
             container.innerHTML = '';
             eventos.forEach((ev) => {
-                // Estado inicial do botão (Ativo/Inativo)
-                const isAtivo = ev.status !== "inativo"; 
+                // Checa se este evento é o que está ativo no localStorage
+                const estaAtivo = eventoAtivoConfig && eventoAtivoConfig.id === ev.id;
+                
                 const card = document.createElement('div');
-                card.className = `event-card ${isAtivo ? '' : 'card-inativo'}`;
+                card.className = `event-card ${estaAtivo ? 'active-border' : ''}`;
                 
                 card.innerHTML = `
-                    <div class="event-info" style="cursor:pointer; flex:1;">
+                    <div class="event-info" onclick="irParaCamera(${JSON.stringify(ev).replace(/"/g, '&quot;')})" style="cursor:pointer">
                         <h4>${ev.nome.replace(/_/g, ' ')}</h4>
-                        <span>📅 ${ev.data || '--/--/--'} | ⏳ ${ev.tempo}s</span>
+                        <span>DATA: ${ev.data || '--/--/--'} | DURAÇÃO: ${ev.tempo}s</span>
                     </div>
-                    <div class="group-actions">
-                        <button class="status-toggle ${isAtivo ? 'status-on' : 'status-off'}" id="tog-${ev.id}">
-                            ${isAtivo ? '● ATIVO' : '○ INATIVO'}
+                    <div class="group-actions-row">
+                        <button class="status-btn ${estaAtivo ? 'btn-is-on' : 'btn-is-off'}" onclick='alternarAtivacao(${JSON.stringify(ev).replace(/"/g, '&quot;')})'>
+                            ${estaAtivo ? '● EVENTO ATIVO' : '○ ATIVAR GALERIA'}
                         </button>
-                        <div class="action-links">
-                            <button class="btn-action-small" id="edit-${ev.id}">EDITAR</button>
-                            <button class="btn-action-small btn-delete" id="del-${ev.id}">🗑️</button>
-                        </div>
+                        <button class="btn-edit-big" onclick="window.location.href='config_evento.html?id=${ev.id}'">EDITAR</button>
+                        <button class="btn-del-big" onclick="excluirEvento('${ev.id}', '${ev.nome}')">×</button>
                     </div>
                 `;
-
-                // Clique na info -> Só abre se estiver ATIVO
-                card.querySelector('.event-info').onclick = () => {
-                    if(ev.status === "inativo") { alert("Evento Inativo. Ative para acessar."); return; }
-                    abrirEvento(ev);
-                };
-
-                // Alternar Status
-                card.querySelector(`#tog-${ev.id}`).onclick = (e) => {
-                    e.stopPropagation();
-                    toggleStatus(ev);
-                };
-
-                card.querySelector(`#edit-${ev.id}`).onclick = (e) => { e.stopPropagation(); window.location.href = `config_evento.html?id=${ev.id}`; };
-                card.querySelector(`#del-${ev.id}`).onclick = (e) => { e.stopPropagation(); excluirEvento(ev.id, ev.nome); };
-
                 container.appendChild(card);
             });
-        } catch (err) { container.innerHTML = '<p style="color:red;">Erro ao carregar.</p>'; }
+        } catch (err) { container.innerHTML = '<p>Erro de conexão.</p>'; }
     }
 
-    async function toggleStatus(evento) {
-        const novoStatus = (evento.status === "inativo") ? "ativo" : "inativo";
-        try {
-            // Atualiza no servidor (O Worker precisa aceitar essa rota de status ou update)
-            await fetch(`${WORKER_URL}/update-status?id=${evento.id}&status=${novoStatus}`);
-            renderEventos();
-        } catch (e) { alert("Erro ao mudar status."); }
+    // FUNCAO QUE DEFINE QUAL EVENTO A GALERIA VAI PUXAR
+    function alternarAtivacao(evento) {
+        const atual = JSON.parse(localStorage.getItem('config_atual'));
+        
+        if (atual && atual.id === evento.id) {
+            // Se clicar no que já está ativo, ele desativa (Galeria fica vazia)
+            localStorage.removeItem('config_atual');
+            alert("Galeria Desativada.");
+        } else {
+            // Define este evento como o único ativo
+            localStorage.setItem('config_atual', JSON.stringify(evento));
+            alert("Galeria vinculada ao evento: " + evento.nome);
+        }
+        renderEventos();
     }
 
-    function abrirEvento(config) { localStorage.setItem('config_atual', JSON.stringify(config)); window.location.href = 'camera.html'; }
+    function irParaCamera(evento) {
+        localStorage.setItem('config_atual', JSON.stringify(evento));
+        window.location.href = 'camera.html';
+    }
 
     async function excluirEvento(id, nome) {
         if(confirm(`Excluir ${nome}?`)) {
-            try { await fetch(`${WORKER_URL}/excluir-evento?id=${id}&evento=${nome}`); renderEventos(); } catch (e) { alert("Erro."); }
+            try { 
+                await fetch(`${WORKER_URL}/excluir-evento?id=${id}&evento=${nome}`); 
+                const atual = JSON.parse(localStorage.getItem('config_atual'));
+                if(atual && atual.id === id) localStorage.removeItem('config_atual');
+                renderEventos(); 
+            } catch (e) { alert("Erro."); }
         }
     }
 
