@@ -67,7 +67,6 @@
             max-width: 400px;
         }
 
-        /* ESTILO BASE DOS BOTÕES */
         .btn-central {
             width: 100%;
             padding: 20px;
@@ -84,7 +83,6 @@
             transition: all 0.3s ease;
         }
 
-        /* BOTÃO PRINCIPAL: CRIAR EVENTO */
         .btn-create {
             background: linear-gradient(135deg, var(--dourado), var(--dourado-dark));
             color: #1a1a1a;
@@ -92,7 +90,6 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
-        /* BOTÃO SECUNDÁRIO: GALERIA (Estilo Glass Dourado) */
         #btn-galeria {
             background: rgba(197, 160, 89, 0.1);
             color: var(--dourado);
@@ -100,12 +97,6 @@
             margin-bottom: 25px;
         }
 
-        #btn-galeria:hover {
-            background: rgba(197, 160, 89, 0.2);
-            box-shadow: 0 0 15px rgba(197, 160, 89, 0.3);
-        }
-
-        /* BOTÃO LOGIN */
         #btn-login {
             display: block;
             background: transparent;
@@ -114,7 +105,6 @@
             margin-top: 50px;
         }
 
-        /* LISTA DE EVENTOS */
         .event-list-container {
             width: 100%;
             margin-top: 30px;
@@ -122,9 +112,9 @@
         }
 
         .event-card {
-            background: rgba(0,0,0,0.3);
+            background: rgba(0,0,0,0.4);
             border: 1px solid rgba(197, 160, 89, 0.2);
-            padding: 18px;
+            padding: 15px;
             border-radius: 15px;
             margin-bottom: 12px;
             display: flex;
@@ -133,19 +123,25 @@
             transition: transform 0.2s;
         }
         
-        .event-card:active { transform: scale(0.98); }
+        .event-card:hover { border-color: var(--dourado); }
 
         .event-info h4 { margin: 0; color: var(--dourado); text-transform: uppercase; font-size: 16px; }
         .event-info span { font-size: 11px; color: #888; }
 
-        .btn-action {
-            background: rgba(255,59,48,0.1);
-            border: 1px solid rgba(255,59,48,0.3);
-            color: #ff3b30;
-            width: 38px; height: 38px;
+        .group-actions { display: flex; gap: 8px; }
+
+        .btn-action-small {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(197, 160, 89, 0.3);
+            color: var(--dourado);
+            padding: 8px;
             border-radius: 8px;
             cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
         }
+
+        .btn-delete { border-color: rgba(255,59,48,0.4); color: #ff3b30; }
 
         /* MODAL SENHA */
         #modal-senha {
@@ -228,7 +224,7 @@
 
 <script>
     const SENHA_MESTRA = "1234"; 
-    const WORKER_URL = "https://photomovie.maxprimefotovideo.workers.dev"; // Sua URL do Worker
+    const WORKER_URL = "https://photomovie.maxprimefotovideo.workers.dev";
 
     window.onload = () => {
         if(sessionStorage.getItem('logado') === 'true') {
@@ -265,10 +261,8 @@
         renderEventos();
     }
 
-    // AJUSTADO: Agora busca do Worker e não do localStorage local
     async function renderEventos() {
         const container = document.getElementById('lista-eventos');
-        
         try {
             const res = await fetch(`${WORKER_URL}/listar-eventos`);
             const eventos = await res.json();
@@ -280,44 +274,56 @@
 
             container.innerHTML = '';
             eventos.forEach((ev) => {
-                container.innerHTML += `
-                    <div class="event-card">
-                        <div class="event-info" onclick='abrirEvento(${JSON.stringify(ev)})' style="cursor:pointer; flex:1;">
-                            <h4>${ev.nome.replace(/_/g, ' ')}</h4>
-                            <span>📅 ${ev.data || '--/--/--'} | ⏳ ${ev.tempo}s</span>
-                        </div>
-                        <div>
-                            <button class="btn-action" onclick="excluirEvento('${ev.id}', '${ev.nome}')">🗑️</button>
-                        </div>
+                // Criamos o card
+                const card = document.createElement('div');
+                card.className = 'event-card';
+                
+                // Conteúdo do Card
+                card.innerHTML = `
+                    <div class="event-info" style="cursor:pointer; flex:1;">
+                        <h4>${ev.nome.replace(/_/g, ' ')}</h4>
+                        <span>📅 ${ev.data || '--/--/--'} | ⏳ ${ev.tempo}s</span>
+                    </div>
+                    <div class="group-actions">
+                        <button class="btn-action-small" id="edit-${ev.id}">EDITAR</button>
+                        <button class="btn-action-small btn-delete" id="del-${ev.id}">EXCLUIR</button>
                     </div>
                 `;
+
+                // Clique na info -> Abre Câmera
+                card.querySelector('.event-info').onclick = () => abrirEvento(ev);
+
+                // Clique no Editar -> Abre Config com o ID
+                card.querySelector(`#edit-${ev.id}`).onclick = (e) => {
+                    e.stopPropagation();
+                    localStorage.setItem('evento_para_editar', JSON.stringify(ev));
+                    window.location.href = `config_evento.html?id=${ev.id}`;
+                };
+
+                // Clique no Excluir
+                card.querySelector(`#del-${ev.id}`).onclick = (e) => {
+                    e.stopPropagation();
+                    excluirEvento(ev.id, ev.nome);
+                };
+
+                container.appendChild(card);
             });
         } catch (err) {
             container.innerHTML = '<p style="font-size:12px; color:red; text-align:center;">Erro ao carregar eventos.</p>';
         }
     }
 
-    // AJUSTADO: Recebe o objeto completo e salva para a câmera usar
     function abrirEvento(config) {
-        if(config) {
-            localStorage.setItem('config_atual', JSON.stringify(config));
-            window.location.href = 'camera.html'; 
-        }
+        localStorage.setItem('config_atual', JSON.stringify(config));
+        window.location.href = 'camera.html'; 
     }
 
-    // AJUSTADO: Exclui via API para limpar o banco e o R2
     async function excluirEvento(id, nome) {
         if(confirm(`Deseja realmente excluir o evento ${nome}?`)) {
             try {
                 const res = await fetch(`${WORKER_URL}/excluir-evento?id=${id}&evento=${nome}`);
-                if(res.ok) {
-                    renderEventos();
-                } else {
-                    alert("Erro ao excluir no servidor.");
-                }
-            } catch (e) {
-                alert("Erro de conexão ao excluir.");
-            }
+                if(res.ok) { renderEventos(); }
+            } catch (e) { alert("Erro de conexão."); }
         }
     }
 
