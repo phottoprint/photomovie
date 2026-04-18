@@ -246,10 +246,20 @@
     }
 
     async function excluirEvento(id, nome) {
-        if(!confirm(`Excluir permanentemente "${nome}"?`)) return;
-        await fetch(`${WORKER_URL}/excluir-evento?id=${id}&evento=${encodeURIComponent(nome)}`, { method: 'DELETE' });
-        renderEventos();
+    if (!confirm(`Deseja excluir o evento ${nome}? Isso apagará todos os vídeos da galeria.`)) return;
+
+    try {
+        const res = await fetch(`${WORKER_URL}/excluir-evento?id=${id}&evento=${nome}`, { method: 'GET' });
+        if (res.ok) {
+            alert("Evento excluído!");
+            listarEventos(); // Atualiza a lista na tela
+        } else {
+            alert("Erro ao excluir no servidor.");
+        }
+    } catch (err) {
+        alert("Erro de conexão ao excluir.");
     }
+}
 
     function bloquear() { sessionStorage.removeItem('logado'); location.reload(); }
 </script>
