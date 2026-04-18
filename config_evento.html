@@ -11,7 +11,6 @@
             --dourado: #c5a059; 
             --dourado-fosco: #8e6d2d;
             --preto: #050505;
-            --roxo-vizz: #8a2be2;
         }
         
         body { 
@@ -29,14 +28,6 @@
         .header h1 { 
             color: var(--dourado); margin: 0; font-size: 36px; letter-spacing: 5px; 
             font-weight: 900; text-transform: uppercase;
-            animation: pulse-gold-title 3s infinite ease-in-out;
-        }
-
-        .header p { color: var(--dourado); font-size: 16px; margin: 5px 0 0 0; letter-spacing: 3px; font-weight: 300; opacity: 0.8; }
-
-        @keyframes pulse-gold-title {
-            0%, 100% { text-shadow: 0 0 5px rgba(197, 160, 89, 0.2); transform: scale(1); }
-            50% { text-shadow: 0 0 20px rgba(197, 160, 89, 0.6); transform: scale(1.02); }
         }
 
         .container { padding: 20px; max-width: 500px; margin: 0 auto; }
@@ -59,22 +50,6 @@
             color: white; border-radius: 14px; box-sizing: border-box; font-size: 16px;
         }
 
-        .vizz-presets { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        
-        .preset-btn {
-            background: #151515; border: 1px solid #333; color: #fff;
-            padding: 15px; border-radius: 15px; cursor: pointer; font-size: 12px;
-            font-weight: bold; text-transform: uppercase; transition: 0.3s;
-            display: flex; flex-direction: column; align-items: center; gap: 5px;
-        }
-
-        .preset-btn.active { border-color: var(--turquesa); background: rgba(0, 209, 209, 0.1); }
-        .preset-btn.special.active { background: rgba(138, 43, 226, 0.2); border-color: var(--roxo-vizz); }
-
-        .speed-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 15px; padding-top: 15px; border-top: 1px dashed #333; }
-        .speed-box { text-align: center; background: #0a0a0a; padding: 10px; border-radius: 16px; border: 1px solid #222; }
-        .speed-box span { font-size: 9px; display: block; margin-bottom: 8px; color: var(--dourado); font-weight: 900; }
-
         .time-selector { display: flex; justify-content: center; gap: 15px; }
         .time-btn {
             background: #1a1a1a; border: 2px solid #333; color: #666;
@@ -84,26 +59,14 @@
 
         .action-box {
             width: 100%; padding: 20px; background: #111; border: 2px dashed #444; 
-            color: #888; border-radius: 18px; 
-            text-align: center; 
-            cursor: pointer;
-            font-weight: bold; transition: 0.3s;
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            box-sizing: border-box;
+            color: #888; border-radius: 18px; text-align: center; cursor: pointer;
+            font-weight: bold; display: flex; justify-content: center; align-items: center; box-sizing: border-box;
         }
         
         #frame-preview { 
-            width: 100%; 
-            aspect-ratio: 9/16; 
-            max-height: 250px; 
-            margin-top: 15px; 
-            display: none; 
-            border-radius: 12px; 
-            border: 1px solid #333;
-            object-fit: contain; 
-            background: #000;
+            width: 100%; aspect-ratio: 9/16; max-height: 250px; 
+            margin-top: 15px; display: none; border-radius: 12px; 
+            border: 1px solid #333; object-fit: contain; background: #000;
         }
 
         .btn-save-main {
@@ -114,26 +77,11 @@
 
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 9999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
         .modal-content { 
-            width: 85%; 
-            max-width: 400px; 
-            background: #0a0a0a; 
-            border-radius: 35px; 
-            border: 1px solid var(--dourado); 
-            padding: 30px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 10px; 
+            width: 85%; max-width: 400px; background: #0a0a0a; border-radius: 35px; 
+            border: 1px solid var(--dourado); padding: 30px; display: flex; flex-direction: column; gap: 10px; 
         }
 
-        .player-container {
-            background: #111; padding: 15px; border-radius: 20px;
-            border: 1px solid #333; margin-top: 10px; text-align: center;
-        }
-        
-        audio {
-            width: 100%; height: 40px; margin-top: 10px;
-            filter: invert(100%) hue-rotate(180deg) brightness(1.5);
-        }
+        audio { width: 100%; height: 40px; margin-top: 10px; filter: invert(100%); }
     </style>
 </head>
 <body>
@@ -148,8 +96,8 @@
 
         <div class="section">
             <h3>1. O Evento</h3>
-            <label>NOME DO EVENTO</label>
-            <input type="text" id="conf-nome" placeholder="Ex: Casamento">
+            <label>NOME DO EVENTO (Sem espaços)</label>
+            <input type="text" id="conf-nome" placeholder="Ex: Casamento_Tiago" oninput="this.value = this.value.replace(/\s+/g, '_')">
             <label>DATA</label>
             <input type="date" id="conf-data">
         </div>
@@ -165,41 +113,7 @@
         </div>
 
         <div class="section">
-            <h3>3. Timeline de Velocidade</h3>
-            <div class="vizz-presets">
-                <button class="preset-btn" id="btn-classic" onclick="applyVizzPreset('vizz-classic', this)"><span>⚡ Classic</span></button>
-                <button class="preset-btn" id="btn-ultra" onclick="applyVizzPreset('vizz-ultra', this)"><span>🐢 Ultra Slow</span></button>
-                <button class="preset-btn special" id="btn-reverse" onclick="toggleReverse()"><span>🔄 Reverse FX</span></button>
-                <button class="preset-btn" id="btn-linear" onclick="applyVizzPreset('vizz-linear', this)"><span>⚖️ Normal</span></button>
-            </div>
-            
-            <div class="speed-grid">
-                <div class="speed-box"><span>ENTRADA</span>
-                    <select id="speed-start">
-                        <option value="4">4x</option>
-                        <option value="2" selected>2x</option>
-                        <option value="1">1x</option>
-                    </select>
-                </div>
-                <div class="speed-box"><span>MEIO</span>
-                    <select id="speed-mid">
-                        <option value="1">1x</option>
-                        <option value="0.5" selected>0.5x</option>
-                        <option value="0.25">0.25x</option>
-                    </select>
-                </div>
-                <div class="speed-box"><span>SAÍDA</span>
-                    <select id="speed-end">
-                        <option value="4">4x</option>
-                        <option value="2" selected>2x</option>
-                        <option value="1">1x</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <div class="section">
-            <h3>4. Estética</h3>
+            <h3>3. Estética</h3>
             <div class="action-box" onclick="toggleModal('music-modal', true)" style="margin-bottom: 10px;">
                 <span id="music-status-text">🎵 CONFIGURAR MÚSICA</span>
             </div>
@@ -223,142 +137,96 @@
                 <span id="music-file-label">📤 UPAR MP3</span>
                 <input type="file" id="file-musica" accept="audio/mpeg, audio/mp3" style="display:none" onchange="subirArquivo(this, 'MUSICA')">
             </div>
-            <label>INÍCIO (SEG)</label>
-            <input type="number" id="conf-musica-offset" value="0" oninput="sincronizarTempoPlayer()">
-            <div class="player-container">
-                <audio id="main-audio-player" controls></audio>
-            </div>
             <button class="btn-save-main" onclick="fecharModalMusica()">CONCLUIR</button>
         </div>
     </div>
 
 <script>
     const WORKER_URL = "https://photomovie.maxprimefotovideo.workers.dev";
-    let reverseActive = false;
 
     window.onload = () => {
         const editData = localStorage.getItem('evento_para_editar');
         if (editData) {
             const ev = JSON.parse(editData);
-            
-            if(ev.id) document.getElementById('conf-id').value = ev.id;
-            if(ev.nome) document.getElementById('conf-nome').value = ev.nome;
-            if(ev.data) document.getElementById('conf-data').value = ev.data;
+            document.getElementById('conf-id').value = ev.id || "";
+            document.getElementById('conf-nome').value = ev.nome || "";
+            document.getElementById('conf-data').value = ev.data || "";
             if(ev.tempo) setTime(parseInt(ev.tempo), document.getElementById('time-'+ev.tempo));
-            if(ev.reverse) { reverseActive = true; document.getElementById('btn-reverse').classList.add('active'); }
             
-            if(ev.molduraUrl) { // CORREÇÃO: Usando a chave correta do banco
+            if(ev.molduraUrl) {
                 document.getElementById('conf-moldura-url').value = ev.molduraUrl;
                 const preview = document.getElementById('frame-preview');
-                preview.src = ev.molduraUrl; preview.style.display = "block";
+                preview.src = `${WORKER_URL}/stream?id=${ev.molduraUrl}`; 
+                preview.style.display = "block";
                 document.getElementById('upload-label').innerText = "📸 MOLDURA OK";
             }
-            
-            if(ev.musicaUrl) {
-                document.getElementById('conf-musica-url').value = ev.musicaUrl;
-                document.getElementById('music-status-text').innerText = "🎵 MÚSICA OK";
-                if(ev.musicaOffset) document.getElementById('conf-musica-offset').value = ev.musicaOffset;
-            }
-
             document.getElementById('titulo-pagina').innerText = "EDITAR EVENTO";
             localStorage.removeItem('evento_para_editar');
         }
     }
 
-    function toggleModal(id, show) { 
-        document.getElementById(id).style.display = show ? 'flex' : 'none'; 
-        if(show && id === 'music-modal') carregarSomNoPlayer();
-    }
-
-    function fecharModalMusica() {
-        document.getElementById('main-audio-player').pause(); 
-        toggleModal('music-modal', false);
-    }
-    
-    function carregarSomNoPlayer() {
-        const url = document.getElementById('conf-musica-url').value;
-        const player = document.getElementById('main-audio-player');
-        if(!url) return;
-        player.src = url;
-        player.load();
-    }
-
-    function sincronizarTempoPlayer() {
-        const player = document.getElementById('main-audio-player');
-        if(player.src) player.currentTime = document.getElementById('conf-musica-offset').value;
-    }
-
+    function toggleModal(id, show) { document.getElementById(id).style.display = show ? 'flex' : 'none'; }
+    function fecharModalMusica() { toggleModal('music-modal', false); }
     function setTime(val, btn) {
-        if(!btn) return;
         document.getElementById('conf-tempo').value = val;
         document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
     }
 
-    function toggleReverse() {
-        reverseActive = !reverseActive;
-        document.getElementById('btn-reverse').classList.toggle('active', reverseActive);
-    }
-
-    function applyVizzPreset(type, btn) {
-        document.querySelectorAll('.preset-btn').forEach(b => { if(b.id !== 'btn-reverse') b.classList.remove('active'); });
-        btn.classList.add('active');
-        const s = document.getElementById('speed-start'), m = document.getElementById('speed-mid'), e = document.getElementById('speed-end');
-        if(type === 'vizz-classic') { s.value="2"; m.value="0.5"; e.value="2"; }
-        if(type === 'vizz-ultra')   { s.value="4"; m.value="0.25"; e.value="4"; }
-        if(type === 'vizz-linear')  { s.value="1"; m.value="1"; e.value="1"; }
-    }
-
     async function subirArquivo(input, tipo) {
+        const nomeEvento = document.getElementById('conf-nome').value.trim();
+        if(!nomeEvento) {
+            alert("Digite o nome do evento antes de subir arquivos!");
+            input.value = "";
+            return;
+        }
+
         if(!input.files[0]) return;
         const label = tipo === 'MOLDURA' ? document.getElementById('upload-label') : document.getElementById('music-file-label');
-        const originalText = label.innerText;
         label.innerText = "⏳ ENVIANDO...";
         
         const formData = new FormData();
-        formData.append("video", input.files[0]);
-        formData.append("uuid", tipo.toLowerCase() + "_" + Date.now());
-        formData.append("evento", tipo === 'MOLDURA' ? "MOLDURAS_SISTEMA" : "MUSICAS_SISTEMA");
+        formData.append("file", input.files[0]);
+        // PONTO 2 RESOLVIDO: Moldura vai para dentro da pasta do evento
+        const fileName = tipo === 'MOLDURA' ? `moldura_principal.png` : `musica_evento.mp3`;
+        formData.append("uuid", fileName); 
+        formData.append("evento", nomeEvento);
 
         try {
             const res = await fetch(`${WORKER_URL}/upload`, { method: 'POST', body: formData });
             const data = await res.json();
-            // CORREÇÃO: Salva apenas o ID ou path para usar na rota /stream
-            const pathArquivo = data.path || (tipo === 'MOLDURA' ? "MOLDURAS_SISTEMA/" : "MUSICAS_SISTEMA/") + tipo.toLowerCase() + "_" + Date.now();
-            const urlFinal = `${WORKER_URL}/stream?id=${pathArquivo}`;
+            
+            // Salva apenas o caminho relativo (Pasta/Arquivo)
+            const pathRelativo = `${nomeEvento}/${fileName}`;
 
             if(tipo === 'MOLDURA') {
-                document.getElementById('conf-moldura-url').value = urlFinal;
+                document.getElementById('conf-moldura-url').value = pathRelativo;
                 const preview = document.getElementById('frame-preview');
-                preview.src = urlFinal; preview.style.display = "block";
+                preview.src = `${WORKER_URL}/stream?id=${pathRelativo}`;
+                preview.style.display = "block";
                 label.innerText = "📸 MOLDURA OK";
             } else {
-                document.getElementById('conf-musica-url').value = urlFinal;
+                document.getElementById('conf-musica-url').value = pathRelativo;
                 label.innerText = "🎵 MP3 OK";
                 document.getElementById('music-status-text').innerText = "🎵 MÚSICA OK";
-                carregarSomNoPlayer();
             }
         } catch (e) { 
-            alert("Erro no upload do arquivo."); 
-            label.innerText = originalText; 
+            alert("Erro no upload."); 
+            label.innerText = "ERRO NO UPLOAD"; 
         }
     }
 
     async function salvarConfig() {
         const nomeEvento = document.getElementById('conf-nome').value.trim();
-        const idExistente = document.getElementById('conf-id').value;
-
-        if(!nomeEvento) return alert("Por favor, digite o nome do evento.");
+        if(!nomeEvento) return alert("Digite o nome do evento.");
 
         const config = {
-            id: idExistente || String(Date.now()),
+            id: document.getElementById('conf-id').value || String(Date.now()),
             nome: nomeEvento,
             data: document.getElementById('conf-data').value,
             tempo: String(document.getElementById('conf-tempo').value),
-            reverse: reverseActive,
-            moldura: document.getElementById('conf-moldura-url').value || "", // Chave correta para o Worker
-            musicaUrl: document.getElementById('conf-musica-url').value || "",
-            musicaOffset: document.getElementById('conf-musica-offset').value || "0"
+            molduraUrl: document.getElementById('conf-moldura-url').value, // Nome correto da coluna
+            musicaUrl: document.getElementById('conf-musica-url').value
         };
 
         try {
@@ -371,13 +239,8 @@
             if(res.ok) {
                 alert("Evento salvo com sucesso!");
                 window.location.href = 'index.html';
-            } else {
-                const erroTexto = await res.text();
-                throw new Error(erroTexto);
             }
-        } catch (e) { 
-            alert("Erro ao salvar: " + e.message); 
-        }
+        } catch (e) { alert("Erro ao salvar."); }
     }
 </script>
 </body>
