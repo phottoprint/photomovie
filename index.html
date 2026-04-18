@@ -11,8 +11,7 @@
             --dourado-dark: #8e6d2d;
             --bg-modal: rgba(0, 20, 20, 0.98);
             --cinza-minimal: #666666; 
-            --ativo: #28a745;
-            --inativo: #ff3b30;
+            --ativo-ouro: linear-gradient(135deg, #c5a059, #8e6d2d);
         }
         
         body { 
@@ -40,13 +39,12 @@
             display: none; box-sizing: border-box; transition: all 0.3s ease;
         }
 
-        .btn-create { background: linear-gradient(135deg, var(--dourado), var(--dourado-dark)); color: #1a1a1a; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        .btn-create { background: var(--ativo-ouro); color: #1a1a1a; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         #btn-galeria { background: rgba(197, 160, 89, 0.1); color: var(--dourado); border: 1px solid var(--dourado); margin-bottom: 25px; }
         #btn-login { display: block; background: transparent; color: var(--dourado); border: 2px solid var(--dourado); margin-top: 50px; }
 
         .event-list-container { width: 100%; margin-top: 30px; display: none; }
 
-        /* CARDS E BOTOES MAIORES CONFORME PEDIDO */
         .event-card {
             background: rgba(0,0,0,0.5); border: 2px solid rgba(197, 160, 89, 0.2);
             padding: 25px; border-radius: 20px; margin-bottom: 18px;
@@ -54,23 +52,23 @@
             transition: 0.3s;
         }
         
-        .event-card.active-border { border-color: var(--ativo); background: rgba(40, 167, 69, 0.05); }
+        .event-card.active-border { border-color: var(--dourado); background: rgba(197, 160, 89, 0.08); }
 
         .event-info h4 { margin: 0; color: var(--dourado); text-transform: uppercase; font-size: 22px; }
         .event-info span { font-size: 13px; color: #aaa; display: block; margin-top: 6px; }
 
         .group-actions-row { display: flex; gap: 10px; width: 100%; }
 
-        /* BOTAO DE STATUS GRANDE E FUNCIONAL */
+        /* ITEM 2: BOTAO ATIVO EM DOURADO */
         .status-btn {
-            flex: 2; padding: 18px; border-radius: 12px; font-size: 14px; font-weight: 900;
+            flex: 2; padding: 18px; border-radius: 12px; font-size: 13px; font-weight: 900;
             cursor: pointer; text-transform: uppercase; border: none; transition: 0.3s;
         }
-        .btn-is-on { background: var(--ativo); color: white; box-shadow: 0 4px 10px rgba(40, 167, 69, 0.3); }
-        .btn-is-off { background: #333; color: #777; }
+        .btn-is-on { background: var(--ativo-ouro); color: #000; box-shadow: 0 4px 12px rgba(197, 160, 89, 0.4); }
+        .btn-is-off { background: #222; color: #666; border: 1px solid #333; }
 
-        .btn-edit-big { flex: 1; background: #444; color: white; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
-        .btn-del-big { flex: 0.5; background: rgba(255,59,48,0.2); color: #ff3b30; border: 1px solid #ff3b30; border-radius: 12px; cursor: pointer; font-size: 18px; }
+        .btn-edit-big { flex: 1.2; background: #333; color: #fff; border: 1px solid #555; border-radius: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .btn-del-big { flex: 0.4; background: rgba(255,59,48,0.1); color: #ff3b30; border: 1px solid #ff3b30; border-radius: 12px; cursor: pointer; font-size: 18px; }
 
         #modal-senha { position: fixed; inset: 0; background: var(--bg-modal); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(15px); }
         .modal-content { background: #002222; padding: 35px; border-radius: 25px; border: 1px solid var(--dourado); text-align: center; width: 85%; max-width: 320px; }
@@ -87,7 +85,7 @@
 
     <div class="main-container">
         <button id="btn-login" class="btn-central" onclick="abrirModal()">🔓 ACESSAR SISTEMA</button>
-        <a href="config_evento.html" id="btn-create" class="btn-protected btn-central btn-create">➕ CRIAR NOVO EVENTO</a>
+        <a href="config_evento.html" id="btn-create" class="btn-protected btn-central btn-create" onclick="localStorage.removeItem('evento_para_editar')">➕ CRIAR NOVO EVENTO</a>
         <a href="galeria.html" id="btn-galeria" class="btn-protected btn-central">🎞️ ABRIR GALERIA</a>
         
         <div id="container-eventos" class="event-list-container">
@@ -138,26 +136,27 @@
         try {
             const res = await fetch(`${WORKER_URL}/listar-eventos`);
             const eventos = await res.json();
-            if(!eventos || eventos.length === 0) { container.innerHTML = '<p style="text-align:center; opacity:0.5;">Vazio.</p>'; return; }
+            if(!eventos || eventos.length === 0) { container.innerHTML = '<p style="text-align:center; opacity:0.5;">Sem eventos no momento.</p>'; return; }
 
             container.innerHTML = '';
             eventos.forEach((ev) => {
-                // Checa se este evento é o que está ativo no localStorage
                 const estaAtivo = eventoAtivoConfig && eventoAtivoConfig.id === ev.id;
-                
                 const card = document.createElement('div');
                 card.className = `event-card ${estaAtivo ? 'active-border' : ''}`;
                 
+                // Sanitização para evitar erros no clique
+                const evData = JSON.stringify(ev).replace(/"/g, '&quot;');
+
                 card.innerHTML = `
-                    <div class="event-info" onclick="irParaCamera(${JSON.stringify(ev).replace(/"/g, '&quot;')})" style="cursor:pointer">
+                    <div class="event-info" onclick="irParaCamera(${evData})" style="cursor:pointer">
                         <h4>${ev.nome.replace(/_/g, ' ')}</h4>
                         <span>DATA: ${ev.data || '--/--/--'} | DURAÇÃO: ${ev.tempo}s</span>
                     </div>
                     <div class="group-actions-row">
-                        <button class="status-btn ${estaAtivo ? 'btn-is-on' : 'btn-is-off'}" onclick='alternarAtivacao(${JSON.stringify(ev).replace(/"/g, '&quot;')})'>
-                            ${estaAtivo ? '● EVENTO ATIVO' : '○ ATIVAR GALERIA'}
+                        <button class="status-btn ${estaAtivo ? 'btn-is-on' : 'btn-is-off'}" onclick='alternarAtivacao(${evData})'>
+                            ${estaAtivo ? '● ATIVO' : 'ATIVAR GALERIA'}
                         </button>
-                        <button class="btn-edit-big" onclick="window.location.href='config_evento.html?id=${ev.id}'">EDITAR</button>
+                        <button class="btn-edit-big" onclick='irParaEditar(${evData})'>EDITAR</button>
                         <button class="btn-del-big" onclick="excluirEvento('${ev.id}', '${ev.nome}')">×</button>
                     </div>
                 `;
@@ -166,18 +165,18 @@
         } catch (err) { container.innerHTML = '<p>Erro de conexão.</p>'; }
     }
 
-    // FUNCAO QUE DEFINE QUAL EVENTO A GALERIA VAI PUXAR
+    // ITEM 1: SALVA OS DADOS PARA O EDITAR NÃO VIR EM BRANCO
+    function irParaEditar(evento) {
+        localStorage.setItem('evento_para_editar', JSON.stringify(evento));
+        window.location.href = `config_evento.html?id=${evento.id}`;
+    }
+
     function alternarAtivacao(evento) {
         const atual = JSON.parse(localStorage.getItem('config_atual'));
-        
         if (atual && atual.id === evento.id) {
-            // Se clicar no que já está ativo, ele desativa (Galeria fica vazia)
             localStorage.removeItem('config_atual');
-            alert("Galeria Desativada.");
         } else {
-            // Define este evento como o único ativo
             localStorage.setItem('config_atual', JSON.stringify(evento));
-            alert("Galeria vinculada ao evento: " + evento.nome);
         }
         renderEventos();
     }
@@ -188,13 +187,13 @@
     }
 
     async function excluirEvento(id, nome) {
-        if(confirm(`Excluir ${nome}?`)) {
+        if(confirm(`Excluir permanentemente ${nome}?`)) {
             try { 
                 await fetch(`${WORKER_URL}/excluir-evento?id=${id}&evento=${nome}`); 
                 const atual = JSON.parse(localStorage.getItem('config_atual'));
                 if(atual && atual.id === id) localStorage.removeItem('config_atual');
                 renderEventos(); 
-            } catch (e) { alert("Erro."); }
+            } catch (e) { alert("Erro ao excluir."); }
         }
     }
 
