@@ -3,264 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHOTO MOVIE Pro - Camera</title>
+    <title>Câmera Pro - Fix</title>
     <style>
-        :root { 
-            --turquesa: #00d1d1; 
-            --dourado: #c5a059; 
-            --laranja: #ff8c00;
-            --vermelho-neon: #ff0000;
-        }
-        
-        body { margin: 0; background: #000; color: white; font-family: sans-serif; overflow: hidden; }
-
-        .screen { display: none; min-height: 100vh; width: 100vw; flex-direction: column; align-items: center; position: absolute; }
-        .active { display: flex; }
-
-        #cam-container { width: 100%; height: 100vh; position: relative; background: #000; overflow: hidden; }
-        #vid-preview { width: 100%; height: 100%; object-fit: cover; }
-        
-        .event-badge { 
-            position: fixed; top: 30px; left: 50%; transform: translateX(-50%); 
-            background: rgba(0,0,0,0.6); padding: 10px 25px; border-radius: 30px; 
-            border: 1px solid var(--dourado); font-size: 14px; z-index: 1000; 
-            color: var(--dourado); font-weight: bold; text-transform: uppercase;
-            backdrop-filter: blur(5px); white-space: nowrap;
-        }
-
-        /* Moldura de visualização em tempo real para o usuário */
-        #moldura-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            object-fit: fill; pointer-events: none; z-index: 50;
-        }
-
-        .controls { position: absolute; bottom: 80px; width: 100%; display: flex; justify-content: center; align-items: center; z-index: 100; }
-
+        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; }
+        #cam-container { width: 100vw; height: 100vh; position: relative; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        canvas { display: none; }
+        .controls { position: absolute; bottom: 50px; width: 100%; text-align: center; z-index: 100; }
         .shutter { 
-            width: 90px; height: 90px; background: var(--turquesa); 
-            border-radius: 50%; display: flex; align-items: center; justify-content: center; 
-            cursor: pointer; border: 4px solid white;
-            animation: pulse-dourado 2s infinite;
+            width: 80px; height: 80px; border-radius: 50%; background: #00d1d1; 
+            border: 5px solid white; display: inline-block; cursor: pointer;
         }
-
-        @keyframes pulse-dourado {
-            0% { box-shadow: 0 0 0 0 rgba(197, 160, 89, 0.8); }
-            70% { box-shadow: 0 0 0 20px rgba(197, 160, 89, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(197, 160, 89, 0); }
-        }
-
-        .btn-ui-flip { 
-            position: absolute; right: 30px; background: rgba(0,0,0,0.5); 
-            border: 1px solid rgba(255,255,255,0.3); color: white; 
-            width: 55px; height: 55px; border-radius: 50%; font-size: 1.5rem; 
-            display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px);
-        }
-
-        #status-msg { 
-            position: fixed; inset: 0; z-index: 1500; display: none; flex-direction: column;
-            align-items: center; justify-content: center; font-weight: 900; 
-            background: rgba(0,0,0,0.4); pointer-events: none; text-align: center;
-        }
-
-        .msg-contagem { font-size: 8rem; color: white; }
-        .msg-finalizando { font-size: 3.5rem; color: var(--laranja); animation: blink 0.6s infinite; }
-        
-        .msg-finalizado { 
-            font-size: 5rem; color: var(--vermelho-neon); 
-            text-shadow: 0 0 15px var(--vermelho-neon), 0 0 30px var(--vermelho-neon);
-            animation: pulse-red 0.5s infinite alternate; 
-        }
-
-        @keyframes pulse-red { from { transform: scale(1); opacity: 0.8; } to { transform: scale(1.15); opacity: 1; } }
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
-
-        #upload-loading { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; color: var(--turquesa); }
-        
-        #tap-overlay { position: fixed; inset: 0; z-index: 2000; display: none; }
+        #moldura-view { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; object-fit: fill; z-index: 10; }
+        #status { position: fixed; inset: 0; display: none; background: rgba(0,0,0,0.5); color: #fff; font-size: 80px; align-items: center; justify-content: center; z-index: 200; }
+        #loading { position: fixed; inset: 0; display: none; background: #000; color: #00d1d1; align-items: center; justify-content: center; z-index: 300; }
     </style>
 </head>
-<body onclick="voltarParaGaleria()">
+<body>
 
-    <div id="evento-info-badge" class="event-badge" style="display:none;"></div>
-    <div id="tap-overlay"></div>
-
-    <div id="upload-loading">
-        <div style="font-size: 24px; margin-bottom: 10px; font-weight: bold;">ENVIANDO VÍDEO...</div>
-        <small style="color: white; opacity: 0.8;">Processando na nuvem</small>
-    </div>
-
-    <div id="screen-camera" class="screen active">
-        <div id="cam-container">
-            <video id="vid-preview" autoplay playsinline muted></video>
-            
-            <img id="moldura-r2" src="" style="display:none;" crossorigin="anonymous">
-            <img id="moldura-overlay" src="" style="display:none;">
-
-            <canvas id="record-canvas" width="720" height="1280" style="display:none;"></canvas>
-            
-            <div id="status-msg"></div>
-            
-            <div class="controls">
-                <div class="shutter" onclick="iniciarContagem()">
-                    <div style="width: 28px; height: 28px; background: #000; border-radius: 5px;"></div>
-                </div>
-                <button class="btn-ui-flip" onclick="girarCamera()">🔄</button>
-            </div>
+    <div id="cam-container">
+        <video id="preview" autoplay playsinline muted></video>
+        <img id="moldura-view" src="">
+        <div class="controls">
+            <div class="shutter" id="btn-shoot"></div>
         </div>
     </div>
 
+    <canvas id="canvas" width="720" height="1280"></canvas>
+    <div id="status"></div>
+    <div id="loading">ENVIANDO...</div>
+
 <script>
-    let stream, recorder, chunks = [], currentFacingMode = "environment", prontoParaSair = false;
-    const video = document.getElementById('vid-preview');
-    const canvas = document.getElementById('record-canvas');
+    const video = document.getElementById('preview');
+    const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
-    
-    // Usaremos um objeto Image nativo para garantir o carregamento CORS
-    const frameImg = new Image();
-    frameImg.crossOrigin = "anonymous"; 
+    const btn = document.getElementById('btn-shoot');
+    const molduraImg = new Image();
+    molduraImg.crossOrigin = "anonymous"; // CRÍTICO PARA A JUNÇÃO FUNCIONAR
 
-    const msg = document.getElementById('status-msg');
-    const WORKER_URL = "https://photomovie.maxprimefotovideo.workers.dev"; 
+    let recorder, chunks = [];
 
-    window.onload = () => {
-        const configSessao = JSON.parse(localStorage.getItem('config_atual'));
-        if(configSessao) {
-            document.getElementById('evento-info-badge').innerText = configSessao.nome;
-            document.getElementById('evento-info-badge').style.display = 'block';
-            
-            if(configSessao.moldura) {
-                // Carrega a imagem para o Canvas (Gravação)
-                frameImg.src = configSessao.moldura;
-                // Carrega a imagem para a tela (Visualização)
-                document.getElementById('moldura-overlay').src = configSessao.moldura;
-                document.getElementById('moldura-overlay').style.display = 'block';
-            }
+    window.onload = async () => {
+        const config = JSON.parse(localStorage.getItem('config_atual'));
+        if (config && config.moldura) {
+            molduraImg.src = config.moldura;
+            document.getElementById('moldura-view').src = config.moldura;
         }
-        ligarCamera();
+        
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: "environment", width: 1280, height: 720 }, 
+            audio: false 
+        });
+        video.srcObject = stream;
     };
 
-    async function ligarCamera() {
-        if (stream) stream.getTracks().forEach(t => t.stop());
-        const constraints = {
-            video: { facingMode: currentFacingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
-            audio: false
-        };
-        try {
-            stream = await navigator.mediaDevices.getUserMedia(constraints);
-            video.srcObject = stream;
-            await video.play();
-        } catch (err) {
-            stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-            video.srcObject = stream;
-        }
-    }
-
-    function girarCamera() {
-        currentFacingMode = (currentFacingMode === "environment") ? "user" : "environment";
-        ligarCamera();
-    }
-
-    function iniciarContagem() {
+    btn.onclick = () => {
         let c = 3;
-        msg.className = "msg-contagem"; 
-        msg.style.display = 'flex';
-        msg.innerText = c;
-
+        const status = document.getElementById('status');
+        status.style.display = 'flex';
+        status.innerText = c;
+        
         let t = setInterval(() => {
             c--;
-            if(c > 0) msg.innerText = c;
-            else { 
-                clearInterval(t); 
-                msg.style.display = 'none';
-                gravar(); 
-            }
+            if(c > 0) status.innerText = c;
+            else { clearInterval(t); status.style.display = 'none'; iniciarGravacao(); }
         }, 1000);
-    }
+    };
 
-    function gravar() {
+    function iniciarGravacao() {
         chunks = [];
-        const configSessao = JSON.parse(localStorage.getItem('config_atual'));
-        const tempoTotal = configSessao ? parseInt(configSessao.tempo) : 10;
-        const nomeEvento = configSessao ? configSessao.nome : "Geral";
-        
-        // Função que desenha o frame atual
-        const drawLoop = () => {
-            // Desenha a câmera (Fundo)
+        const config = JSON.parse(localStorage.getItem('config_atual'));
+        const tempo = (config ? parseInt(config.tempo) : 10) * 1000;
+
+        const loop = () => {
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            
-            // Desenha a moldura (Sobreposição)
-            // IMPORTANTE: Verifica se a imagem carregou e se não há erro de CORS
-            if(frameImg.complete && frameImg.naturalWidth !== 0) {
-                ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+            if (molduraImg.complete) {
+                ctx.drawImage(molduraImg, 0, 0, canvas.width, canvas.height);
             }
-            
-            if(recorder && recorder.state === "recording") {
-                requestAnimationFrame(drawLoop);
-            }
+            if (recorder && recorder.state === "recording") requestAnimationFrame(loop);
         };
 
-        const recStream = canvas.captureStream(30); // 30 FPS
-        recorder = new MediaRecorder(recStream, { 
-            mimeType: 'video/webm;codecs=vp8', 
-            videoBitsPerSecond: 3500000 
-        });
+        const stream = canvas.captureStream(30);
+        recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp8' });
         
-        recorder.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
-        
+        recorder.ondataavailable = e => chunks.push(e.data);
         recorder.onstop = async () => {
+            document.getElementById('loading').style.display = 'flex';
             const blob = new Blob(chunks, { type: 'video/webm' });
-            await realizarUpload(blob, nomeEvento);
+            const fd = new FormData();
+            fd.append("video", blob);
+            fd.append("uuid", "vid_" + Date.now());
+            fd.append("evento", config ? config.nome : "Geral");
+
+            await fetch("https://photomovie.maxprimefotovideo.workers.dev/upload", { method: "POST", body: fd });
+            window.location.href = "galeria.html";
         };
 
         recorder.start();
-        drawLoop();
-
-        let s = 0;
-        let t = setInterval(() => {
-            s++;
-            if (s === (tempoTotal - 3)) {
-                msg.style.display = 'flex';
-                msg.innerText = "FINALIZANDO";
-                msg.className = "msg-finalizando";
-            }
-            if (s >= tempoTotal) {
-                clearInterval(t);
-                if(recorder.state === "recording") recorder.stop();
-            }
-        }, 1000);
-    }
-
-    async function realizarUpload(blob, evento) {
-        document.getElementById('upload-loading').style.display = 'flex';
-        msg.style.display = 'none';
-        
-        const uuid = "vid_" + Date.now();
-        const formData = new FormData();
-        formData.append("video", blob);
-        formData.append("uuid", uuid);
-        formData.append("evento", evento);
-
-        try {
-            const res = await fetch(`${WORKER_URL}/upload`, { method: 'POST', body: formData });
-            if(res.ok) {
-                document.getElementById('upload-loading').style.display = 'none';
-                msg.innerText = "FINALIZADO";
-                msg.className = "msg-finalizado";
-                msg.style.display = 'flex';
-                prontoParaSair = true;
-                document.getElementById('tap-overlay').style.display = 'block';
-            }
-        } catch (e) { 
-            alert("Erro no upload. Tente novamente.");
-            document.getElementById('upload-loading').style.display = 'none';
-        }
-    }
-
-    function voltarParaGaleria() {
-        if(prontoParaSair) {
-            window.location.href = 'galeria.html';
-        }
+        loop();
+        setTimeout(() => recorder.stop(), tempo);
     }
 </script>
 </body>
