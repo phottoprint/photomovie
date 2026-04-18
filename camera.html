@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Câmera Pro - Fix Moldura</title>
+    <title>Câmera Pro - Photo Movie</title>
     <style>
         body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; }
         #cam-container { width: 100vw; height: 100vh; position: relative; }
@@ -11,12 +11,12 @@
         #moldura-view { 
             position: absolute; inset: 0; width: 100%; height: 100%; 
             pointer-events: none; object-fit: fill; z-index: 10; 
-            display: none; /* Só mostra se carregar */
+            display: none; 
         }
         .controls { position: absolute; bottom: 50px; width: 100%; text-align: center; z-index: 100; }
         .shutter { width: 80px; height: 80px; border-radius: 50%; background: #00d1d1; border: 5px solid white; display: inline-block; cursor: pointer; }
         #status { position: fixed; inset: 0; display: none; background: rgba(0,0,0,0.5); color: #fff; font-size: 80px; align-items: center; justify-content: center; z-index: 200; }
-        #loading { position: fixed; inset: 0; display: none; background: #000; color: #00d1d1; align-items: center; justify-content: center; z-index: 300; }
+        #loading { position: fixed; inset: 0; display: none; background: #000; color: #00d1d1; align-items: center; justify-content: center; z-index: 300; flex-direction: column; gap: 10px; }
     </style>
 </head>
 <body>
@@ -31,54 +31,71 @@
 
     <canvas id="canvas" width="720" height="1280" style="display:none;"></canvas>
     <div id="status"></div>
-    <div id="loading">ENVIANDO VÍDEO...</div>
+    <div id="loading">
+        <div class="spinner"></div>
+        <span>PROCESSANDO E ENVIANDO...</span>
+    </div>
 
 <script>
+    const WORKER_URL = "https://photomovie.maxprimefotovideo.workers.dev";
     const video = document.getElementById('preview');
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d');
     const btn = document.getElementById('btn-shoot');
     const view = document.getElementById('moldura-view');
     
-    const molduraImg = new Image();
-    molduraImg.crossOrigin = "anonymous"; 
+    // 1. Crie o objeto Image ANTES de carregar o src
+const molduraImg = new Image();
+
+// 2. Peça a permissão de pixels ANTES de definir o src
+molduraImg.crossOrigin = "anonymous"; 
+
+// 3. Aí sim, defina o link via Worker
+molduraImg.src = `${WORKER_URL}/stream?id=${fileId}`; 
 
     window.onload = async () => {
         const config = JSON.parse(localStorage.getItem('config_atual'));
         console.log("Configuração carregada:", config);
 
-        if (config && config.moldura) {
-            // CORREÇÃO: Força a moldura a carregar via rota de stream do Worker para evitar bloqueio de pixels (CORS)
-            let urlMoldura = config.moldura;
-            if (urlMoldura.includes('pub-') || urlMoldura.includes('.r2.dev')) {
-                const id = urlMoldura.split('/').pop();
-                urlMoldura = `https://photomovie.maxprimefotovideo.workers.dev/stream?id=${id}`;
-            } else if (!urlMoldura.startsWith('http')) {
-                urlMoldura = `https://photomovie.maxprimefotovideo.workers.dev/stream?id=${urlMoldura}`;
+        if (config && (config.molduraUrl || config.moldura)) {
+            let pathOriginal = config.molduraUrl || config.moldura;
+            let fileId = "";
+
+            // Extrai apenas o ID/Caminho do arquivo, ignorando o domínio
+            if (pathOriginal.includes('?id=')) {
+                fileId = pathOriginal.split('?id=')[1];
+            } else if (pathOriginal.includes('r2.dev/')) {
+                fileId = pathOriginal.split('r2.dev/')[1];
+            } else {
+                fileId = pathOriginal;
             }
 
-            molduraImg.src = urlMoldura;
-            view.src = urlMoldura;
+            // Força carregar via Worker para garantir o CORS liberado para o Canvas
+            const urlFinal = `${WORKER_URL}/stream?id=${fileId}`;
+            console.log("Carregando moldura via Worker:", urlFinal);
+
+            molduraImg.src = urlFinal;
+            view.src = urlFinal;
 
             molduraImg.onload = () => {
-                console.log("Moldura carregada com sucesso para o Canvas!");
+                console.log("Moldura pronta para o Canvas!");
                 view.style.display = 'block';
             };
-
+            
             molduraImg.onerror = () => {
-                console.error("ERRO: Não foi possível carregar a moldura. Verifique o link:", urlMoldura);
-                alert("Erro ao carregar moldura. Verifique a conexão ou o link da imagem.");
+                console.error("Erro ao carregar moldura via Worker. Tentando link original...");
+                if(!molduraImg.src.includes(pathOriginal)) molduraImg.src = pathOriginal;
             };
         }
         
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "environment", width: 1280, height: 720 }, 
+                video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }, 
                 audio: false 
             });
             video.srcObject = stream;
         } catch (e) {
-            alert("Erro ao abrir câmera: " + e.message);
+            alert("Erro ao abrir câmera. Verifique as permissões.");
         }
     };
 
@@ -91,7 +108,11 @@
         let t = setInterval(() => {
             c--;
             if(c > 0) status.innerText = c;
-            else { clearInterval(t); status.style.display = 'none'; iniciarGravacao(); }
+            else { 
+                clearInterval(t); 
+                status.style.display = 'none'; 
+                iniciarGravacao(); 
+            }
         }, 1000);
     };
 
@@ -100,13 +121,21 @@
         const config = JSON.parse(localStorage.getItem('config_atual'));
         const tempo = (config ? parseInt(config.tempo) : 10) * 1000;
 
+        // Função de desenho contínuo no Canvas
         const loop = () => {
+            if (video.paused || video.ended) return;
+            
+            // Desenha a Câmera
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            // CORREÇÃO: Garantia que a moldura seja desenhada sobre cada frame do vídeo
+            
+            // Desenha a Moldura por cima
             if (molduraImg.complete && molduraImg.naturalWidth > 0) {
                 ctx.drawImage(molduraImg, 0, 0, canvas.width, canvas.height);
             }
-            if (recorder && recorder.state === "recording") requestAnimationFrame(loop);
+            
+            if (recorder && recorder.state === "recording") {
+                requestAnimationFrame(loop);
+            }
         };
 
         const stream = canvas.captureStream(30);
@@ -116,29 +145,39 @@
         });
         
         recorder.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
+        
         recorder.onstop = async () => {
             document.getElementById('loading').style.display = 'flex';
             const blob = new Blob(chunks, { type: 'video/webm' });
+            
             const fd = new FormData();
             fd.append("video", blob);
             fd.append("uuid", "vid_" + Date.now());
             fd.append("evento", config ? config.nome : "Geral");
 
             try {
-                const res = await fetch("https://photomovie.maxprimefotovideo.workers.dev/upload", { 
+                const res = await fetch(`${WORKER_URL}/upload`, { 
                     method: "POST", 
                     body: fd 
                 });
-                if(res.ok) window.location.href = "galeria.html";
-                else alert("Erro no upload do servidor.");
+                if(res.ok) {
+                    window.location.href = "galeria.html";
+                } else {
+                    alert("Erro ao salvar vídeo no servidor.");
+                    document.getElementById('loading').style.display = 'none';
+                }
             } catch (err) {
-                alert("Erro de rede ao enviar.");
+                alert("Erro de conexão.");
+                document.getElementById('loading').style.display = 'none';
             }
         };
 
         recorder.start();
-        loop();
-        setTimeout(() => { if(recorder.state === "recording") recorder.stop(); }, tempo);
+        loop(); // Inicia o desenho no canvas
+        
+        setTimeout(() => { 
+            if(recorder.state === "recording") recorder.stop(); 
+        }, tempo);
     }
 </script>
 </body>
