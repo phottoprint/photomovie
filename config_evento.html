@@ -2,128 +2,338 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CONFIG - Photo Movie</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CONFIGURAR EVENTO - Photo Movie</title>
     <style>
         :root { 
-            --turquesa: #003333; 
+            --turquesa: #00d1d1; 
+            --turquesa-dark: #003333;
             --dourado: #c5a059; 
-            --bg-input: rgba(0,0,0,0.3);
+            --dourado-fosco: #8e6d2d;
+            --preto: #050505;
         }
-        body { 
-            background: var(--turquesa); color: white; font-family: sans-serif; 
-            display: flex; flex-direction: column; align-items: center; padding: 20px;
-        }
-        .container { width: 100%; max-width: 400px; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 15px; border: 1px solid var(--dourado); }
-        h2 { color: var(--dourado); text-align: center; text-transform: uppercase; margin-bottom: 25px; }
         
-        .field { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-size: 12px; color: var(--dourado); font-weight: bold; }
-        input { 
-            width: 100%; padding: 15px; background: var(--bg-input); border: 1px solid rgba(197, 160, 89, 0.3); 
-            color: white; border-radius: 8px; box-sizing: border-box; outline: none;
+        body { 
+            margin: 0; background: var(--preto); color: white; 
+            font-family: 'Segoe UI', Roboto, sans-serif; padding-bottom: 40px;
+            background-image: radial-gradient(circle at top right, #111, #050505);
         }
-        input:focus { border-color: var(--dourado); }
 
-        .btn-save { 
-            width: 100%; padding: 18px; background: var(--dourado); color: black; 
-            border: none; border-radius: 8px; font-weight: 900; cursor: pointer; margin-top: 10px;
+        .header {
+            background: linear-gradient(to bottom, var(--turquesa-dark), var(--preto)); 
+            padding: 35px 25px; text-align: center;
+            border-bottom: 2px solid var(--dourado);
         }
-        .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-back { display: block; text-align: center; margin-top: 20px; color: #999; text-decoration: none; font-size: 13px; }
+
+        .header h1 { color: var(--dourado); margin: 0; font-size: 36px; letter-spacing: 5px; font-weight: 900; text-transform: uppercase; }
+
+        .container { padding: 20px; max-width: 500px; margin: 0 auto; }
+
+        .section {
+            background: rgba(20, 20, 20, 0.9); border: 1px solid #333; padding: 25px 20px;
+            border-radius: 24px; margin-bottom: 20px;
+        }
+
+        .section h3 { 
+            color: var(--dourado); margin-top: 0; font-size: 12px; 
+            text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid #222;
+            padding-bottom: 12px; margin-bottom: 20px;
+        }
+
+        label { display: block; font-size: 11px; margin: 15px 0 8px 0; color: #888; font-weight: bold; text-transform: uppercase; }
+
+        input, select {
+            width: 100%; padding: 16px; background: #000; border: 1px solid #444;
+            color: white; border-radius: 14px; box-sizing: border-box; font-size: 16px; outline: none;
+        }
+        input:focus, select:focus { border-color: var(--dourado); }
+
+        .time-selector { display: flex; justify-content: center; gap: 15px; }
+        .time-btn {
+            background: #1a1a1a; border: 2px solid #333; color: #666;
+            width: 55px; height: 55px; border-radius: 50%; cursor: pointer; font-weight: bold;
+        }
+        .time-btn.active { border-color: var(--turquesa); color: var(--turquesa); background: rgba(0, 209, 209, 0.1); }
+
+        .speed-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .speed-box { background: #000; border: 1px solid #222; padding: 10px; border-radius: 12px; text-align: center; }
+        .speed-box select { padding: 8px; font-size: 14px; text-align: center; border: none; background: transparent; color: var(--turquesa); font-weight: bold; cursor: pointer; }
+
+        .action-box {
+            width: 100%; padding: 20px; background: #111; border: 2px dashed #444; 
+            color: #888; border-radius: 18px; text-align: center; cursor: pointer;
+            font-weight: bold; display: flex; flex-direction: column; justify-content: center; align-items: center; box-sizing: border-box;
+        }
+        
+        #frame-preview { width: 100%; aspect-ratio: 9/16; max-height: 250px; margin-top: 15px; display: none; border-radius: 12px; border: 1px solid #333; object-fit: contain; background: #000; }
+
+        .btn-save-main {
+            width: 100%; padding: 22px; background: linear-gradient(135deg, var(--dourado), var(--dourado-fosco));
+            border: none; border-radius: 50px; color: #000; font-weight: 900;
+            text-transform: uppercase; cursor: pointer; font-size: 17px; margin-top: 20px;
+        }
+
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 9999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+        .modal-content { width: 85%; max-width: 400px; background: #0a0a0a; border-radius: 35px; border: 1px solid var(--dourado); padding: 30px; display: flex; flex-direction: column; gap: 10px; }
+
+        #audio-player { width: 100%; margin: 15px 0; filter: invert(100%) hue-rotate(180deg) brightness(1.5); height: 35px; }
+        
+        /* Ajuste MM:SS */
+        .trim-container { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
+        .trim-input { text-align: center; color: var(--turquesa); font-family: monospace; font-size: 18px; }
     </style>
 </head>
 <body>
 
-    <h2>Configurar Evento</h2>
-
-    <div class="container">
-        <input type="hidden" id="input-id">
-
-        <div class="field">
-            <label>NOME DO EVENTO (Sem espaços)</label>
-            <input type="text" id="input-nome" placeholder="Ex: Casamento_Bruno_e_Ana">
-        </div>
-
-        <div class="field">
-            <label>DURAÇÃO DO VÍDEO (Segundos)</label>
-            <input type="number" id="input-tempo" placeholder="Ex: 10" value="10">
-        </div>
-
-        <div class="field">
-            <label>URL DA MÚSICA (No R2)</label>
-            <input type="text" id="input-musica" placeholder="Ex: musica.mp3">
-        </div>
-
-        <div class="field">
-            <label>URL DA MOLDURA (No R2)</label>
-            <input type="text" id="input-moldura" placeholder="Ex: moldura.png">
-        </div>
-
-        <button class="btn-save" id="btn-salvar" onclick="salvarEvento()">SALVAR EVENTO</button>
-        <a href="index.html" class="btn-back">Voltar para Central</a>
+    <div class="header">
+        <h1 id="titulo-pagina">PHOTO MOVIE</h1>
+        <p>colecionando momentos</p>
     </div>
 
-    <script>
-        const WORKER_URL = "https://photomovie.maxprimefotovideo.workers.dev";
+    <div class="container">
+        <input type="hidden" id="conf-id" value="">
 
-        // Verifica se é Edição ao carregar a página
-        window.onload = () => {
-            const eventoParaEditar = localStorage.getItem('evento_para_editar');
-            if (eventoParaEditar) {
-                const ev = JSON.parse(eventoParaEditar);
-                document.getElementById('input-id').value = ev.id;
-                document.getElementById('input-nome').value = ev.nome;
-                document.getElementById('input-tempo').value = ev.tempo;
-                document.getElementById('input-musica').value = ev.musicaUrl;
-                document.getElementById('input-moldura').value = ev.molduraUrl;
-                document.querySelector('h2').innerText = "Editar Evento";
-            }
-        };
+        <div class="section">
+            <h3>1. O Evento</h3>
+            <label>NOME DO EVENTO (Sem espaços)</label>
+            <input type="text" id="conf-nome" placeholder="Ex: Casamento_Tiago" oninput="this.value = this.value.replace(/\s+/g, '_')">
+            <label>DATA</label>
+            <input type="date" id="conf-data">
+        </div>
 
-        async function salvarEvento() {
-            const btn = document.getElementById('btn-salvar');
-            const nomeRaw = document.getElementById('input-nome').value.trim();
+        <div class="section">
+            <h3>2. Tempo de Gravação</h3>
+            <div class="time-selector">
+                <button class="time-btn" id="time-8" onclick="setTime(8, this)">8s</button>
+                <button class="time-btn active" id="time-10" onclick="setTime(10, this)">10s</button>
+                <button class="time-btn" id="time-12" onclick="setTime(12, this)">12s</button>
+            </div>
+            <input type="hidden" id="conf-tempo" value="10">
+        </div>
+
+        <div class="section">
+            <h3>3. Velocidade (Efeitos)</h3>
+            <label>Escolher Preset</label>
+            <select id="conf-preset" onchange="atualizarPresetUI()">
+                <option value="normal">Normal (1x Constante)</option>
+                <option value="vizz-classic">Vizz Classic (Fast > Slow > Fast)</option>
+                <option value="boomerang">Boomerang (Normal + Reverso)</option>
+                <option value="slow-extremo">Slow Motion Extremo</option>
+                <option value="custom">Configuração Manual</option>
+            </select>
+
+            <div class="speed-grid">
+                <div class="speed-box"><label>Início</label><select id="conf-v1"><option value="0.2">0.2x</option><option value="0.5">0.5x</option><option value="1.0" selected>1.0x</option><option value="2.0">2.0x</option><option value="4.0">4.0x</option></select></div>
+                <div class="speed-box"><label>Meio</label><select id="conf-v2"><option value="0.2">0.2x</option><option value="0.5">0.5x</option><option value="1.0" selected>1.0x</option><option value="2.0">2.0x</option><option value="4.0">4.0x</option></select></div>
+                <div class="speed-box"><label>Fim</label><select id="conf-v3"><option value="0.2">0.2x</option><option value="0.5">0.5x</option><option value="1.0" selected>1.0x</option><option value="2.0">2.0x</option><option value="4.0">4.0x</option></select></div>
+            </div>
+
+            <div style="margin-top: 20px; display: flex; align-items: center; gap: 10px;">
+                <input type="checkbox" id="conf-reverso" style="width: 22px; height: 22px; accent-color: var(--turquesa);">
+                <label style="margin:0; cursor:pointer;">Ativar Efeito Reverso</label>
+            </div>
+        </div>
+
+        <div class="section">
+            <h3>4. Estética</h3>
+            <div class="action-box" onclick="toggleModal('music-modal', true)" style="margin-bottom: 10px; border-style: solid; border-color: #333;">
+                <span id="music-status-text" style="color: var(--dourado);">🎵 CONFIGURAR MÚSICA</span>
+                <small id="music-filename-display" style="color: #666; font-size: 10px; margin-top: 5px; display: block;"></small>
+            </div>
             
-            if (!nomeRaw) { alert("Digite o nome do evento!"); return; }
+            <div class="action-box" id="btn-moldura-box" onclick="document.getElementById('file-moldura').click()">
+                <span id="upload-label">📸 UPAR MOLDURA (PNG)</span>
+                <input type="file" id="file-moldura" accept="image/png" style="display:none" onchange="subirArquivo(this, 'MOLDURA')">
+            </div>
+            <input type="hidden" id="conf-moldura-url" value="">
+            <input type="hidden" id="conf-musica-url" value="">
+            <input type="hidden" id="conf-musica-name" value="">
+            <center><img id="frame-preview"></center>
+        </div>
 
-            btn.disabled = true;
-            btn.innerText = "SALVANDO...";
+        <button class="btn-save-main" onclick="salvarConfig()">SALVAR EVENTO</button>
+        <p onclick="window.location.href='index.html'" style="text-align:center; color:#555; font-size:12px; margin-top:20px; cursor:pointer; font-weight:bold;">VOLTAR</p>
+    </div>
 
-            // Limpa o nome para evitar problemas de pasta no R2
-            const nomeFormatado = nomeRaw.replace(/\s+/g, '_');
+    <div id="music-modal" class="modal">
+        <div class="modal-content">
+            <h4 style="color:var(--dourado); text-align:center; margin-bottom: 5px;">STUDIO MUSICAL</h4>
             
-            const dados = {
-                id: document.getElementById('input-id').value || Date.now().toString(),
-                nome: nomeFormatado,
-                tempo: document.getElementById('input-tempo').value,
-                musicaUrl: document.getElementById('input-musica').value,
-                molduraUrl: document.getElementById('input-moldura').value,
-                data: new Date().toLocaleDateString('pt-BR')
-            };
+            <div class="action-box" onclick="document.getElementById('file-musica').click()" style="padding: 15px;">
+                <span id="music-file-label">📤 UPAR MP3</span>
+                <input type="file" id="file-musica" accept="audio/mpeg, audio/mp3" style="display:none" onchange="subirArquivo(this, 'MUSICA')">
+            </div>
 
-            try {
-                const res = await fetch(`${WORKER_URL}/salvar-evento`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(dados)
-                });
+            <div id="music-controls" style="margin-top: 10px;">
+                <audio id="audio-player" controls style="display: none;"></audio>
+                
+                <label>INICIAR MÚSICA EM (MM:SS):</label>
+                <div class="trim-container">
+                    <input type="number" id="trim-min" class="trim-input" placeholder="00" min="0" value="0" oninput="sincronizarPlayer()">
+                    <span style="font-weight:bold;">:</span>
+                    <input type="number" id="trim-sec" class="trim-input" placeholder="00" min="0" max="59" value="0" oninput="sincronizarPlayer()">
+                    <button type="button" onclick="marcarTempoAtual()" style="background: var(--turquesa-dark); border: 1px solid var(--turquesa); color: var(--turquesa); border-radius: 10px; padding: 12px; cursor: pointer; font-weight: bold; flex-shrink: 0;">MARCAR</button>
+                </div>
+                
+                <div style="background: rgba(197, 160, 89, 0.1); padding: 12px; border-radius: 12px; margin-top: 15px; border: 1px solid rgba(197, 160, 89, 0.2);">
+                    <label style="margin: 0; color: var(--dourado);"><input type="checkbox" id="conf-musica-loop-vol" checked> VOLUME DINÂMICO (Fade)</label>
+                </div>
+            </div>
 
-                if (res.ok) {
-                    alert("Evento Salvo com Sucesso!");
-                    localStorage.removeItem('evento_para_editar'); // Limpa após salvar
-                    window.location.href = 'index.html';
-                } else {
-                    alert("Erro ao salvar no servidor.");
-                }
-            } catch (e) {
-                console.error(e);
-                alert("Erro de conexão.");
-            } finally {
-                btn.disabled = false;
-                btn.innerText = "SALVAR EVENTO";
+            <button class="btn-save-main" onclick="fecharModalMusica()">CONCLUIR</button>
+        </div>
+    </div>
+
+<script>
+    const WORKER_URL = "https://photomovie.maxprimefotovideo.workers.dev";
+    const player = document.getElementById('audio-player');
+
+    window.onload = () => {
+        const editData = localStorage.getItem('evento_para_editar');
+        if (editData) {
+            const ev = JSON.parse(editData);
+            document.getElementById('conf-id').value = ev.id || "";
+            document.getElementById('conf-nome').value = ev.nome || "";
+            document.getElementById('conf-data').value = ev.data || "";
+            if(ev.preset) document.getElementById('conf-preset').value = ev.preset;
+            if(ev.v1) document.getElementById('conf-v1').value = ev.v1;
+            if(ev.v2) document.getElementById('conf-v2').value = ev.v2;
+            if(ev.v3) document.getElementById('conf-v3').value = ev.v3;
+            if(ev.reverso) document.getElementById('conf-reverso').checked = (ev.reverso === true || ev.reverso === "true");
+            if(ev.tempo) setTime(parseInt(ev.tempo), document.getElementById('time-'+ev.tempo));
+            
+            if(ev.musicaUrl) {
+                document.getElementById('conf-musica-url').value = ev.musicaUrl;
+                document.getElementById('conf-musica-name').value = ev.musicaName || "musica_evento.mp3";
+                document.getElementById('music-filename-display').innerText = ev.musicaName || "Arquivo carregado";
+                document.getElementById('music-status-text').innerText = "🎵 MÚSICA CONFIGURADA";
+                
+                const totalSeconds = parseInt(ev.musicaTrim) || 0;
+                document.getElementById('trim-min').value = Math.floor(totalSeconds / 60);
+                document.getElementById('trim-sec').value = totalSeconds % 60;
+                
+                document.getElementById('conf-musica-loop-vol').checked = ev.musicaLoopVol !== false;
+                player.src = `${WORKER_URL}/stream?id=${ev.musicaUrl}`;
+                player.style.display = "block";
             }
+
+            if(ev.molduraUrl) {
+                document.getElementById('conf-moldura-url').value = ev.molduraUrl;
+                document.getElementById('frame-preview').src = `${WORKER_URL}/stream?id=${ev.molduraUrl}`; 
+                document.getElementById('frame-preview').style.display = "block";
+                document.getElementById('upload-label').innerText = "📸 MOLDURA OK";
+            }
+            document.getElementById('titulo-pagina').innerText = "EDITAR EVENTO";
+            localStorage.removeItem('evento_para_editar');
         }
-    </script>
+    }
+
+    // CORREÇÃO 1: Leva a música para o tempo digitado no MM:SS
+    function sincronizarPlayer() {
+        if(player && player.src) {
+            const m = parseInt(document.getElementById('trim-min').value) || 0;
+            const s = parseInt(document.getElementById('trim-sec').value) || 0;
+            player.currentTime = (m * 60) + s;
+        }
+    }
+
+    // CORREÇÃO 2: Marcar preenche os campos MM e SS baseados no player atual
+    function marcarTempoAtual() {
+        if(player && player.src) {
+            const total = Math.floor(player.currentTime);
+            document.getElementById('trim-min').value = Math.floor(total / 60);
+            document.getElementById('trim-sec').value = total % 60;
+        } else {
+            alert("Dê o play na música primeiro!");
+        }
+    }
+
+    function atualizarPresetUI() {
+        const p = document.getElementById('conf-preset').value;
+        if (p === 'vizz-classic') { setV("2.0", "0.3", "2.0", false); }
+        else if (p === 'boomerang') { setV("1.0", "1.0", "1.0", true); }
+        else if (p === 'slow-extremo') { setV("0.5", "0.2", "0.5", false); }
+        else if (p === 'normal') { setV("1.0", "1.0", "1.0", false); }
+    }
+    function setV(a,b,c,r){ document.getElementById('conf-v1').value=a; document.getElementById('conf-v2').value=b; document.getElementById('conf-v3').value=c; document.getElementById('conf-reverso').checked=r; }
+
+    function toggleModal(id, show) { 
+        document.getElementById(id).style.display = show ? 'flex' : 'none'; 
+        if(!show) player.pause();
+    }
+    
+    function fecharModalMusica() { toggleModal('music-modal', false); }
+    function setTime(val, btn) { document.getElementById('conf-tempo').value = val; document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active')); if(btn) btn.classList.add('active'); }
+
+    async function subirArquivo(input, tipo) {
+        const nomeEvento = document.getElementById('conf-nome').value.trim();
+        if(!nomeEvento) { alert("Nome do evento obrigatório!"); return; }
+        if(!input.files[0]) return;
+        
+        const file = input.files[0];
+        const label = tipo === 'MOLDURA' ? document.getElementById('upload-label') : document.getElementById('music-file-label');
+        label.innerText = "⏳ ENVIANDO...";
+
+        const formData = new FormData();
+        formData.append("file", file);
+        const fileName = tipo === 'MOLDURA' ? `moldura_principal.png` : `musica_evento.mp3`;
+        formData.append("uuid", fileName); formData.append("evento", nomeEvento);
+
+        try {
+            await fetch(`${WORKER_URL}/upload`, { method: 'POST', body: formData });
+            const pathRelativo = `${nomeEvento}/${fileName}`;
+            if(tipo === 'MOLDURA') {
+                document.getElementById('conf-moldura-url').value = pathRelativo;
+                document.getElementById('frame-preview').src = `${WORKER_URL}/stream?id=${pathRelativo}`;
+                document.getElementById('frame-preview').style.display = "block";
+                label.innerText = "📸 MOLDURA OK";
+            } else {
+                document.getElementById('conf-musica-url').value = pathRelativo;
+                document.getElementById('conf-musica-name').value = file.name;
+                document.getElementById('music-filename-display').innerText = file.name;
+                document.getElementById('music-status-text').innerText = "🎵 MÚSICA CONFIGURADA";
+                label.innerText = "✅ " + file.name;
+                
+                player.src = URL.createObjectURL(file);
+                player.style.display = "block";
+            }
+        } catch (e) { alert("Erro no upload."); label.innerText = "ERRO"; }
+    }
+
+    async function salvarConfig() {
+        const nomeEvento = document.getElementById('conf-nome').value.trim();
+        if(!nomeEvento) return alert("Digite o nome do evento.");
+        
+        // Converte MM:SS para segundos totais antes de salvar
+        const m = parseInt(document.getElementById('trim-min').value) || 0;
+        const s = parseInt(document.getElementById('trim-sec').value) || 0;
+        const totalSec = (m * 60) + s;
+
+        const config = {
+            id: document.getElementById('conf-id').value || String(Date.now()),
+            nome: nomeEvento,
+            data: document.getElementById('conf-data').value,
+            tempo: String(document.getElementById('conf-tempo').value),
+            preset: document.getElementById('conf-preset').value,
+            v1: document.getElementById('conf-v1').value,
+            v2: document.getElementById('conf-v2').value,
+            v3: document.getElementById('conf-v3').value,
+            reverso: document.getElementById('conf-reverso').checked,
+            molduraUrl: document.getElementById('conf-moldura-url').value,
+            musicaUrl: document.getElementById('conf-musica-url').value,
+            musicaName: document.getElementById('conf-musica-name').value,
+            musicaTrim: String(totalSec),
+            musicaLoopVol: document.getElementById('conf-musica-loop-vol').checked
+        };
+        try {
+            const res = await fetch(`${WORKER_URL}/salvar-evento`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(config)
+            });
+            if(res.ok) { alert("Evento salvo!"); window.location.href = 'index.html'; }
+        } catch (e) { alert("Erro ao salvar."); }
+    }
+</script>
 </body>
 </html>
