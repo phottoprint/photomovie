@@ -46,42 +46,45 @@
 
         .event-list-container { width: 100%; margin-top: 30px; display: none; }
 
-        /* CARD DE EVENTO COM BOTÃO DE CÂMERA */
+        /* GRID DO CARD MELHORADO */
         .event-card {
             background: rgba(0,0,0,0.5); border: 2px solid rgba(197, 160, 89, 0.2);
-            padding: 20px; border-radius: 20px; margin-bottom: 18px;
-            display: flex; flex-direction: column; gap: 15px;
-            transition: 0.3s; position: relative;
+            padding: 15px; border-radius: 20px; margin-bottom: 18px;
+            display: grid;
+            grid-template-columns: 1fr 100px; /* Coluna da info e coluna da câmera */
+            gap: 10px;
+            transition: 0.3s;
         }
         
         .event-card.active-border { border-color: var(--dourado); background: rgba(197, 160, 89, 0.08); }
 
-        .card-top-row { display: flex; justify-content: space-between; align-items: center; }
+        .event-info-col { display: flex; flex-direction: column; gap: 12px; justify-content: center; }
 
-        .event-info h4 { margin: 0; color: var(--dourado); text-transform: uppercase; font-size: 20px; max-width: 220px; }
-        .event-info span { font-size: 12px; color: #aaa; display: block; margin-top: 4px; }
+        .event-info h4 { margin: 0; color: var(--dourado); text-transform: uppercase; font-size: 18px; line-height: 1.2; }
+        .event-info span { font-size: 11px; color: #aaa; display: block; margin-top: 4px; }
 
-        /* BOTÃO DE CÂMERA GIGANTE (ITEM 2) */
+        /* BOTÃO DE CÂMERA LADO DIREITO TOTAL */
         .btn-camera-main {
             background: var(--ativo-ouro); color: #000;
-            border: none; border-radius: 15px; width: 80px; height: 60px;
+            border: none; border-radius: 15px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 30px; cursor: pointer; transition: 0.2s;
+            font-size: 40px; cursor: pointer; transition: 0.2s;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            grid-row: span 2; /* Faz ocupar a altura de cima a baixo */
         }
-        .btn-camera-main:active { transform: scale(0.9); }
+        .btn-camera-main:active { transform: scale(0.95); }
 
-        .group-actions-row { display: flex; gap: 10px; width: 100%; }
+        .group-actions-row { display: flex; gap: 8px; width: 100%; }
 
         .status-btn {
-            flex: 2; padding: 15px; border-radius: 12px; font-size: 12px; font-weight: 900;
-            cursor: pointer; text-transform: uppercase; border: none; transition: 0.3s;
+            flex: 2; padding: 12px; border-radius: 10px; font-size: 10px; font-weight: 900;
+            cursor: pointer; text-transform: uppercase; border: none;
         }
-        .btn-is-on { background: var(--ativo-ouro); color: #000; box-shadow: 0 4px 12px rgba(197, 160, 89, 0.4); }
+        .btn-is-on { background: var(--ativo-ouro); color: #000; }
         .btn-is-off { background: #222; color: #666; border: 1px solid #333; }
 
-        .btn-edit-big { flex: 1; background: #333; color: #fff; border: 1px solid #555; border-radius: 12px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 11px; }
-        .btn-del-big { width: 45px; background: rgba(255,59,48,0.1); color: #ff3b30; border: 1px solid #ff3b30; border-radius: 12px; cursor: pointer; font-size: 18px; }
+        .btn-edit-big { flex: 1.5; background: #333; color: #fff; border: 1px solid #555; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 10px; }
+        .btn-del-big { flex: 0.8; background: rgba(255,59,48,0.1); color: #ff3b30; border: 1px solid #ff3b30; border-radius: 10px; cursor: pointer; font-size: 16px; }
 
         #modal-senha { position: fixed; inset: 0; background: var(--bg-modal); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; backdrop-filter: blur(15px); }
         .modal-content { background: #002222; padding: 35px; border-radius: 25px; border: 1px solid var(--dourado); text-align: center; width: 85%; max-width: 320px; }
@@ -98,11 +101,8 @@
 
     <div class="main-container">
         <button id="btn-login" class="btn-central" onclick="abrirModal()">🔓 ACESSAR SISTEMA</button>
-        
         <a href="config_evento.html" id="btn-create" class="btn-protected btn-central btn-create" onclick="localStorage.removeItem('evento_para_editar')">➕ CRIAR NOVO EVENTO</a>
-        
         <a href="galeria_admin.html" id="btn-admin" class="btn-protected btn-central">👑 GALERIA ADMIN</a>
-        
         <a href="galeria.html" id="btn-galeria" class="btn-protected btn-central">🎞️ ABRIR GALERIA</a>
         
         <div id="container-eventos" class="event-list-container">
@@ -151,9 +151,14 @@
         const eventoAtivoConfig = JSON.parse(localStorage.getItem('config_atual'));
 
         try {
-            const res = await fetch(`${WORKER_URL}/listar-eventos`);
+            const res = await fetch(`${WORKER_URL}/listar-eventos?t=${Date.now()}`);
+            if (!res.ok) throw new Error(`Erro ${res.status}`);
             const eventos = await res.json();
-            if(!eventos || eventos.length === 0) { container.innerHTML = '<p style="text-align:center; opacity:0.5;">Sem eventos no momento.</p>'; return; }
+            
+            if(!eventos || eventos.length === 0) { 
+                container.innerHTML = '<p style="text-align:center; opacity:0.5;">Sem eventos no momento.</p>'; 
+                return; 
+            }
 
             container.innerHTML = '';
             eventos.forEach((ev) => {
@@ -164,24 +169,26 @@
                 card.className = `event-card ${estaAtivo ? 'active-border' : ''}`;
                 
                 card.innerHTML = `
-                    <div class="card-top-row">
+                    <div class="event-info-col">
                         <div class="event-info">
                             <h4>${ev.nome.replace(/_/g, ' ')}</h4>
                             <span>DATA: ${ev.data || '--/--/--'} | DURAÇÃO: ${ev.tempo}s</span>
                         </div>
-                        <button class="btn-camera-main" onclick="irParaCamera(${evData})">📸</button>
+                        <div class="group-actions-row">
+                            <button class="status-btn ${estaAtivo ? 'btn-is-on' : 'btn-is-off'}" onclick='alternarAtivacao(${evData})'>
+                                ${estaAtivo ? '● ATIVO' : 'ATIVAR'}
+                            </button>
+                            <button class="btn-edit-big" onclick='irParaEditar(${evData})'>EDITAR</button>
+                            <button class="btn-del-big" onclick="excluirEvento('${ev.id}', '${ev.nome}')">×</button>
+                        </div>
                     </div>
-                    <div class="group-actions-row">
-                        <button class="status-btn ${estaAtivo ? 'btn-is-on' : 'btn-is-off'}" onclick='alternarAtivacao(${evData})'>
-                            ${estaAtivo ? '● ATIVO' : 'ATIVAR GALERIA'}
-                        </button>
-                        <button class="btn-edit-big" onclick='irParaEditar(${evData})'>EDITAR</button>
-                        <button class="btn-del-big" onclick="excluirEvento('${ev.id}', '${ev.nome}')">×</button>
-                    </div>
+                    <button class="btn-camera-main" onclick="irParaCamera(${evData})">📸</button>
                 `;
                 container.appendChild(card);
             });
-        } catch (err) { container.innerHTML = '<p>Erro de conexão.</p>'; }
+        } catch (err) { 
+            container.innerHTML = `<p style="color: #ff5555; text-align:center;">Erro de conexão.</p>`; 
+        }
     }
 
     function irParaEditar(evento) {
@@ -204,25 +211,15 @@
         window.location.href = 'camera.html';
     }
 
-    // ITEM 1: CORREÇÃO DO BOTAO EXCLUIR (SINCRONIZADO COM WORKER V13.5)
     async function excluirEvento(id, nome) {
-        if(confirm(`ATENÇÃO: Isso apagará o evento e TODOS os vídeos do Bucket. Confirmar exclusão de ${nome}?`)) {
+        if(confirm(`ATENÇÃO: Apagar evento ${nome} e arquivos?`)) {
             try { 
-                // Primeiro, limpamos a galeria e o R2 usando a rota do worker
-                // Como não temos uma rota "excluir-evento" no worker, vamos usar o deletar em loop ou avisar o worker
                 const res = await fetch(`${WORKER_URL}/deletar-evento-completo`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ id: id, evento: nome })
                 });
-
-                if(res.ok) {
-                    const atual = JSON.parse(localStorage.getItem('config_atual'));
-                    if(atual && atual.id === id) localStorage.removeItem('config_atual');
-                    renderEventos(); 
-                } else {
-                    alert("Erro ao excluir no servidor.");
-                }
+                if(res.ok) renderEventos(); 
             } catch (e) { alert("Erro de conexão."); }
         }
     }
