@@ -126,22 +126,19 @@
 
     // FUNÇÃO COM ATRASO PARA PERMITIR DIGITAR 2 OU MAIS DÍGITOS
     function agendarBusca() {
-        clearTimeout(tempoBusca);
-        tempoBusca = setTimeout(() => {
-            const num = document.getElementById('input-busca').value;
-            if (!num) return;
-            const index = parseInt(num) - 1;
-            if (listaFinais[index]) {
-                const file = listaFinais[index];
-                const url = `${WORKER_URL}/stream?id=${encodeURIComponent(file.path)}`;
-                abrirZoom(url, file.path);
-                document.getElementById('input-busca').value = '';
-            } else if (num > 0) {
-                alert("Vídeo não encontrado!");
-                document.getElementById('input-busca').value = '';
-            }
-        }, 800); // Aguarda 0.8 segundos após o último dígito
-    }
+    clearTimeout(tempoBusca); // Cancela a busca imediata
+    tempoBusca = setTimeout(() => { // Espera 800 milisegundos
+        const num = document.getElementById('input-busca').value;
+        if (!num) return;
+        const index = parseInt(num) - 1;
+        if (listaFinais[index]) {
+            const file = listaFinais[index];
+            const url = `${WORKER_URL}/stream?id=${encodeURIComponent(file.path)}`;
+            abrirZoom(url, file.path);
+            document.getElementById('input-busca').value = '';
+        }
+    }, 1000); 
+}
 
     function abrirZoom(url, path) {
         const modal = document.getElementById('modal-zoom');
