@@ -129,7 +129,7 @@
         <div class="header-top">
             <div class="event-left">
                 <div class="v-line"></div>
-                <p id="nome-evento-titulo">CARREGANDO...</p>
+                <p id="nome-evento-titulo">Sincronizando...</p>
             </div>
             
             <div class="title-group">
@@ -168,30 +168,23 @@
     let isAdmin = false;
     let cliquesAdmin = 0;
     let listaArquivosAtuais = [];
-
-    function atualizarInterfaceEvento() {
-        const config = JSON.parse(localStorage.getItem('config_atual'));
-        if(config && config.nome) {
-            const nomeFormatado = config.nome.replace(/_/g, ' ');
-            // Só altera o texto se for diferente para evitar processamento desnecessário
-            if (document.getElementById('nome-evento-titulo').innerText !== nomeFormatado) {
-                document.getElementById('nome-evento-titulo').innerText = nomeFormatado;
-            }
-            return config.nome;
-        }
-        return null;
-    }
+    let idPastaOriginal = ""; // Variável para manter o vínculo com o bucket mesmo após trocar o nome
 
     window.onload = () => {
-        const nomeEvento = atualizarInterfaceEvento();
-        if(!nomeEvento) { window.location.href = "index.html"; return; }
+        const config = JSON.parse(localStorage.getItem('config_atual'));
+        if(!config) { window.location.href = "index.html"; return; }
         
-        carregarArquivos(nomeEvento);
+        // Se a edição mudou o nome, usamos o campo "id_evento" ou o nome original persistido para não perder os vídeos
+        idPastaOriginal = config.id_evento || config.nome; 
+        document.getElementById('nome-evento-titulo').innerText = config.nome.replace(/_/g, ' ');
         
-        // Loop de sincronização
+        carregarArquivos(idPastaOriginal);
         setInterval(() => {
-            const nomeEventoAtualizado = atualizarInterfaceEvento();
-            if(nomeEventoAtualizado) carregarArquivos(nomeEventoAtualizado, true);
+            const configAtualizada = JSON.parse(localStorage.getItem('config_atual'));
+            if(configAtualizada) {
+                document.getElementById('nome-evento-titulo').innerText = configAtualizada.nome.replace(/_/g, ' ');
+                carregarArquivos(idPastaOriginal, true);
+            }
         }, 8000);
     };
 
@@ -206,9 +199,9 @@
         }
     }
 
-    async function carregarArquivos(eventoNome, isSilent = false) {
+    async function carregarArquivos(eventoID, isSilent = false) {
         try {
-            const res = await fetch(`${WORKER_URL}/listar-galeria?evento=${encodeURIComponent(eventoNome)}`);
+            const res = await fetch(`${WORKER_URL}/listar-galeria?evento=${encodeURIComponent(eventoID)}`);
             const dados = await res.json();
             listaArquivosAtuais = dados.filter(f => f.path.includes('final_'));
             renderizarGaleria(isSilent);
@@ -233,7 +226,6 @@
             return;
         }
 
-        // Se estiver silencioso e nada mudou, não reconstrói o DOM
         if(isSilent && filtrados.length === container.querySelectorAll('.video-card').length && termoBusca === "") return;
 
         container.innerHTML = "";
@@ -268,27 +260,25 @@
 
     async function excluirArquivo(path) {
         if(!confirm("Deseja apagar este vídeo permanentemente?")) return;
-        const config = JSON.parse(localStorage.getItem('config_atual'));
         try {
             await fetch(`${WORKER_URL}/deletar`, {
                 method: 'POST',
-                body: JSON.stringify({ id: path, evento: config.nome })
+                body: JSON.stringify({ id: path, evento: idPastaOriginal })
             });
-            carregarArquivos(config.nome);
+            carregarArquivos(idPastaOriginal);
         } catch (e) { alert("Erro ao deletar"); }
     }
 
     async function excluirTudo() {
         const pass = prompt("Para apagar TUDO, digite 'apagar':");
         if(pass !== 'apagar') return;
-        const config = JSON.parse(localStorage.getItem('config_atual'));
         for(let f of listaArquivosAtuais) {
             await fetch(`${WORKER_URL}/deletar`, {
                 method: 'POST',
-                body: JSON.stringify({ id: f.path, evento: config.nome })
+                body: JSON.stringify({ id: f.path, evento: idPastaOriginal })
             });
         }
-        carregarArquivos(config.nome);
+        carregarArquivos(idPastaOriginal);
     }
 
     async function baixarTudoZip() {
@@ -326,6 +316,8 @@
         document.getElementById('modal-zoom').style.display = 'none';
         const v = document.getElementById('media-full');
         v.pause(); v.src = "";
+        
+        // Garante que volta para a galeria completa
         document.getElementById('input-busca').value = "";
         renderizarGaleria(true);
     }
