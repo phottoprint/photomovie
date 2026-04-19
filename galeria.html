@@ -10,22 +10,105 @@
         :root { --turquesa: #00d1d1; --dourado: #c5a059; --bg: #001a1a; --danger: #ff4d4d; }
         body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; min-height: 100vh; }
         
-        .header { padding: 25px; border-bottom: 2px solid var(--dourado); background: rgba(0,0,0,0.6); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(15px); }
+        .header { 
+            padding: 20px; 
+            border-bottom: 2px solid var(--dourado); 
+            background: rgba(0,0,0,0.6); 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+            backdrop-filter: blur(15px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .title-group { flex-grow: 1; }
         .header h1 { color: var(--dourado); letter-spacing: 5px; margin: 0; text-transform: uppercase; font-size: 1.8rem; font-weight: 900; cursor: pointer; }
-        .header p { color: var(--dourado); font-size: 12px; margin-top: 5px; opacity: 0.7; letter-spacing: 3px; text-transform: uppercase; }
+        .header .subtitle { font-size: 11px; letter-spacing: 4px; opacity: 0.9; margin-top: 2px; text-transform: uppercase; color: var(--dourado); }
+
+        .event-left { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            position: absolute; 
+            left: 0;
+        }
+        .v-line { width: 2px; height: 35px; background: var(--dourado); border-radius: 2px; }
+        #nome-evento-titulo { 
+            color: var(--dourado); 
+            font-size: 13px; 
+            margin: 0; 
+            opacity: 0.8; 
+            letter-spacing: 2px; 
+            text-transform: uppercase; 
+            font-weight: bold;
+            text-align: left;
+        }
+
+        .search-container {
+            position: relative;
+            width: 90%;
+            max-width: 400px;
+            margin-top: 5px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px 40px 10px 20px;
+            border-radius: 25px;
+            border: 1px solid var(--dourado);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            outline: none;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .search-container::after {
+            content: '🔍';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            opacity: 0.7;
+        }
 
         .admin-panel { display: none; background: #002b2b; padding: 15px; border-bottom: 1px solid var(--dourado); gap: 10px; justify-content: center; flex-wrap: wrap; }
-
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; padding: 15px; padding-bottom: 120px; }
 
         .video-card { 
             background: #000; border: 1px solid rgba(197, 160, 89, 0.3); border-radius: 12px; 
             overflow: hidden; aspect-ratio: 9/16; position: relative; cursor: pointer; transition: 0.2s;
         }
+        
+        /* Ajuste solicitado: Número do vídeo no canto superior direito */
+        .video-number {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: var(--dourado);
+            font-weight: bold;
+            font-size: 18px;
+            z-index: 5;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.3);
+            padding: 2px 8px;
+            border-radius: 5px;
+        }
+
         .video-card:active { transform: scale(0.95); }
         .video-card img, .video-card video { width: 100%; height: 100%; object-fit: cover; }
 
-        .btn-del-mini { position: absolute; top: 5px; right: 5px; background: var(--danger); border: none; color: white; border-radius: 50%; width: 30px; height: 30px; display: none; z-index: 10; font-weight: bold; }
+        .btn-del-mini { position: absolute; bottom: 10px; right: 10px; background: var(--danger); border: none; color: white; border-radius: 50%; width: 30px; height: 30px; display: none; z-index: 10; font-weight: bold; }
 
         #modal-zoom { position: fixed; inset: 0; background: rgba(0,0,0,0.98); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
         #media-full { width: 85%; max-height: 70vh; border: 2px solid var(--dourado); border-radius: 15px; background: #000; }
@@ -44,8 +127,21 @@
 <body>
 
     <div class="header">
-        <h1 onclick="detectarAdmin()">PHOTO MOVIE</h1>
-        <p id="nome-evento-titulo">Sincronizando...</p>
+        <div class="header-top">
+            <div class="event-left">
+                <div class="v-line"></div>
+                <p id="nome-evento-titulo">Sincronizando...</p>
+            </div>
+            
+            <div class="title-group">
+                <h1 onclick="detectarAdmin()">PHOTO MOVIE</h1>
+                <p class="subtitle">COLECIONANDO MOMENTOS</p>
+            </div>
+        </div>
+
+        <div class="search-container">
+            <input type="number" id="input-busca" class="search-input" placeholder="Digite o número do vídeo..." oninput="filtrarVideos()">
+        </div>
     </div>
 
     <div id="admin-panel" class="admin-panel">
@@ -79,7 +175,7 @@
         if(!config) { window.location.href = "index.html"; return; }
         document.getElementById('nome-evento-titulo').innerText = config.nome.replace(/_/g, ' ');
         carregarArquivos(config.nome);
-        setInterval(() => carregarArquivos(config.nome, true), 8000); // Auto-refresh suave
+        setInterval(() => carregarArquivos(config.nome, true), 8000);
     };
 
     function detectarAdmin() {
@@ -94,38 +190,55 @@
     }
 
     async function carregarArquivos(eventoNome, isSilent = false) {
-        const container = document.getElementById('gallery-container');
-        if(!isSilent) container.innerHTML = "<p>Buscando arquivos...</p>";
-
         try {
             const res = await fetch(`${WORKER_URL}/listar-galeria?evento=${encodeURIComponent(eventoNome)}`);
             const dados = await res.json();
-            listaArquivosAtuais = dados;
             
-            // FILTRO: Só mostra os que contém "final_"
-            const finais = dados.filter(f => f.path.includes('final_'));
+            // Filtra apenas os finais primeiro para garantir que a numeração seja consistente
+            listaArquivosAtuais = dados.filter(f => f.path.includes('final_'));
             
-            if(!isSilent) container.innerHTML = "";
-            if(finais.length === 0 && !isSilent) {
-                container.innerHTML = "<p style='grid-column: 1/-1; opacity:0.5; margin-top:50px;'>Aguardando processamento dos vídeos...</p>";
-                return;
-            }
-
-            if(isSilent && finais.length === container.querySelectorAll('.video-card').length) return;
-
-            container.innerHTML = "";
-            finais.forEach(file => {
-                const url = `${WORKER_URL}/stream?id=${encodeURIComponent(file.path)}`;
-                const card = document.createElement('div');
-                card.className = 'video-card';
-                card.innerHTML = `
-                    <video src="${url}#t=0.5" muted playsinline></video>
-                    <button class="btn-del-mini" style="display:${isAdmin?'block':'none'}" onclick="event.stopPropagation(); excluirArquivo('${file.path}')">X</button>
-                `;
-                card.onclick = () => abrirZoom(url, file.path);
-                container.appendChild(card);
-            });
+            renderizarGaleria(isSilent);
         } catch (e) { console.error("Erro na galeria", e); }
+    }
+
+    function filtrarVideos() {
+        renderizarGaleria(true);
+    }
+
+    function renderizarGaleria(isSilent = false) {
+        const container = document.getElementById('gallery-container');
+        const termoBusca = document.getElementById('input-busca').value;
+        
+        // Lógica de filtragem: Se houver número na busca, filtra pelo índice (ID visual)
+        const filtrados = listaArquivosAtuais.filter((file, index) => {
+            const numeroVideo = (index + 1).toString();
+            return termoBusca === "" || numeroVideo === termoBusca || numeroVideo.includes(termoBusca);
+        });
+
+        if(!isSilent && filtrados.length === 0) {
+            container.innerHTML = "<p style='grid-column: 1/-1; opacity:0.5; margin-top:50px;'>Nenhum vídeo encontrado...</p>";
+            return;
+        }
+
+        // Evita piscar a tela se o conteúdo for o mesmo
+        if(isSilent && filtrados.length === container.querySelectorAll('.video-card').length && termoBusca === "") return;
+
+        container.innerHTML = "";
+        filtrados.forEach((file) => {
+            // Encontra o índice original para manter o número correto mesmo filtrado
+            const indiceOriginal = listaArquivosAtuais.findIndex(f => f.path === file.path) + 1;
+            
+            const url = `${WORKER_URL}/stream?id=${encodeURIComponent(file.path)}`;
+            const card = document.createElement('div');
+            card.className = 'video-card';
+            card.innerHTML = `
+                <div class="video-number">#${indiceOriginal}</div>
+                <video src="${url}#t=0.5" muted playsinline></video>
+                <button class="btn-del-mini" style="display:${isAdmin?'block':'none'}" onclick="event.stopPropagation(); excluirArquivo('${file.path}')">X</button>
+            `;
+            card.onclick = () => abrirZoom(url, file.path);
+            container.appendChild(card);
+        });
     }
 
     function abrirZoom(url, path) {
@@ -134,9 +247,7 @@
         modal.style.display = 'flex';
         video.src = url;
         video.play();
-
         document.getElementById('btn-download-force').onclick = () => forcarDownload(url, path.split('/').pop());
-        
         const btnDel = document.getElementById('btn-delete-single');
         if(isAdmin) {
             btnDel.style.display = 'flex';
@@ -159,11 +270,8 @@
     async function excluirTudo() {
         const pass = prompt("Para apagar TUDO, digite 'apagar':");
         if(pass !== 'apagar') return;
-        
         const config = JSON.parse(localStorage.getItem('config_atual'));
-        const finais = listaArquivosAtuais.filter(f => f.path.includes('final_'));
-        
-        for(let f of finais) {
+        for(let f of listaArquivosAtuais) {
             await fetch(`${WORKER_URL}/deletar`, {
                 method: 'POST',
                 body: JSON.stringify({ id: f.path, evento: config.nome })
@@ -176,19 +284,15 @@
         const btn = document.querySelector('.btn-zip');
         const origText = btn.innerText;
         btn.innerText = "⚡ PREPARANDO PACOTE...";
-        
         const zip = new JSZip();
-        const finais = listaArquivosAtuais.filter(f => f.path.includes('final_'));
-        
         try {
-            for(let i = 0; i < finais.length; i++) {
-                btn.innerText = `⚡ BAIXANDO ${i+1}/${finais.length}`;
-                const url = `${WORKER_URL}/stream?id=${encodeURIComponent(finais[i].path)}`;
+            for(let i = 0; i < listaArquivosAtuais.length; i++) {
+                btn.innerText = `⚡ BAIXANDO ${i+1}/${listaArquivosAtuais.length}`;
+                const url = `${WORKER_URL}/stream?id=${encodeURIComponent(listaArquivosAtuais[i].path)}`;
                 const response = await fetch(url);
                 const blob = await response.blob();
                 zip.file(`video_${i+1}.mp4`, blob);
             }
-            
             btn.innerText = "📦 COMPRIMINDO...";
             const content = await zip.generateAsync({type:"blob"});
             saveAs(content, `Galeria_${document.getElementById('nome-evento-titulo').innerText}.zip`);
