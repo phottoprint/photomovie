@@ -32,7 +32,6 @@
         .btn-action { padding: 12px 20px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 12px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 5px; }
         .btn-close { background: #333; color: white; }
         .btn-download { background: var(--dourado); color: black; }
-        .btn-danger { background: var(--danger); color: white; }
         .btn-zip { background: #28a745; color: white; }
         .nav-footer { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 500; width: 90%; }
     </style>
@@ -43,7 +42,7 @@
         <div class="header-top">
             <div class="event-left">
                 <div class="v-line"></div>
-                <p id="nome-evento-titulo">Sincronizando...</p>
+                <p id="nome-evento-titulo">Carregando...</p>
             </div>
             <div class="title-group">
                 <h1 onclick="detectarAdmin()">PHOTO MOVIE</h1>
@@ -57,7 +56,7 @@
 
     <div id="admin-panel" class="admin-panel">
         <button class="btn-action btn-zip" onclick="baixarTudoZip()">📦 BAIXAR TUDO (ZIP)</button>
-        <button class="btn-action btn-danger" onclick="excluirTudo()">⚠️ APAGAR GALERIA</button>
+        <button class="btn-action btn-danger" onclick="excluirTudo()" style="background: var(--danger); color: white;">⚠️ APAGAR GALERIA</button>
     </div>
 
     <div id="gallery-container" class="gallery-grid"></div>
@@ -71,7 +70,7 @@
         <div class="modal-controls">
             <button class="btn-action btn-close" onclick="fecharZoom()">FECHAR</button>
             <button id="btn-download-force" class="btn-action btn-download">BAIXAR MP4</button>
-            <button id="btn-delete-single" class="btn-action btn-danger admin-only" style="display:none">EXCLUIR</button>
+            <button id="btn-delete-single" class="btn-action admin-only" style="display:none; background: var(--danger); color: white;">EXCLUIR</button>
         </div>
     </div>
 
@@ -80,39 +79,43 @@
     let isAdmin = false;
     let cliquesAdmin = 0;
     let listaArquivosAtuais = [];
-    let pastaIDReal = ""; // Este ID nunca muda, mesmo que você edite o nome
+    
+    // O "NÚMERO" fixo do evento (O ID da Pasta)
+    let numeroFixoEvento = ""; 
 
-    async function carregarDados() {
+    async function carregarGaleria(isSilent = false) {
         const config = JSON.parse(localStorage.getItem('config_atual'));
         if(!config) { window.location.href = "index.html"; return; }
 
-        // 1. Atualiza o NOME que aparece na tela (Título Editado)
-        document.getElementById('nome-evento-titulo').innerText = config.nome.replace(/_/g, ' ');
-
-        // 2. Define a PASTA REAL do Bucket (Fixa para os vídeos não sumirem)
-        if(!config.pasta_id_original) {
-            config.pasta_id_original = config.nome; 
+        // MUDANÇA AQUI: 
+        // Se o evento for novo, ele usa o nome como ID. 
+        // Se você editar o nome, o 'id_fixo' continua sendo o primeiro nome criado.
+        if(!config.id_fixo) {
+            config.id_fixo = config.nome; 
             localStorage.setItem('config_atual', JSON.stringify(config));
         }
-        pastaIDReal = config.pasta_id_original;
 
-        // 3. Busca os vídeos sempre na pasta original
+        // CAPA: Nome que aparece no Título (Pode mudar sempre)
+        document.getElementById('nome-evento-titulo').innerText = config.nome.replace(/_/g, ' ');
+        
+        // NÚMERO/PASTA: Onde os vídeos realmente estão
+        numeroFixoEvento = config.id_fixo;
+
         try {
-            const res = await fetch(`${WORKER_URL}/listar-galeria?evento=${encodeURIComponent(pastaIDReal)}`);
+            const res = await fetch(`${WORKER_URL}/listar-galeria?evento=${encodeURIComponent(numeroFixoEvento)}`);
             const dados = await res.json();
             listaArquivosAtuais = dados.filter(f => f.path.includes('final_'));
-            renderizarGaleria(true);
-        } catch (e) { console.error("Erro na carga", e); }
+            renderizarGaleria(isSilent);
+        } catch (e) { console.error("Erro", e); }
     }
 
     window.onload = () => {
-        carregarDados();
-        // Sincroniza a cada 5 segundos para caso você edite o nome em outra aba
-        setInterval(carregarDados, 5000);
+        carregarGaleria();
+        setInterval(() => carregarGaleria(true), 6000);
     };
 
     function renderizarGaleria(isSilent = false) {
-        const container = document.getElementById('gallery-container');
+        const container = document.getElementById('gallery-grid') || document.getElementById('gallery-container');
         const termoBusca = document.getElementById('input-busca').value;
         
         const filtrados = listaArquivosAtuais.filter((file, index) => {
@@ -120,22 +123,20 @@
             return termoBusca === "" || num === termoBusca || num.includes(termoBusca);
         });
 
-        if(!isSilent && filtrados.length === 0) {
-            container.innerHTML = "<p style='grid-column: 1/-1; opacity:0.5; margin-top:50px;'>Nenhum vídeo...</p>";
-            return;
-        }
-
-        // Evita rebuild se nada mudou
         if(isSilent && filtrados.length === container.querySelectorAll('.video-card').length && termoBusca === "") return;
 
         container.innerHTML = "";
+        if(filtrados.length === 0) {
+            container.innerHTML = "<p style='grid-column: 1/-1; opacity:0.5; margin-top:50px;'>Nenhum vídeo...</p>";
+        }
+
         filtrados.forEach((file) => {
-            const indice = listaArquivosAtuais.findIndex(f => f.path === file.path) + 1;
+            const indiceOriginal = listaArquivosAtuais.findIndex(f => f.path === file.path) + 1;
             const url = `${WORKER_URL}/stream?id=${encodeURIComponent(file.path)}`;
             const card = document.createElement('div');
             card.className = 'video-card';
             card.innerHTML = `
-                <div class="video-number">#${indice}</div>
+                <div class="video-number">#${indiceOriginal}</div>
                 <video src="${url}#t=0.5" muted playsinline></video>
                 <button class="btn-del-mini" style="display:${isAdmin?'block':'none'}" onclick="event.stopPropagation(); excluirArquivo('${file.path}')">X</button>
             `;
@@ -159,25 +160,23 @@
     }
 
     async function excluirArquivo(path) {
-        if(!confirm("Excluir vídeo?")) return;
-        try {
-            await fetch(`${WORKER_URL}/deletar`, {
-                method: 'POST',
-                body: JSON.stringify({ id: path, evento: pastaIDReal })
-            });
-            carregarDados();
-        } catch (e) { alert("Erro"); }
+        if(!confirm("Deseja apagar permanentemente?")) return;
+        await fetch(`${WORKER_URL}/deletar`, {
+            method: 'POST',
+            body: JSON.stringify({ id: path, evento: numeroFixoEvento })
+        });
+        carregarGaleria();
     }
 
     async function excluirTudo() {
-        if(prompt("Digite 'apagar':") !== 'apagar') return;
+        if(prompt("Digite 'apagar' para limpar a galeria:") !== 'apagar') return;
         for(let f of listaArquivosAtuais) {
             await fetch(`${WORKER_URL}/deletar`, {
                 method: 'POST',
-                body: JSON.stringify({ id: f.path, evento: pastaIDReal })
+                body: JSON.stringify({ id: f.path, evento: numeroFixoEvento })
             });
         }
-        carregarDados();
+        carregarGaleria();
     }
 
     function detectarAdmin() {
@@ -185,27 +184,27 @@
             isAdmin = true;
             document.getElementById('admin-panel').style.display = 'flex';
             document.querySelectorAll('.btn-del-mini').forEach(b => b.style.display = 'block');
+            alert("MODO ADMIN ATIVADO");
             cliquesAdmin = 0;
         }
     }
 
     async function baixarTudoZip() {
         const btn = document.querySelector('.btn-zip');
-        btn.innerText = "⚡ PROCESSANDO...";
+        const original = btn.innerText;
+        btn.innerText = "⚡ PREPARANDO...";
         const zip = new JSZip();
         for(let i = 0; i < listaArquivosAtuais.length; i++) {
             const url = `${WORKER_URL}/stream?id=${encodeURIComponent(listaArquivosAtuais[i].path)}`;
             const res = await fetch(url);
             zip.file(`video_${i+1}.mp4`, await res.blob());
         }
-        const content = await zip.generateAsync({type:"blob"});
-        saveAs(content, `Galeria_${document.getElementById('nome-evento-titulo').innerText}.zip`);
-        btn.innerText = "📦 BAIXAR TUDO (ZIP)";
+        saveAs(await zip.generateAsync({type:"blob"}), `Galeria.zip`);
+        btn.innerText = original;
     }
 
     async function forcarDownload(url, filename) {
-        const res = await fetch(url);
-        saveAs(await res.blob(), filename);
+        saveAs(await (await fetch(url)).blob(), filename);
     }
 
     function fecharZoom() {
