@@ -1,42 +1,129 @@
-async function salvarEvento() {
-    const btn = document.querySelector('.btn-save'); // ou o ID do seu botão
-    btn.disabled = true;
-    btn.innerText = "SALVANDO...";
-
-    const id = document.getElementById('input-id').value || Date.now().toString();
-    const nome = document.getElementById('input-nome').value.trim().replace(/\s+/g, '_');
-    const tempo = document.getElementById('input-tempo').value;
-    
-    // Pegue as URLs que já foram enviadas para o R2 (Música e Moldura)
-    const musicaUrl = document.getElementById('url-musica').value; 
-    const molduraUrl = document.getElementById('url-moldura').value;
-
-    const dados = {
-        id: id,
-        nome: nome,
-        tempo: tempo,
-        musicaUrl: musicaUrl,
-        molduraUrl: molduraUrl,
-        data: new Date().toLocaleDateString('pt-BR')
-    };
-
-    try {
-        const res = await fetch(`${WORKER_URL}/salvar-evento`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dados)
-        });
-
-        if (res.ok) {
-            alert("Evento Salvo com Sucesso!");
-            window.location.href = 'index.html'; // Volta para a central
-        } else {
-            alert("Erro ao salvar no banco de dados.");
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CONFIG - Photo Movie</title>
+    <style>
+        :root { 
+            --turquesa: #003333; 
+            --dourado: #c5a059; 
+            --bg-input: rgba(0,0,0,0.3);
         }
-    } catch (e) {
-        alert("Erro de conexão com o Worker.");
-    } finally {
-        btn.disabled = false;
-        btn.innerText = "SALVAR EVENTO";
-    }
-}
+        body { 
+            background: var(--turquesa); color: white; font-family: sans-serif; 
+            display: flex; flex-direction: column; align-items: center; padding: 20px;
+        }
+        .container { width: 100%; max-width: 400px; background: rgba(0,0,0,0.2); padding: 20px; border-radius: 15px; border: 1px solid var(--dourado); }
+        h2 { color: var(--dourado); text-align: center; text-transform: uppercase; margin-bottom: 25px; }
+        
+        .field { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-size: 12px; color: var(--dourado); font-weight: bold; }
+        input { 
+            width: 100%; padding: 15px; background: var(--bg-input); border: 1px solid rgba(197, 160, 89, 0.3); 
+            color: white; border-radius: 8px; box-sizing: border-box; outline: none;
+        }
+        input:focus { border-color: var(--dourado); }
+
+        .btn-save { 
+            width: 100%; padding: 18px; background: var(--dourado); color: black; 
+            border: none; border-radius: 8px; font-weight: 900; cursor: pointer; margin-top: 10px;
+        }
+        .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-back { display: block; text-align: center; margin-top: 20px; color: #999; text-decoration: none; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+    <h2>Configurar Evento</h2>
+
+    <div class="container">
+        <input type="hidden" id="input-id">
+
+        <div class="field">
+            <label>NOME DO EVENTO (Sem espaços)</label>
+            <input type="text" id="input-nome" placeholder="Ex: Casamento_Bruno_e_Ana">
+        </div>
+
+        <div class="field">
+            <label>DURAÇÃO DO VÍDEO (Segundos)</label>
+            <input type="number" id="input-tempo" placeholder="Ex: 10" value="10">
+        </div>
+
+        <div class="field">
+            <label>URL DA MÚSICA (No R2)</label>
+            <input type="text" id="input-musica" placeholder="Ex: musica.mp3">
+        </div>
+
+        <div class="field">
+            <label>URL DA MOLDURA (No R2)</label>
+            <input type="text" id="input-moldura" placeholder="Ex: moldura.png">
+        </div>
+
+        <button class="btn-save" id="btn-salvar" onclick="salvarEvento()">SALVAR EVENTO</button>
+        <a href="index.html" class="btn-back">Voltar para Central</a>
+    </div>
+
+    <script>
+        const WORKER_URL = "https://photomovie.maxprimefotovideo.workers.dev";
+
+        // Verifica se é Edição ao carregar a página
+        window.onload = () => {
+            const eventoParaEditar = localStorage.getItem('evento_para_editar');
+            if (eventoParaEditar) {
+                const ev = JSON.parse(eventoParaEditar);
+                document.getElementById('input-id').value = ev.id;
+                document.getElementById('input-nome').value = ev.nome;
+                document.getElementById('input-tempo').value = ev.tempo;
+                document.getElementById('input-musica').value = ev.musicaUrl;
+                document.getElementById('input-moldura').value = ev.molduraUrl;
+                document.querySelector('h2').innerText = "Editar Evento";
+            }
+        };
+
+        async function salvarEvento() {
+            const btn = document.getElementById('btn-salvar');
+            const nomeRaw = document.getElementById('input-nome').value.trim();
+            
+            if (!nomeRaw) { alert("Digite o nome do evento!"); return; }
+
+            btn.disabled = true;
+            btn.innerText = "SALVANDO...";
+
+            // Limpa o nome para evitar problemas de pasta no R2
+            const nomeFormatado = nomeRaw.replace(/\s+/g, '_');
+            
+            const dados = {
+                id: document.getElementById('input-id').value || Date.now().toString(),
+                nome: nomeFormatado,
+                tempo: document.getElementById('input-tempo').value,
+                musicaUrl: document.getElementById('input-musica').value,
+                molduraUrl: document.getElementById('input-moldura').value,
+                data: new Date().toLocaleDateString('pt-BR')
+            };
+
+            try {
+                const res = await fetch(`${WORKER_URL}/salvar-evento`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+
+                if (res.ok) {
+                    alert("Evento Salvo com Sucesso!");
+                    localStorage.removeItem('evento_para_editar'); // Limpa após salvar
+                    window.location.href = 'index.html';
+                } else {
+                    alert("Erro ao salvar no servidor.");
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Erro de conexão.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "SALVAR EVENTO";
+            }
+        }
+    </script>
+</body>
+</html>
