@@ -5,89 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CONFIGURAR EVENTO - Photo Movie</title>
     <style>
-        :root { 
-            --turquesa: #00d1d1; 
-            --turquesa-dark: #003333;
-            --dourado: #c5a059; 
-            --dourado-fosco: #8e6d2d;
-            --preto: #050505;
-        }
-        
-        body { 
-            margin: 0; background: var(--preto); color: white; 
-            font-family: 'Segoe UI', Roboto, sans-serif; padding-bottom: 40px;
-            background-image: radial-gradient(circle at top right, #111, #050505);
-        }
-
-        .header {
-            background: linear-gradient(to bottom, var(--turquesa-dark), var(--preto)); 
-            padding: 35px 25px; text-align: center;
-            border-bottom: 2px solid var(--dourado);
-        }
-
+        :root { --turquesa: #00d1d1; --turquesa-dark: #003333; --dourado: #c5a059; --dourado-fosco: #8e6d2d; --preto: #050505; }
+        body { margin: 0; background: var(--preto); color: white; font-family: 'Segoe UI', sans-serif; padding-bottom: 40px; background-image: radial-gradient(circle at top right, #111, #050505); }
+        .header { background: linear-gradient(to bottom, var(--turquesa-dark), var(--preto)); padding: 35px 25px; text-align: center; border-bottom: 2px solid var(--dourado); }
         .header h1 { color: var(--dourado); margin: 0; font-size: 36px; letter-spacing: 5px; font-weight: 900; text-transform: uppercase; }
-
         .container { padding: 20px; max-width: 500px; margin: 0 auto; }
-
-        .section {
-            background: rgba(20, 20, 20, 0.9); border: 1px solid #333; padding: 25px 20px;
-            border-radius: 24px; margin-bottom: 20px;
-        }
-
-        .section h3 { 
-            color: var(--dourado); margin-top: 0; font-size: 12px; 
-            text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid #222;
-            padding-bottom: 12px; margin-bottom: 20px;
-        }
-
+        .section { background: rgba(20, 20, 20, 0.9); border: 1px solid #333; padding: 25px 20px; border-radius: 24px; margin-bottom: 20px; }
+        .section h3 { color: var(--dourado); margin-top: 0; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid #222; padding-bottom: 12px; margin-bottom: 20px; }
         label { display: block; font-size: 11px; margin: 15px 0 8px 0; color: #888; font-weight: bold; text-transform: uppercase; }
-
-        input, select {
-            width: 100%; padding: 16px; background: #000; border: 1px solid #444;
-            color: white; border-radius: 14px; box-sizing: border-box; font-size: 16px; outline: none;
-        }
-        input:focus, select:focus { border-color: var(--dourado); }
-
+        input, select { width: 100%; padding: 16px; background: #000; border: 1px solid #444; color: white; border-radius: 14px; box-sizing: border-box; font-size: 16px; outline: none; }
         .time-selector { display: flex; justify-content: center; gap: 15px; }
-        .time-btn {
-            background: #1a1a1a; border: 2px solid #333; color: #666;
-            width: 55px; height: 55px; border-radius: 50%; cursor: pointer; font-weight: bold;
-        }
+        .time-btn { background: #1a1a1a; border: 2px solid #333; color: #666; width: 55px; height: 55px; border-radius: 50%; cursor: pointer; font-weight: bold; }
         .time-btn.active { border-color: var(--turquesa); color: var(--turquesa); background: rgba(0, 209, 209, 0.1); }
-
         .speed-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
         .speed-box { background: #000; border: 1px solid #222; padding: 10px; border-radius: 12px; text-align: center; }
-        .speed-box select { padding: 8px; font-size: 14px; text-align: center; border: none; background: transparent; color: var(--turquesa); font-weight: bold; cursor: pointer; }
-
-        .action-box {
-            width: 100%; padding: 20px; background: #111; border: 2px dashed #444; 
-            color: #888; border-radius: 18px; text-align: center; cursor: pointer;
-            font-weight: bold; display: flex; flex-direction: column; justify-content: center; align-items: center; box-sizing: border-box;
-        }
-        
-        #frame-preview { width: 100%; aspect-ratio: 9/16; max-height: 250px; margin-top: 15px; display: none; border-radius: 12px; border: 1px solid #333; object-fit: contain; background: #000; }
-
-        .btn-save-main {
-            width: 100%; padding: 22px; background: linear-gradient(135deg, var(--dourado), var(--dourado-fosco));
-            border: none; border-radius: 50px; color: #000; font-weight: 900;
-            text-transform: uppercase; cursor: pointer; font-size: 17px; margin-top: 20px;
-        }
-
+        .speed-box select { border: none; background: transparent; color: var(--turquesa); font-weight: bold; cursor: pointer; }
+        .action-box { width: 100%; padding: 20px; background: #111; border: 2px dashed #444; color: #888; border-radius: 18px; text-align: center; cursor: pointer; font-weight: bold; display: flex; flex-direction: column; justify-content: center; align-items: center; box-sizing: border-box; }
+        .btn-save-main { width: 100%; padding: 22px; background: linear-gradient(135deg, var(--dourado), var(--dourado-fosco)); border: none; border-radius: 50px; color: #000; font-weight: 900; text-transform: uppercase; cursor: pointer; font-size: 17px; margin-top: 20px; }
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 9999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
         .modal-content { width: 85%; max-width: 400px; background: #0a0a0a; border-radius: 35px; border: 1px solid var(--dourado); padding: 30px; display: flex; flex-direction: column; gap: 10px; }
-
-        #audio-player { width: 100%; margin: 15px 0; filter: invert(100%) hue-rotate(180deg) brightness(1.5); height: 35px; }
-        
-        /* Ajuste MM:SS */
-        .trim-container { display: flex; align-items: center; gap: 8px; margin-top: 5px; }
-        .trim-input { text-align: center; color: var(--turquesa); font-family: monospace; font-size: 18px; }
+        #frame-preview { width: 100%; max-height: 200px; margin-top: 15px; display: none; border-radius: 12px; object-fit: contain; }
     </style>
 </head>
 <body>
 
     <div class="header">
         <h1 id="titulo-pagina">PHOTO MOVIE</h1>
-        <p>colecionando momentos</p>
+        <p>COLECIONANDO MOMENTOS</p>
     </div>
 
     <div class="container">
@@ -95,7 +39,7 @@
 
         <div class="section">
             <h3>1. O Evento</h3>
-            <label>NOME DO EVENTO (Sem espaços)</label>
+            <label>NOME DO EVENTO (CAPA)</label>
             <input type="text" id="conf-nome" placeholder="Ex: Casamento_Tiago" oninput="this.value = this.value.replace(/\s+/g, '_')">
             <label>DATA</label>
             <input type="date" id="conf-data">
@@ -113,80 +57,35 @@
 
         <div class="section">
             <h3>3. Velocidade (Efeitos)</h3>
-            <label>Escolher Preset</label>
             <select id="conf-preset" onchange="atualizarPresetUI()">
                 <option value="normal">Normal (1x Constante)</option>
                 <option value="vizz-classic">Vizz Classic (Fast > Slow > Fast)</option>
                 <option value="boomerang">Boomerang (Normal + Reverso)</option>
-                <option value="slow-extremo">Slow Motion Extremo</option>
                 <option value="custom">Configuração Manual</option>
             </select>
-
             <div class="speed-grid">
-                <div class="speed-box"><label>Início</label><select id="conf-v1"><option value="0.2">0.2x</option><option value="0.5">0.5x</option><option value="1.0" selected>1.0x</option><option value="2.0">2.0x</option><option value="4.0">4.0x</option></select></div>
-                <div class="speed-box"><label>Meio</label><select id="conf-v2"><option value="0.2">0.2x</option><option value="0.5">0.5x</option><option value="1.0" selected>1.0x</option><option value="2.0">2.0x</option><option value="4.0">4.0x</option></select></div>
-                <div class="speed-box"><label>Fim</label><select id="conf-v3"><option value="0.2">0.2x</option><option value="0.5">0.5x</option><option value="1.0" selected>1.0x</option><option value="2.0">2.0x</option><option value="4.0">4.0x</option></select></div>
-            </div>
-
-            <div style="margin-top: 20px; display: flex; align-items: center; gap: 10px;">
-                <input type="checkbox" id="conf-reverso" style="width: 22px; height: 22px; accent-color: var(--turquesa);">
-                <label style="margin:0; cursor:pointer;">Ativar Efeito Reverso</label>
+                <div class="speed-box"><label>Início</label><select id="conf-v1"><option value="0.5">0.5x</option><option value="1.0" selected>1.0x</option><option value="2.0">2.0x</option></select></div>
+                <div class="speed-box"><label>Meio</label><select id="conf-v2"><option value="0.5">0.5x</option><option value="1.0" selected>1.0x</option><option value="2.0">2.0x</option></select></div>
+                <div class="speed-box"><label>Fim</label><select id="conf-v3"><option value="0.5">0.5x</option><option value="1.0" selected>1.0x</option><option value="2.0">2.0x</option></select></div>
             </div>
         </div>
 
         <div class="section">
             <h3>4. Estética</h3>
-            <div class="action-box" onclick="toggleModal('music-modal', true)" style="margin-bottom: 10px; border-style: solid; border-color: #333;">
-                <span id="music-status-text" style="color: var(--dourado);">🎵 CONFIGURAR MÚSICA</span>
-                <small id="music-filename-display" style="color: #666; font-size: 10px; margin-top: 5px; display: block;"></small>
-            </div>
-            
             <div class="action-box" id="btn-moldura-box" onclick="document.getElementById('file-moldura').click()">
                 <span id="upload-label">📸 UPAR MOLDURA (PNG)</span>
                 <input type="file" id="file-moldura" accept="image/png" style="display:none" onchange="subirArquivo(this, 'MOLDURA')">
             </div>
             <input type="hidden" id="conf-moldura-url" value="">
-            <input type="hidden" id="conf-musica-url" value="">
-            <input type="hidden" id="conf-musica-name" value="">
             <center><img id="frame-preview"></center>
         </div>
 
         <button class="btn-save-main" onclick="salvarConfig()">SALVAR EVENTO</button>
-        <p onclick="window.location.href='index.html'" style="text-align:center; color:#555; font-size:12px; margin-top:20px; cursor:pointer; font-weight:bold;">VOLTAR</p>
-    </div>
-
-    <div id="music-modal" class="modal">
-        <div class="modal-content">
-            <h4 style="color:var(--dourado); text-align:center; margin-bottom: 5px;">STUDIO MUSICAL</h4>
-            
-            <div class="action-box" onclick="document.getElementById('file-musica').click()" style="padding: 15px;">
-                <span id="music-file-label">📤 UPAR MP3</span>
-                <input type="file" id="file-musica" accept="audio/mpeg, audio/mp3" style="display:none" onchange="subirArquivo(this, 'MUSICA')">
-            </div>
-
-            <div id="music-controls" style="margin-top: 10px;">
-                <audio id="audio-player" controls style="display: none;"></audio>
-                
-                <label>INICIAR MÚSICA EM (MM:SS):</label>
-                <div class="trim-container">
-                    <input type="number" id="trim-min" class="trim-input" placeholder="00" min="0" value="0" oninput="sincronizarPlayer()">
-                    <span style="font-weight:bold;">:</span>
-                    <input type="number" id="trim-sec" class="trim-input" placeholder="00" min="0" max="59" value="0" oninput="sincronizarPlayer()">
-                    <button type="button" onclick="marcarTempoAtual()" style="background: var(--turquesa-dark); border: 1px solid var(--turquesa); color: var(--turquesa); border-radius: 10px; padding: 12px; cursor: pointer; font-weight: bold; flex-shrink: 0;">MARCAR</button>
-                </div>
-                
-                <div style="background: rgba(197, 160, 89, 0.1); padding: 12px; border-radius: 12px; margin-top: 15px; border: 1px solid rgba(197, 160, 89, 0.2);">
-                    <label style="margin: 0; color: var(--dourado);"><input type="checkbox" id="conf-musica-loop-vol" checked> VOLUME DINÂMICO (Fade)</label>
-                </div>
-            </div>
-
-            <button class="btn-save-main" onclick="fecharModalMusica()">CONCLUIR</button>
-        </div>
+        <p onclick="window.location.href='index.html'" style="text-align:center; color:#555; font-size:12px; margin-top:20px; cursor:pointer;">CANCELAR</p>
     </div>
 
 <script>
     const WORKER_URL = "https://photomovie.maxprimefotovideo.workers.dev";
-    const player = document.getElementById('audio-player');
 
     window.onload = () => {
         const editData = localStorage.getItem('evento_para_editar');
@@ -195,143 +94,66 @@
             document.getElementById('conf-id').value = ev.id || "";
             document.getElementById('conf-nome').value = ev.nome || "";
             document.getElementById('conf-data').value = ev.data || "";
-            if(ev.preset) document.getElementById('conf-preset').value = ev.preset;
-            if(ev.v1) document.getElementById('conf-v1').value = ev.v1;
-            if(ev.v2) document.getElementById('conf-v2').value = ev.v2;
-            if(ev.v3) document.getElementById('conf-v3').value = ev.v3;
-            if(ev.reverso) document.getElementById('conf-reverso').checked = (ev.reverso === true || ev.reverso === "true");
-            if(ev.tempo) setTime(parseInt(ev.tempo), document.getElementById('time-'+ev.tempo));
-            
-            if(ev.musicaUrl) {
-                document.getElementById('conf-musica-url').value = ev.musicaUrl;
-                document.getElementById('conf-musica-name').value = ev.musicaName || "musica_evento.mp3";
-                document.getElementById('music-filename-display').innerText = ev.musicaName || "Arquivo carregado";
-                document.getElementById('music-status-text').innerText = "🎵 MÚSICA CONFIGURADA";
-                
-                const totalSeconds = parseInt(ev.musicaTrim) || 0;
-                document.getElementById('trim-min').value = Math.floor(totalSeconds / 60);
-                document.getElementById('trim-sec').value = totalSeconds % 60;
-                
-                document.getElementById('conf-musica-loop-vol').checked = ev.musicaLoopVol !== false;
-                player.src = `${WORKER_URL}/stream?id=${ev.musicaUrl}`;
-                player.style.display = "block";
-            }
-
+            document.getElementById('conf-tempo').value = ev.tempo || "10";
             if(ev.molduraUrl) {
                 document.getElementById('conf-moldura-url').value = ev.molduraUrl;
-                document.getElementById('frame-preview').src = `${WORKER_URL}/stream?id=${ev.molduraUrl}`; 
+                document.getElementById('frame-preview').src = `${WORKER_URL}/stream?id=${ev.molduraUrl}`;
                 document.getElementById('frame-preview').style.display = "block";
-                document.getElementById('upload-label').innerText = "📸 MOLDURA OK";
             }
             document.getElementById('titulo-pagina').innerText = "EDITAR EVENTO";
-            localStorage.removeItem('evento_para_editar');
         }
-    }
+    };
 
-    // CORREÇÃO 1: Leva a música para o tempo digitado no MM:SS
-    function sincronizarPlayer() {
-        if(player && player.src) {
-            const m = parseInt(document.getElementById('trim-min').value) || 0;
-            const s = parseInt(document.getElementById('trim-sec').value) || 0;
-            player.currentTime = (m * 60) + s;
-        }
+    function setTime(val, btn) {
+        document.getElementById('conf-tempo').value = val;
+        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
     }
-
-    // CORREÇÃO 2: Marcar preenche os campos MM e SS baseados no player atual
-    function marcarTempoAtual() {
-        if(player && player.src) {
-            const total = Math.floor(player.currentTime);
-            document.getElementById('trim-min').value = Math.floor(total / 60);
-            document.getElementById('trim-sec').value = total % 60;
-        } else {
-            alert("Dê o play na música primeiro!");
-        }
-    }
-
-    function atualizarPresetUI() {
-        const p = document.getElementById('conf-preset').value;
-        if (p === 'vizz-classic') { setV("2.0", "0.3", "2.0", false); }
-        else if (p === 'boomerang') { setV("1.0", "1.0", "1.0", true); }
-        else if (p === 'slow-extremo') { setV("0.5", "0.2", "0.5", false); }
-        else if (p === 'normal') { setV("1.0", "1.0", "1.0", false); }
-    }
-    function setV(a,b,c,r){ document.getElementById('conf-v1').value=a; document.getElementById('conf-v2').value=b; document.getElementById('conf-v3').value=c; document.getElementById('conf-reverso').checked=r; }
-
-    function toggleModal(id, show) { 
-        document.getElementById(id).style.display = show ? 'flex' : 'none'; 
-        if(!show) player.pause();
-    }
-    
-    function fecharModalMusica() { toggleModal('music-modal', false); }
-    function setTime(val, btn) { document.getElementById('conf-tempo').value = val; document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active')); if(btn) btn.classList.add('active'); }
 
     async function subirArquivo(input, tipo) {
         const nomeEvento = document.getElementById('conf-nome').value.trim();
-        if(!nomeEvento) { alert("Nome do evento obrigatório!"); return; }
-        if(!input.files[0]) return;
-        
+        if(!nomeEvento) return alert("Digite o nome antes de upar!");
         const file = input.files[0];
-        const label = tipo === 'MOLDURA' ? document.getElementById('upload-label') : document.getElementById('music-file-label');
-        label.innerText = "⏳ ENVIANDO...";
-
         const formData = new FormData();
         formData.append("file", file);
-        const fileName = tipo === 'MOLDURA' ? `moldura_principal.png` : `musica_evento.mp3`;
-        formData.append("uuid", fileName); formData.append("evento", nomeEvento);
-
-        try {
-            await fetch(`${WORKER_URL}/upload`, { method: 'POST', body: formData });
-            const pathRelativo = `${nomeEvento}/${fileName}`;
-            if(tipo === 'MOLDURA') {
-                document.getElementById('conf-moldura-url').value = pathRelativo;
-                document.getElementById('frame-preview').src = `${WORKER_URL}/stream?id=${pathRelativo}`;
-                document.getElementById('frame-preview').style.display = "block";
-                label.innerText = "📸 MOLDURA OK";
-            } else {
-                document.getElementById('conf-musica-url').value = pathRelativo;
-                document.getElementById('conf-musica-name').value = file.name;
-                document.getElementById('music-filename-display').innerText = file.name;
-                document.getElementById('music-status-text').innerText = "🎵 MÚSICA CONFIGURADA";
-                label.innerText = "✅ " + file.name;
-                
-                player.src = URL.createObjectURL(file);
-                player.style.display = "block";
-            }
-        } catch (e) { alert("Erro no upload."); label.innerText = "ERRO"; }
+        formData.append("uuid", "moldura_principal.png");
+        formData.append("evento", nomeEvento);
+        
+        document.getElementById('upload-label').innerText = "⏳ ENVIANDO...";
+        await fetch(`${WORKER_URL}/upload`, { method: 'POST', body: formData });
+        document.getElementById('conf-moldura-url').value = `${nomeEvento}/moldura_principal.png`;
+        document.getElementById('upload-label').innerText = "📸 MOLDURA OK";
     }
 
     async function salvarConfig() {
         const nomeEvento = document.getElementById('conf-nome').value.trim();
-        if(!nomeEvento) return alert("Digite o nome do evento.");
-        
-        // Converte MM:SS para segundos totais antes de salvar
-        const m = parseInt(document.getElementById('trim-min').value) || 0;
-        const s = parseInt(document.getElementById('trim-sec').value) || 0;
-        const totalSec = (m * 60) + s;
+        if(!nomeEvento) return alert("Nome obrigatório!");
 
+        // RECUPERA O ID FIXO SE ELE JÁ EXISTIR NO STORAGE
+        const dadosLocais = JSON.parse(localStorage.getItem('config_atual')) || {};
+        
         const config = {
             id: document.getElementById('conf-id').value || String(Date.now()),
-            nome: nomeEvento,
+            nome: nomeEvento, 
+            id_fixo: dadosLocais.id_fixo || nomeEvento, // AQUI ESTÁ A CHAVE: O número nunca muda
             data: document.getElementById('conf-data').value,
             tempo: String(document.getElementById('conf-tempo').value),
-            preset: document.getElementById('conf-preset').value,
-            v1: document.getElementById('conf-v1').value,
-            v2: document.getElementById('conf-v2').value,
-            v3: document.getElementById('conf-v3').value,
-            reverso: document.getElementById('conf-reverso').checked,
-            molduraUrl: document.getElementById('conf-moldura-url').value,
-            musicaUrl: document.getElementById('conf-musica-url').value,
-            musicaName: document.getElementById('conf-musica-name').value,
-            musicaTrim: String(totalSec),
-            musicaLoopVol: document.getElementById('conf-musica-loop-vol').checked
+            molduraUrl: document.getElementById('conf-moldura-url').value
         };
+
         try {
             const res = await fetch(`${WORKER_URL}/salvar-evento`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(config)
             });
-            if(res.ok) { alert("Evento salvo!"); window.location.href = 'index.html'; }
+
+            if(res.ok) {
+                // SALVA NO STORAGE PARA A GALERIA LER NA HORA
+                localStorage.setItem('config_atual', JSON.stringify(config));
+                alert("Evento Atualizado!");
+                window.location.href = 'index.html';
+            }
         } catch (e) { alert("Erro ao salvar."); }
     }
 </script>
