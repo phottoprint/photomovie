@@ -9,25 +9,98 @@
     <style>
         :root { --turquesa: #00d1d1; --dourado: #c5a059; --bg: #001a1a; --danger: #ff4d4d; }
         body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; min-height: 100vh; }
-        .header { padding: 20px; border-bottom: 2px solid var(--dourado); background: rgba(0,0,0,0.6); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(15px); display: flex; flex-direction: column; align-items: center; }
-        .header-top { display: flex; align-items: center; justify-content: center; width: 100%; position: relative; margin-bottom: 15px; }
+        
+        .header { 
+            padding: 20px; 
+            border-bottom: 2px solid var(--dourado); 
+            background: rgba(0,0,0,0.6); 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+            backdrop-filter: blur(15px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .event-left { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            position: absolute; 
+            left: 0;
+        }
+        .v-line { width: 2px; height: 35px; background: var(--dourado); border-radius: 2px; }
+        #nome-evento-titulo { 
+            color: var(--dourado); 
+            font-size: 14px; 
+            margin: 0; 
+            letter-spacing: 2px; 
+            text-transform: uppercase; 
+            font-weight: bold;
+            text-align: left;
+        }
+
         .title-group { flex-grow: 1; }
         .header h1 { color: var(--dourado); letter-spacing: 5px; margin: 0; text-transform: uppercase; font-size: 1.8rem; font-weight: 900; cursor: pointer; }
         .header .subtitle { font-size: 11px; letter-spacing: 4px; opacity: 0.9; margin-top: 2px; text-transform: uppercase; color: var(--dourado); }
-        .event-left { display: flex; align-items: center; gap: 10px; position: absolute; left: 0; }
-        .v-line { width: 2px; height: 35px; background: var(--dourado); border-radius: 2px; }
-        #nome-evento-titulo { color: var(--dourado); font-size: 14px; margin: 0; opacity: 1; letter-spacing: 2px; text-transform: uppercase; font-weight: bold; text-align: left; }
-        .search-container { position: relative; width: 90%; max-width: 400px; margin-top: 5px; }
-        .search-input { width: 100%; padding: 10px 40px 10px 20px; border-radius: 25px; border: 1px solid var(--dourado); background: rgba(255, 255, 255, 0.1); color: white; outline: none; font-size: 14px; box-sizing: border-box; }
+
+        .search-container {
+            position: relative;
+            width: 90%;
+            max-width: 400px;
+            margin-top: 5px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px 40px 10px 20px;
+            border-radius: 25px;
+            border: 1px solid var(--dourado);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            outline: none;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
         .admin-panel { display: none; background: #002b2b; padding: 15px; border-bottom: 1px solid var(--dourado); gap: 10px; justify-content: center; flex-wrap: wrap; }
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; padding: 15px; padding-bottom: 120px; }
-        .video-card { background: #000; border: 1px solid rgba(197, 160, 89, 0.3); border-radius: 12px; overflow: hidden; aspect-ratio: 9/16; position: relative; cursor: pointer; }
-        .video-number { position: absolute; top: 10px; right: 10px; color: var(--dourado); font-weight: bold; font-size: 18px; z-index: 5; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 5px; }
+
+        .video-card { 
+            background: #000; border: 1px solid rgba(197, 160, 89, 0.3); border-radius: 12px; 
+            overflow: hidden; aspect-ratio: 9/16; position: relative; cursor: pointer; 
+        }
+        .video-number {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: var(--dourado);
+            font-weight: bold;
+            font-size: 18px;
+            z-index: 5;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.3);
+            padding: 2px 8px;
+            border-radius: 5px;
+        }
         .video-card video { width: 100%; height: 100%; object-fit: cover; }
+
         .btn-del-mini { position: absolute; bottom: 10px; right: 10px; background: var(--danger); border: none; color: white; border-radius: 50%; width: 30px; height: 30px; display: none; z-index: 10; font-weight: bold; }
+
         #modal-zoom { position: fixed; inset: 0; background: rgba(0,0,0,0.98); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
         #media-full { width: 85%; max-height: 70vh; border: 2px solid var(--dourado); border-radius: 15px; background: #000; }
+        
         .modal-controls { margin-top: 25px; display: flex; gap: 10px; width: 85%; justify-content: center; flex-wrap: wrap; }
+        
         .btn-action { padding: 12px 20px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 12px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 5px; }
         .btn-close { background: #333; color: white; }
         .btn-download { background: var(--dourado); color: black; }
@@ -80,35 +153,42 @@
     let listaArquivosAtuais = [];
     let idPastaFixo = ""; 
 
-    // FUNÇÃO QUE ATUALIZA O NOME NO TOPO E BUSCA VÍDEOS
-    async function sincronizarTudo(isSilent = false) {
-        const config = JSON.parse(localStorage.getItem('config_atual'));
-        if(!config) return;
+    // FUNÇÃO PRINCIPAL: Sincroniza Nome (Capa) e Vídeos (Pasta Real)
+    async function sincronizarInterface(isSilent = false) {
+        const gDados = localStorage.getItem('config_atual');
+        if(!gDados) return;
+        const config = JSON.parse(gDados);
 
-        // 1. FORÇA O NOME EDITADO A APARECER NO TOPO
-        const nomeFormatado = config.nome.replace(/_/g, ' ');
-        document.getElementById('nome-evento-titulo').innerText = nomeFormatado;
+        // 1. ATUALIZA O NOME NO TOPO (Pega sempre o que foi editado no storage)
+        const tituloHTML = document.getElementById('nome-evento-titulo');
+        const nomeAtualizado = config.nome.replace(/_/g, ' ');
+        if (tituloHTML.innerText !== nomeAtualizado) {
+            tituloHTML.innerText = nomeAtualizado;
+        }
 
-        // 2. GARANTE O ID FIXO (A "PASTA" QUE NÃO MUDA)
+        // 2. DEFINE O ID DA PASTA (Se não existir, trava o nome atual como ID fixo)
         if(!config.id_fixo) {
             config.id_fixo = config.nome; 
             localStorage.setItem('config_atual', JSON.stringify(config));
         }
         idPastaFixo = config.id_fixo;
 
-        // 3. BUSCA OS VÍDEOS SEMPRE NO ID FIXO
+        // 3. BUSCA VÍDEOS PELA PASTA REAL (id_fixo)
         try {
             const res = await fetch(`${WORKER_URL}/listar-galeria?evento=${encodeURIComponent(idPastaFixo)}`);
             const dados = await res.json();
-            listaArquivosAtuais = dados.filter(f => f.path.includes('final_'));
+            // Filtra apenas vídeos processados
+            listaArquivosAtuais = dados.filter(f => f.path.toLowerCase().includes('final_'));
             renderizarGaleria(isSilent);
-        } catch (e) { console.error("Erro na sincronização", e); }
+        } catch (e) {
+            console.error("Erro ao carregar vídeos:", e);
+        }
     }
 
     window.onload = () => {
-        sincronizarTudo();
-        // Sincroniza o NOME e os VÍDEOS a cada 2 segundos (Super rápido para não dar erro)
-        setInterval(() => sincronizarTudo(true), 2000);
+        sincronizarInterface();
+        // Verifica se houve edição de nome ou novos vídeos a cada 3 segundos
+        setInterval(() => sincronizarInterface(true), 3000);
     };
 
     function renderizarGaleria(isSilent) {
@@ -120,9 +200,10 @@
             return termoBusca === "" || num === termoBusca || num.includes(termoBusca);
         });
 
+        // Se estiver em modo silencioso e nada mudou na quantidade, não reconstrói
         if(isSilent && filtrados.length === container.querySelectorAll('.video-card').length && termoBusca === "") return;
 
-        container.innerHTML = filtrados.length ? "" : "<p style='grid-column: 1/-1; opacity:0.5; margin-top:50px;'>Nenhum vídeo disponível...</p>";
+        container.innerHTML = filtrados.length ? "" : "<p style='grid-column: 1/-1; opacity:0.5; margin-top:50px;'>Aguardando novos vídeos...</p>";
 
         filtrados.forEach((file) => {
             const indiceOriginal = listaArquivosAtuais.findIndex(f => f.path === file.path) + 1;
@@ -154,17 +235,23 @@
     }
 
     async function excluirArquivo(path) {
-        if(!confirm("Excluir vídeo?")) return;
-        await fetch(`${WORKER_URL}/deletar`, { method: 'POST', body: JSON.stringify({ id: path, evento: idPastaFixo }) });
-        sincronizarTudo();
+        if(!confirm("Excluir este vídeo permanentemente?")) return;
+        await fetch(`${WORKER_URL}/deletar`, { 
+            method: 'POST', 
+            body: JSON.stringify({ id: path, evento: idPastaFixo }) 
+        });
+        sincronizarInterface();
     }
 
     async function excluirTudo() {
-        if(prompt("Digite 'apagar':") !== 'apagar') return;
+        if(prompt("Para limpar tudo, digite 'apagar':") !== 'apagar') return;
         for(let f of listaArquivosAtuais) {
-            await fetch(`${WORKER_URL}/deletar`, { method: 'POST', body: JSON.stringify({ id: f.path, evento: idPastaFixo }) });
+            await fetch(`${WORKER_URL}/deletar`, { 
+                method: 'POST', 
+                body: JSON.stringify({ id: f.path, evento: idPastaFixo }) 
+            });
         }
-        sincronizarTudo();
+        sincronizarInterface();
     }
 
     function detectarAdmin() {
@@ -178,19 +265,22 @@
 
     async function baixarTudoZip() {
         const btn = document.querySelector('.btn-zip');
-        btn.innerText = "⏳ AGUARDE...";
+        const textOrig = btn.innerText;
+        btn.innerText = "⏳ GERANDO ZIP...";
         const zip = new JSZip();
         for(let i = 0; i < listaArquivosAtuais.length; i++) {
             const url = `${WORKER_URL}/stream?id=${encodeURIComponent(listaArquivosAtuais[i].path)}`;
             const res = await fetch(url);
             zip.file(`video_${i+1}.mp4`, await res.blob());
         }
-        saveAs(await zip.generateAsync({type:"blob"}), "Galeria_Completa.zip");
-        btn.innerText = "📦 BAIXAR TUDO (ZIP)";
+        const content = await zip.generateAsync({type:"blob"});
+        saveAs(content, "Galeria_Eventos.zip");
+        btn.innerText = textOrig;
     }
 
     async function forcarDownload(url, filename) {
-        saveAs(await (await fetch(url)).blob(), filename);
+        const res = await fetch(url);
+        saveAs(await res.blob(), filename);
     }
 
     function fecharZoom() {
