@@ -129,7 +129,7 @@
         <div class="header-top">
             <div class="event-left">
                 <div class="v-line"></div>
-                <p id="nome-evento-titulo">Sincronizando...</p>
+                <p id="nome-evento-titulo">CARREGANDO...</p>
             </div>
             
             <div class="title-group">
@@ -169,12 +169,25 @@
     let cliquesAdmin = 0;
     let listaArquivosAtuais = [];
 
+    // Função para atualizar o nome do evento no topo
+    function atualizarTituloEvento() {
+        const config = JSON.parse(localStorage.getItem('config_atual'));
+        if(config && config.nome) {
+            document.getElementById('nome-evento-titulo').innerText = config.nome.replace(/_/g, ' ');
+        }
+    }
+
     window.onload = () => {
         const config = JSON.parse(localStorage.getItem('config_atual'));
         if(!config) { window.location.href = "index.html"; return; }
-        document.getElementById('nome-evento-titulo').innerText = config.nome.replace(/_/g, ' ');
+        
+        atualizarTituloEvento(); // Garante a atualização imediata
+        
         carregarArquivos(config.nome);
-        setInterval(() => carregarArquivos(config.nome, true), 8000);
+        setInterval(() => {
+            atualizarTituloEvento(); // Checa se o nome mudou no localStorage durante o uso
+            carregarArquivos(config.nome, true);
+        }, 8000);
     };
 
     function detectarAdmin() {
@@ -307,8 +320,6 @@
         document.getElementById('modal-zoom').style.display = 'none';
         const v = document.getElementById('media-full');
         v.pause(); v.src = "";
-        
-        // Correção solicitada: Limpa a busca e volta para a galeria completa ao fechar
         document.getElementById('input-busca').value = "";
         renderizarGaleria(true);
     }
