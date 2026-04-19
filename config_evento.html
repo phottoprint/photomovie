@@ -1,144 +1,34 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CONFIGURAR EVENTO - Photo Movie</title>
-    <style>
-        :root { --turquesa: #00d1d1; --turquesa-dark: #003333; --dourado: #c5a059; --dourado-fosco: #8e6d2d; --preto: #050505; }
-        body { margin: 0; background: var(--preto); color: white; font-family: 'Segoe UI', sans-serif; padding-bottom: 40px; background-image: radial-gradient(circle at top right, #111, #050505); }
-        .header { background: linear-gradient(to bottom, var(--turquesa-dark), var(--preto)); padding: 35px 25px; text-align: center; border-bottom: 2px solid var(--dourado); }
-        .header h1 { color: var(--dourado); margin: 0; font-size: 36px; letter-spacing: 5px; font-weight: 900; text-transform: uppercase; }
-        .container { padding: 20px; max-width: 500px; margin: 0 auto; }
-        .section { background: rgba(20, 20, 20, 0.9); border: 1px solid #333; padding: 25px 20px; border-radius: 24px; margin-bottom: 20px; }
-        .section h3 { color: var(--dourado); margin-top: 0; font-size: 12px; text-transform: uppercase; letter-spacing: 2px; border-bottom: 1px solid #222; padding-bottom: 12px; margin-bottom: 20px; }
-        label { display: block; font-size: 11px; margin: 15px 0 8px 0; color: #888; font-weight: bold; text-transform: uppercase; }
-        input, select { width: 100%; padding: 16px; background: #000; border: 1px solid #444; color: white; border-radius: 14px; box-sizing: border-box; font-size: 16px; outline: none; }
-        .time-selector { display: flex; justify-content: center; gap: 15px; }
-        .time-btn { background: #1a1a1a; border: 2px solid #333; color: #666; width: 55px; height: 55px; border-radius: 50%; cursor: pointer; font-weight: bold; }
-        .time-btn.active { border-color: var(--turquesa); color: var(--turquesa); background: rgba(0, 209, 209, 0.1); }
-        .speed-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .speed-box { background: #000; border: 1px solid #222; padding: 10px; border-radius: 12px; text-align: center; }
-        .speed-box select { border: none; background: transparent; color: var(--turquesa); font-weight: bold; cursor: pointer; }
-        .action-box { width: 100%; padding: 20px; background: #111; border: 2px dashed #444; color: #888; border-radius: 18px; text-align: center; cursor: pointer; font-weight: bold; display: flex; flex-direction: column; justify-content: center; align-items: center; box-sizing: border-box; }
-        .btn-save-main { width: 100%; padding: 22px; background: linear-gradient(135deg, var(--dourado), var(--dourado-fosco)); border: none; border-radius: 50px; color: #000; font-weight: 900; text-transform: uppercase; cursor: pointer; font-size: 17px; margin-top: 20px; }
-        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 9999; display: none; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
-        .modal-content { width: 85%; max-width: 400px; background: #0a0a0a; border-radius: 35px; border: 1px solid var(--dourado); padding: 30px; display: flex; flex-direction: column; gap: 10px; }
-        #frame-preview { width: 100%; max-height: 200px; margin-top: 15px; display: none; border-radius: 12px; object-fit: contain; }
-    </style>
-</head>
-<body>
-
-    <div class="header">
-        <h1 id="titulo-pagina">PHOTO MOVIE</h1>
-        <p>COLECIONANDO MOMENTOS</p>
-    </div>
-
-    <div class="container">
-        <input type="hidden" id="conf-id" value="">
-
-        <div class="section">
-            <h3>1. O Evento</h3>
-            <label>NOME DO EVENTO (CAPA)</label>
-            <input type="text" id="conf-nome" placeholder="Ex: Casamento_Tiago" oninput="this.value = this.value.replace(/\s+/g, '_')">
-            <label>DATA</label>
-            <input type="date" id="conf-data">
-        </div>
-
-        <div class="section">
-            <h3>2. Tempo de Gravação</h3>
-            <div class="time-selector">
-                <button class="time-btn" id="time-8" onclick="setTime(8, this)">8s</button>
-                <button class="time-btn active" id="time-10" onclick="setTime(10, this)">10s</button>
-                <button class="time-btn" id="time-12" onclick="setTime(12, this)">12s</button>
-            </div>
-            <input type="hidden" id="conf-tempo" value="10">
-        </div>
-
-        <div class="section">
-            <h3>3. Velocidade (Efeitos)</h3>
-            <select id="conf-preset" onchange="atualizarPresetUI()">
-                <option value="normal">Normal (1x Constante)</option>
-                <option value="vizz-classic">Vizz Classic (Fast > Slow > Fast)</option>
-                <option value="boomerang">Boomerang (Normal + Reverso)</option>
-                <option value="custom">Configuração Manual</option>
-            </select>
-            <div class="speed-grid">
-                <div class="speed-box"><label>Início</label><select id="conf-v1"><option value="0.5">0.5x</option><option value="1.0" selected>1.0x</option><option value="2.0">2.0x</option></select></div>
-                <div class="speed-box"><label>Meio</label><select id="conf-v2"><option value="0.5">0.5x</option><option value="1.0" selected>1.0x</option><option value="2.0">2.0x</option></select></div>
-                <div class="speed-box"><label>Fim</label><select id="conf-v3"><option value="0.5">0.5x</option><option value="1.0" selected>1.0x</option><option value="2.0">2.0x</option></select></div>
-            </div>
-        </div>
-
-        <div class="section">
-            <h3>4. Estética</h3>
-            <div class="action-box" id="btn-moldura-box" onclick="document.getElementById('file-moldura').click()">
-                <span id="upload-label">📸 UPAR MOLDURA (PNG)</span>
-                <input type="file" id="file-moldura" accept="image/png" style="display:none" onchange="subirArquivo(this, 'MOLDURA')">
-            </div>
-            <input type="hidden" id="conf-moldura-url" value="">
-            <center><img id="frame-preview"></center>
-        </div>
-
-        <button class="btn-save-main" onclick="salvarConfig()">SALVAR EVENTO</button>
-        <p onclick="window.location.href='index.html'" style="text-align:center; color:#555; font-size:12px; margin-top:20px; cursor:pointer;">CANCELAR</p>
-    </div>
-
-<script>
-    const WORKER_URL = "https://photomovie.maxprimefotovideo.workers.dev";
-
-    window.onload = () => {
-        const editData = localStorage.getItem('evento_para_editar');
-        if (editData) {
-            const ev = JSON.parse(editData);
-            document.getElementById('conf-id').value = ev.id || "";
-            document.getElementById('conf-nome').value = ev.nome || "";
-            document.getElementById('conf-data').value = ev.data || "";
-            document.getElementById('conf-tempo').value = ev.tempo || "10";
-            if(ev.molduraUrl) {
-                document.getElementById('conf-moldura-url').value = ev.molduraUrl;
-                document.getElementById('frame-preview').src = `${WORKER_URL}/stream?id=${ev.molduraUrl}`;
-                document.getElementById('frame-preview').style.display = "block";
-            }
-            document.getElementById('titulo-pagina').innerText = "EDITAR EVENTO";
-        }
-    };
-
-    function setTime(val, btn) {
-        document.getElementById('conf-tempo').value = val;
-        document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-    }
-
-    async function subirArquivo(input, tipo) {
+async function salvarConfig() {
         const nomeEvento = document.getElementById('conf-nome').value.trim();
-        if(!nomeEvento) return alert("Digite o nome antes de upar!");
-        const file = input.files[0];
-        const formData = new FormData();
-        formData.append("file", file);
-        formData.append("uuid", "moldura_principal.png");
-        formData.append("evento", nomeEvento);
+        if(!nomeEvento) return alert("Digite o nome do evento.");
         
-        document.getElementById('upload-label').innerText = "⏳ ENVIANDO...";
-        await fetch(`${WORKER_URL}/upload`, { method: 'POST', body: formData });
-        document.getElementById('conf-moldura-url').value = `${nomeEvento}/moldura_principal.png`;
-        document.getElementById('upload-label').innerText = "📸 MOLDURA OK";
-    }
+        // Converte MM:SS para segundos totais antes de salvar
+        const m = parseInt(document.getElementById('trim-min').value) || 0;
+        const s = parseInt(document.getElementById('trim-sec').value) || 0;
+        const totalSec = (m * 60) + s;
 
-    async function salvarConfig() {
-        const nomeEvento = document.getElementById('conf-nome').value.trim();
-        if(!nomeEvento) return alert("Nome obrigatório!");
+        // --- INICIO DA CORREÇÃO (Mantendo o ID Fixo) ---
+        const configLocalAnterior = JSON.parse(localStorage.getItem('config_atual')) || {};
+        // --- FIM DA CORREÇÃO ---
 
-        // RECUPERA O ID FIXO SE ELE JÁ EXISTIR NO STORAGE
-        const dadosLocais = JSON.parse(localStorage.getItem('config_atual')) || {};
-        
         const config = {
             id: document.getElementById('conf-id').value || String(Date.now()),
-            nome: nomeEvento, 
-            id_fixo: dadosLocais.id_fixo || nomeEvento, // AQUI ESTÁ A CHAVE: O número nunca muda
+            nome: nomeEvento,
+            // --- INICIO DA CORREÇÃO (Vinculando o ID Fixo) ---
+            id_fixo: configLocalAnterior.id_fixo || nomeEvento, 
+            // --- FIM DA CORREÇÃO ---
             data: document.getElementById('conf-data').value,
             tempo: String(document.getElementById('conf-tempo').value),
-            molduraUrl: document.getElementById('conf-moldura-url').value
+            preset: document.getElementById('conf-preset').value,
+            v1: document.getElementById('conf-v1').value,
+            v2: document.getElementById('conf-v2').value,
+            v3: document.getElementById('conf-v3').value,
+            reverso: document.getElementById('conf-reverso').checked,
+            molduraUrl: document.getElementById('conf-moldura-url').value,
+            musicaUrl: document.getElementById('conf-musica-url').value,
+            musicaName: document.getElementById('conf-musica-name').value,
+            musicaTrim: String(totalSec),
+            musicaLoopVol: document.getElementById('conf-musica-loop-vol').checked
         };
 
         try {
@@ -148,14 +38,13 @@
                 body: JSON.stringify(config)
             });
 
-            if(res.ok) {
-                // SALVA NO STORAGE PARA A GALERIA LER NA HORA
+            if(res.ok) { 
+                // --- INICIO DA CORREÇÃO (Avisa o navegador que o nome mudou) ---
                 localStorage.setItem('config_atual', JSON.stringify(config));
-                alert("Evento Atualizado!");
-                window.location.href = 'index.html';
+                // --- FIM DA CORREÇÃO ---
+                
+                alert("Evento salvo!"); 
+                window.location.href = 'index.html'; 
             }
         } catch (e) { alert("Erro ao salvar."); }
     }
-</script>
-</body>
-</html>
