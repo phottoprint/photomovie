@@ -158,25 +158,21 @@
         if(!gDados) return;
         const config = JSON.parse(gDados);
 
-        // 1. Atualiza Nome (Capa)
         const tituloHTML = document.getElementById('nome-evento-titulo');
         const nomeFormatado = (config.nome || "").replace(/_/g, ' ');
         if(tituloHTML.innerText !== nomeFormatado) tituloHTML.innerText = nomeFormatado;
 
-        // 2. Trava o ID da Pasta
         if(!config.id_fixo) {
             config.id_fixo = config.nome;
             localStorage.setItem('config_atual', JSON.stringify(config));
         }
         idPastaFixo = config.id_fixo;
 
-        // 3. Busca arquivos
         try {
             const res = await fetch(`${WORKER_URL}/listar-galeria?evento=${encodeURIComponent(idPastaFixo)}`);
             const dados = await res.json();
             const novosFiltrados = dados.filter(f => f.path.toLowerCase().includes('final_'));
             
-            // Só renderiza se mudar a lista ou se for o primeiro carregamento
             if (JSON.stringify(novosFiltrados) !== JSON.stringify(listaArquivosAtuais) || !isSilent) {
                 listaArquivosAtuais = novosFiltrados;
                 renderizarGaleria(isSilent);
@@ -188,10 +184,27 @@
         const container = document.getElementById('gallery-container');
         const termoBusca = document.getElementById('input-busca').value;
         
+        // Filtra os arquivos com base na busca
         const filtrados = listaArquivosAtuais.filter((file, index) => {
             const num = (index + 1).toString();
             return termoBusca === "" || num === termoBusca || num.includes(termoBusca);
         });
+
+        // LÓGICA DE AUTO-ABRIR AO DIGITAR O NÚMERO EXATO:
+        if (termoBusca !== "" && filtrados.length > 0) {
+            const buscaExata = filtrados.find((f) => {
+                 const numReal = (listaArquivosAtuais.findIndex(ori => ori.path === f.path) + 1).toString();
+                 return numReal === termoBusca;
+            });
+
+            if (buscaExata) {
+                const url = `${WORKER_URL}/stream?id=${encodeURIComponent(buscaExata.path)}`;
+                abrirZoom(url, buscaExata.path);
+                document.getElementById('input-busca').value = ""; // Limpa para mostrar tudo ao fechar
+                renderizarGaleria(true); // Re-renderiza a galeria completa ao fundo
+                return;
+            }
+        }
 
         container.innerHTML = filtrados.length ? "" : "<p style='grid-column: 1/-1; opacity:0.5; margin-top:50px;'>Aguardando novos vídeos...</p>";
 
