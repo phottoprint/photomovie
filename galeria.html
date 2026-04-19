@@ -16,13 +16,12 @@
         .header .subtitle { font-size: 11px; letter-spacing: 4px; opacity: 0.9; margin-top: 2px; text-transform: uppercase; color: var(--dourado); }
         .event-left { display: flex; align-items: center; gap: 10px; position: absolute; left: 0; }
         .v-line { width: 2px; height: 35px; background: var(--dourado); border-radius: 2px; }
-        #nome-evento-titulo { color: var(--dourado); font-size: 13px; margin: 0; opacity: 0.8; letter-spacing: 2px; text-transform: uppercase; font-weight: bold; text-align: left; }
+        #nome-evento-titulo { color: var(--dourado); font-size: 14px; margin: 0; opacity: 1; letter-spacing: 2px; text-transform: uppercase; font-weight: bold; text-align: left; }
         .search-container { position: relative; width: 90%; max-width: 400px; margin-top: 5px; }
         .search-input { width: 100%; padding: 10px 40px 10px 20px; border-radius: 25px; border: 1px solid var(--dourado); background: rgba(255, 255, 255, 0.1); color: white; outline: none; font-size: 14px; box-sizing: border-box; }
-        .search-container::after { content: '🔍'; position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 16px; opacity: 0.7; }
         .admin-panel { display: none; background: #002b2b; padding: 15px; border-bottom: 1px solid var(--dourado); gap: 10px; justify-content: center; flex-wrap: wrap; }
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; padding: 15px; padding-bottom: 120px; }
-        .video-card { background: #000; border: 1px solid rgba(197, 160, 89, 0.3); border-radius: 12px; overflow: hidden; aspect-ratio: 9/16; position: relative; cursor: pointer; transition: 0.2s; }
+        .video-card { background: #000; border: 1px solid rgba(197, 160, 89, 0.3); border-radius: 12px; overflow: hidden; aspect-ratio: 9/16; position: relative; cursor: pointer; }
         .video-number { position: absolute; top: 10px; right: 10px; color: var(--dourado); font-weight: bold; font-size: 18px; z-index: 5; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 5px; }
         .video-card video { width: 100%; height: 100%; object-fit: cover; }
         .btn-del-mini { position: absolute; bottom: 10px; right: 10px; background: var(--danger); border: none; color: white; border-radius: 50%; width: 30px; height: 30px; display: none; z-index: 10; font-weight: bold; }
@@ -42,7 +41,7 @@
         <div class="header-top">
             <div class="event-left">
                 <div class="v-line"></div>
-                <p id="nome-evento-titulo">Carregando...</p>
+                <p id="nome-evento-titulo">SINCRONIZANDO...</p>
             </div>
             <div class="title-group">
                 <h1 onclick="detectarAdmin()">PHOTO MOVIE</h1>
@@ -50,13 +49,13 @@
             </div>
         </div>
         <div class="search-container">
-            <input type="number" id="input-busca" class="search-input" placeholder="Digite o número do vídeo..." oninput="filtrarVideos()">
+            <input type="number" id="input-busca" class="search-input" placeholder="Número do vídeo..." oninput="filtrarVideos()">
         </div>
     </div>
 
     <div id="admin-panel" class="admin-panel">
         <button class="btn-action btn-zip" onclick="baixarTudoZip()">📦 BAIXAR TUDO (ZIP)</button>
-        <button class="btn-action btn-danger" onclick="excluirTudo()" style="background: var(--danger); color: white;">⚠️ APAGAR GALERIA</button>
+        <button class="btn-action" onclick="excluirTudo()" style="background: var(--danger); color: white;">⚠️ APAGAR GALERIA</button>
     </div>
 
     <div id="gallery-container" class="gallery-grid"></div>
@@ -70,7 +69,7 @@
         <div class="modal-controls">
             <button class="btn-action btn-close" onclick="fecharZoom()">FECHAR</button>
             <button id="btn-download-force" class="btn-action btn-download">BAIXAR MP4</button>
-            <button id="btn-delete-single" class="btn-action admin-only" style="display:none; background: var(--danger); color: white;">EXCLUIR</button>
+            <button id="btn-delete-single" class="btn-action" style="display:none; background: var(--danger); color: white;">EXCLUIR</button>
         </div>
     </div>
 
@@ -79,43 +78,41 @@
     let isAdmin = false;
     let cliquesAdmin = 0;
     let listaArquivosAtuais = [];
-    
-    // O "NÚMERO" fixo do evento (O ID da Pasta)
-    let numeroFixoEvento = ""; 
+    let idPastaFixo = ""; 
 
-    async function carregarGaleria(isSilent = false) {
+    // FUNÇÃO QUE ATUALIZA O NOME NO TOPO E BUSCA VÍDEOS
+    async function sincronizarTudo(isSilent = false) {
         const config = JSON.parse(localStorage.getItem('config_atual'));
-        if(!config) { window.location.href = "index.html"; return; }
+        if(!config) return;
 
-        // MUDANÇA AQUI: 
-        // Se o evento for novo, ele usa o nome como ID. 
-        // Se você editar o nome, o 'id_fixo' continua sendo o primeiro nome criado.
+        // 1. FORÇA O NOME EDITADO A APARECER NO TOPO
+        const nomeFormatado = config.nome.replace(/_/g, ' ');
+        document.getElementById('nome-evento-titulo').innerText = nomeFormatado;
+
+        // 2. GARANTE O ID FIXO (A "PASTA" QUE NÃO MUDA)
         if(!config.id_fixo) {
             config.id_fixo = config.nome; 
             localStorage.setItem('config_atual', JSON.stringify(config));
         }
+        idPastaFixo = config.id_fixo;
 
-        // CAPA: Nome que aparece no Título (Pode mudar sempre)
-        document.getElementById('nome-evento-titulo').innerText = config.nome.replace(/_/g, ' ');
-        
-        // NÚMERO/PASTA: Onde os vídeos realmente estão
-        numeroFixoEvento = config.id_fixo;
-
+        // 3. BUSCA OS VÍDEOS SEMPRE NO ID FIXO
         try {
-            const res = await fetch(`${WORKER_URL}/listar-galeria?evento=${encodeURIComponent(numeroFixoEvento)}`);
+            const res = await fetch(`${WORKER_URL}/listar-galeria?evento=${encodeURIComponent(idPastaFixo)}`);
             const dados = await res.json();
             listaArquivosAtuais = dados.filter(f => f.path.includes('final_'));
             renderizarGaleria(isSilent);
-        } catch (e) { console.error("Erro", e); }
+        } catch (e) { console.error("Erro na sincronização", e); }
     }
 
     window.onload = () => {
-        carregarGaleria();
-        setInterval(() => carregarGaleria(true), 6000);
+        sincronizarTudo();
+        // Sincroniza o NOME e os VÍDEOS a cada 2 segundos (Super rápido para não dar erro)
+        setInterval(() => sincronizarTudo(true), 2000);
     };
 
-    function renderizarGaleria(isSilent = false) {
-        const container = document.getElementById('gallery-grid') || document.getElementById('gallery-container');
+    function renderizarGaleria(isSilent) {
+        const container = document.getElementById('gallery-container');
         const termoBusca = document.getElementById('input-busca').value;
         
         const filtrados = listaArquivosAtuais.filter((file, index) => {
@@ -125,10 +122,7 @@
 
         if(isSilent && filtrados.length === container.querySelectorAll('.video-card').length && termoBusca === "") return;
 
-        container.innerHTML = "";
-        if(filtrados.length === 0) {
-            container.innerHTML = "<p style='grid-column: 1/-1; opacity:0.5; margin-top:50px;'>Nenhum vídeo...</p>";
-        }
+        container.innerHTML = filtrados.length ? "" : "<p style='grid-column: 1/-1; opacity:0.5; margin-top:50px;'>Nenhum vídeo disponível...</p>";
 
         filtrados.forEach((file) => {
             const indiceOriginal = listaArquivosAtuais.findIndex(f => f.path === file.path) + 1;
@@ -160,23 +154,17 @@
     }
 
     async function excluirArquivo(path) {
-        if(!confirm("Deseja apagar permanentemente?")) return;
-        await fetch(`${WORKER_URL}/deletar`, {
-            method: 'POST',
-            body: JSON.stringify({ id: path, evento: numeroFixoEvento })
-        });
-        carregarGaleria();
+        if(!confirm("Excluir vídeo?")) return;
+        await fetch(`${WORKER_URL}/deletar`, { method: 'POST', body: JSON.stringify({ id: path, evento: idPastaFixo }) });
+        sincronizarTudo();
     }
 
     async function excluirTudo() {
-        if(prompt("Digite 'apagar' para limpar a galeria:") !== 'apagar') return;
+        if(prompt("Digite 'apagar':") !== 'apagar') return;
         for(let f of listaArquivosAtuais) {
-            await fetch(`${WORKER_URL}/deletar`, {
-                method: 'POST',
-                body: JSON.stringify({ id: f.path, evento: numeroFixoEvento })
-            });
+            await fetch(`${WORKER_URL}/deletar`, { method: 'POST', body: JSON.stringify({ id: f.path, evento: idPastaFixo }) });
         }
-        carregarGaleria();
+        sincronizarTudo();
     }
 
     function detectarAdmin() {
@@ -184,23 +172,21 @@
             isAdmin = true;
             document.getElementById('admin-panel').style.display = 'flex';
             document.querySelectorAll('.btn-del-mini').forEach(b => b.style.display = 'block');
-            alert("MODO ADMIN ATIVADO");
             cliquesAdmin = 0;
         }
     }
 
     async function baixarTudoZip() {
         const btn = document.querySelector('.btn-zip');
-        const original = btn.innerText;
-        btn.innerText = "⚡ PREPARANDO...";
+        btn.innerText = "⏳ AGUARDE...";
         const zip = new JSZip();
         for(let i = 0; i < listaArquivosAtuais.length; i++) {
             const url = `${WORKER_URL}/stream?id=${encodeURIComponent(listaArquivosAtuais[i].path)}`;
             const res = await fetch(url);
             zip.file(`video_${i+1}.mp4`, await res.blob());
         }
-        saveAs(await zip.generateAsync({type:"blob"}), `Galeria.zip`);
-        btn.innerText = original;
+        saveAs(await zip.generateAsync({type:"blob"}), "Galeria_Completa.zip");
+        btn.innerText = "📦 BAIXAR TUDO (ZIP)";
     }
 
     async function forcarDownload(url, filename) {
