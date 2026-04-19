@@ -168,22 +168,32 @@
     let isAdmin = false;
     let cliquesAdmin = 0;
     let listaArquivosAtuais = [];
-    let idPastaOriginal = ""; // Variável para manter o vínculo com o bucket mesmo após trocar o nome
+    
+    // VARIÁVEL CHAVE: Mantém o ID da pasta fixo para não perder os vídeos
+    let pastaIDBusca = ""; 
 
     window.onload = () => {
         const config = JSON.parse(localStorage.getItem('config_atual'));
         if(!config) { window.location.href = "index.html"; return; }
         
-        // Se a edição mudou o nome, usamos o campo "id_evento" ou o nome original persistido para não perder os vídeos
-        idPastaOriginal = config.id_evento || config.nome; 
-        document.getElementById('nome-evento-titulo').innerText = config.nome.replace(/_/g, ' ');
+        // Se houver um ID fixo salvo, usamos ele. Se não, usamos o nome da primeira vez que abriu.
+        // Isso garante que se você mudar o NOME, ele continue buscando na pasta original.
+        pastaIDBusca = config.id_original || config.nome; 
         
-        carregarArquivos(idPastaOriginal);
+        // Se for a primeira vez, salvamos o ID original para nunca mais perder o vínculo
+        if(!config.id_original) {
+            config.id_original = config.nome;
+            localStorage.setItem('config_atual', JSON.stringify(config));
+        }
+
+        document.getElementById('nome-evento-titulo').innerText = config.nome.replace(/_/g, ' ');
+        carregarArquivos(pastaIDBusca);
+        
         setInterval(() => {
-            const configAtualizada = JSON.parse(localStorage.getItem('config_atual'));
-            if(configAtualizada) {
-                document.getElementById('nome-evento-titulo').innerText = configAtualizada.nome.replace(/_/g, ' ');
-                carregarArquivos(idPastaOriginal, true);
+            const configRefresh = JSON.parse(localStorage.getItem('config_atual'));
+            if(configRefresh) {
+                document.getElementById('nome-evento-titulo').innerText = configRefresh.nome.replace(/_/g, ' ');
+                carregarArquivos(pastaIDBusca, true);
             }
         }, 8000);
     };
@@ -263,9 +273,9 @@
         try {
             await fetch(`${WORKER_URL}/deletar`, {
                 method: 'POST',
-                body: JSON.stringify({ id: path, evento: idPastaOriginal })
+                body: JSON.stringify({ id: path, evento: pastaIDBusca })
             });
-            carregarArquivos(idPastaOriginal);
+            carregarArquivos(pastaIDBusca);
         } catch (e) { alert("Erro ao deletar"); }
     }
 
@@ -275,10 +285,10 @@
         for(let f of listaArquivosAtuais) {
             await fetch(`${WORKER_URL}/deletar`, {
                 method: 'POST',
-                body: JSON.stringify({ id: f.path, evento: idPastaOriginal })
+                body: JSON.stringify({ id: f.path, evento: pastaIDBusca })
             });
         }
-        carregarArquivos(idPastaOriginal);
+        carregarArquivos(pastaIDBusca);
     }
 
     async function baixarTudoZip() {
@@ -316,10 +326,6 @@
         document.getElementById('modal-zoom').style.display = 'none';
         const v = document.getElementById('media-full');
         v.pause(); v.src = "";
-        
-        // Garante que volta para a galeria completa
-        document.getElementById('input-busca').value = "";
-        renderizarGaleria(true);
     }
 </script>
 </body>
