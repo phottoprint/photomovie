@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PHOTO MOVIE - ADMIN</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <style>
+        :root { --turquesa: #00d1d1; --dourado: #c5a059; --bg: #001a1a; --danger: #ff4d4d; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; min-height: 100vh; }
+        
+        .header { padding: 20px; border-bottom: 2px solid var(--dourado); background: rgba(0,0,0,0.8); position: sticky; top: 0; z-index: 100; }
+        .header h1 { color: var(--dourado); margin: 0; font-size: 1.5rem; letter-spacing: 3px; }
+
+        /* AREA DE COMANDOS GERAIS */
+        .admin-tools { display: flex; gap: 10px; justify-content: center; padding: 15px; background: #002b2b; }
+
+        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; padding: 15px; padding-bottom: 100px; }
+
+        .video-card { 
+            background: #000; border: 1px solid var(--dourado); border-radius: 12px; 
+            overflow: hidden; aspect-ratio: 9/16; position: relative;
+        }
+        .video-card video { width: 100%; height: 100%; object-fit: cover; }
+
+        /* BOTAO EXCLUIR UNITARIO (X VERMELHO) */
+        .btn-del-mini { 
+            position: absolute; top: 8px; right: 8px; 
+            background: var(--danger); border: none; color: white; 
+            border-radius: 50%; width: 32px; height: 32px; 
+            z-index: 20; font-weight: bold; cursor: pointer;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        /* BOTAO BAIXAR UNITARIO */
+        .btn-down-mini {
+            position: absolute; bottom: 8px; right: 8px;
+            background: var(--dourado); border: none; color: black;
+            border-radius: 5px; padding: 5px 8px; font-size: 10px;
+            font-weight: bold; cursor: pointer; z-index: 20;
+        }
+
+        .btn-action { padding: 10px 15px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 11px; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-zip { background: #28a745; color: white; }
+        .btn-voltar { background: #333; color: white; text-decoration: none; display: inline-block; margin-top: 10px; }
+
+        .footer { position: fixed; bottom: 0; width: 100%; padding: 15px; background: rgba(0,0,0,0.9); }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>GALERIA ADMIN</h1>
+        <p id="nome-evento-txt">CARREGANDO...</p>
+    </div>
+
+    <div class="admin-tools">
+        <button class="btn-action btn-zip" onclick="baixarTudoZip()">📦 BAIXAR TODOS (.ZIP)</button>
+        <button class="btn-action btn-danger" onclick="excluirTudo()">⚠️ APAGAR TUDO</button>
+    </div>
+
+    <div id="gallery-container" class="gallery-grid"></div>
+
+    <div class="footer">
+        <a href="index.html" class="btn-action btn-voltar">← VOLTAR AO INÍCIO</a>
+    </div>
+
+<script>
+    const WORKER_URL = "https://photomovie.maxprimefotovideo.workers.dev";
+    let listaArquivos = [];
+
+    window.onload = () => {
+        const config = JSON.parse(localStorage.getItem('config_atual'));
+        if(!config) { window.location.href = "index.html"; return; }
+        document.getElementById('nome-evento-txt').innerText = "EVENTO: " + config.nome.toUpperCase();
+        carregarArquivos(config.nome);
+    };
+
+    async function carregarArquivos(eventoNome) {
+        const container = document.getElementById('gallery-container');
+        container.innerHTML = "Buscando vídeos...";
+
+        try {
+            const res = await fetch(`${WORKER_URL}/listar-galeria?evento=${encodeURIComponent(eventoNome)}`);
+            listaArquivos = await res.json();
+            
+            // FILTRO: Mostra apenas os editados (final_)
+            const finais = listaArquivos.filter(f => f.path.includes('final_'));
+            
+            container.innerHTML = "";
+            if(finais.length === 0) {
+                container.innerHTML = "<p style='grid-column: 1/-1; opacity:0.5;'>Nenhum vídeo finalizado encontrado.</p>";
+                return;
+            }
+
+            finais.forEach(file => {
+                const url = `${WORKER_URL}/stream?id=${encodeURIComponent(file.path)}`;
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                card.innerHTML = `
+                    <button class="btn-del-mini" onclick="excluirArquivo('${file.path}')">X</button>
+                    <video src="${url}#t=0.5" muted playsinline></video>
+                    <button class="btn-down-mini" onclick="baixarUnitario('${url}', '${file.path}')">BAIXAR</button>
+                `;
+                container.appendChild(card);
+            });
+        } catch (e) { alert("Erro ao carregar arquivos."); }
+    }
+
+    async function excluirArquivo(path) {
+        if(!confirm("Tem certeza que deseja apagar este vídeo?")) return;
+        const config = JSON.parse(localStorage.getItem('config_atual'));
+        await fetch(`${WORKER_URL}/deletar`, {
+            method: 'POST',
+            body: JSON.stringify({ id: path, evento: config.nome })
+        });
+        carregarArquivos(config.nome);
+    }
+
+    async function excluirTudo() {
+        const confirmacao = prompt("Para apagar TUDO, digite APAGAR:");
+        if(confirmacao !== "APAGAR") return;
+
+        const config = JSON.parse(localStorage.getItem('config_atual'));
+        const finais = listaArquivos.filter(f => f.path.includes('final_'));
+        
+        for(let f of finais) {
+            await fetch(`${WORKER_URL}/deletar`, {
+                method: 'POST',
+                body: JSON.stringify({ id: f.path, evento: config.nome })
+            });
+        }
+        carregarArquivos(config.nome);
+    }
+
+    async function baixarUnitario(url, path) {
+        const res = await fetch(url);
+        const blob = await res.blob();
+        saveAs(blob, path.split('/').pop());
+    }
+
+    async function baixarTudoZip() {
+        const btn = document.querySelector('.btn-zip');
+        btn.innerText = "⏳ PREPARANDO...";
+        const zip = new JSZip();
+        const finais = listaArquivos.filter(f => f.path.includes('final_'));
+
+        for(let i = 0; i < finais.length; i++) {
+            const url = `${WORKER_URL}/stream?id=${encodeURIComponent(finais[i].path)}`;
+            const res = await fetch(url);
+            const blob = await res.blob();
+            zip.file(`video_${i+1}.mp4`, blob);
+        }
+
+        const content = await zip.generateAsync({type:"blob"});
+        saveAs(content, "Galeria_Completa.zip");
+        btn.innerText = "📦 BAIXAR TODOS (.ZIP)";
+    }
+</script>
+</body>
+</html>

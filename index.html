@@ -41,6 +41,10 @@
 
         .btn-create { background: var(--ativo-ouro); color: #1a1a1a; border: none; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
         #btn-galeria { background: rgba(197, 160, 89, 0.1); color: var(--dourado); border: 1px solid var(--dourado); margin-bottom: 25px; }
+        
+        /* ESTILO DO NOVO BOTAO ADMIN */
+        #btn-admin { background: #28a745; color: white; border: none; box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3); }
+        
         #btn-login { display: block; background: transparent; color: var(--dourado); border: 2px solid var(--dourado); margin-top: 50px; }
 
         .event-list-container { width: 100%; margin-top: 30px; display: none; }
@@ -59,7 +63,6 @@
 
         .group-actions-row { display: flex; gap: 10px; width: 100%; }
 
-        /* ITEM 2: BOTAO ATIVO EM DOURADO */
         .status-btn {
             flex: 2; padding: 18px; border-radius: 12px; font-size: 13px; font-weight: 900;
             cursor: pointer; text-transform: uppercase; border: none; transition: 0.3s;
@@ -85,7 +88,11 @@
 
     <div class="main-container">
         <button id="btn-login" class="btn-central" onclick="abrirModal()">🔓 ACESSAR SISTEMA</button>
+        
         <a href="config_evento.html" id="btn-create" class="btn-protected btn-central btn-create" onclick="localStorage.removeItem('evento_para_editar')">➕ CRIAR NOVO EVENTO</a>
+        
+        <a href="galeria_admin.html" id="btn-admin" class="btn-protected btn-central">👑 GALERIA ADMIN</a>
+        
         <a href="galeria.html" id="btn-galeria" class="btn-protected btn-central">🎞️ ABRIR GALERIA</a>
         
         <div id="container-eventos" class="event-list-container">
