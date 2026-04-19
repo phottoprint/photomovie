@@ -9,117 +9,32 @@
     <style>
         :root { --turquesa: #00d1d1; --dourado: #c5a059; --bg: #001a1a; --danger: #ff4d4d; }
         body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; min-height: 100vh; }
-        
-        .header { 
-            padding: 20px; 
-            border-bottom: 2px solid var(--dourado); 
-            background: rgba(0,0,0,0.6); 
-            position: sticky; 
-            top: 0; 
-            z-index: 100; 
-            backdrop-filter: blur(15px);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .header-top {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            position: relative;
-            margin-bottom: 15px;
-        }
-
+        .header { padding: 20px; border-bottom: 2px solid var(--dourado); background: rgba(0,0,0,0.6); position: sticky; top: 0; z-index: 100; backdrop-filter: blur(15px); display: flex; flex-direction: column; align-items: center; }
+        .header-top { display: flex; align-items: center; justify-content: center; width: 100%; position: relative; margin-bottom: 15px; }
         .title-group { flex-grow: 1; }
         .header h1 { color: var(--dourado); letter-spacing: 5px; margin: 0; text-transform: uppercase; font-size: 1.8rem; font-weight: 900; cursor: pointer; }
         .header .subtitle { font-size: 11px; letter-spacing: 4px; opacity: 0.9; margin-top: 2px; text-transform: uppercase; color: var(--dourado); }
-
-        .event-left { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            position: absolute; 
-            left: 0;
-        }
+        .event-left { display: flex; align-items: center; gap: 10px; position: absolute; left: 0; }
         .v-line { width: 2px; height: 35px; background: var(--dourado); border-radius: 2px; }
-        #nome-evento-titulo { 
-            color: var(--dourado); 
-            font-size: 13px; 
-            margin: 0; 
-            opacity: 0.8; 
-            letter-spacing: 2px; 
-            text-transform: uppercase; 
-            font-weight: bold;
-            text-align: left;
-        }
-
-        .search-container {
-            position: relative;
-            width: 90%;
-            max-width: 400px;
-            margin-top: 5px;
-        }
-        .search-input {
-            width: 100%;
-            padding: 10px 40px 10px 20px;
-            border-radius: 25px;
-            border: 1px solid var(--dourado);
-            background: rgba(255, 255, 255, 0.1);
-            color: white;
-            outline: none;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
-        .search-container::after {
-            content: '🔍';
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 16px;
-            opacity: 0.7;
-        }
-
+        #nome-evento-titulo { color: var(--dourado); font-size: 13px; margin: 0; opacity: 0.8; letter-spacing: 2px; text-transform: uppercase; font-weight: bold; text-align: left; }
+        .search-container { position: relative; width: 90%; max-width: 400px; margin-top: 5px; }
+        .search-input { width: 100%; padding: 10px 40px 10px 20px; border-radius: 25px; border: 1px solid var(--dourado); background: rgba(255, 255, 255, 0.1); color: white; outline: none; font-size: 14px; box-sizing: border-box; }
+        .search-container::after { content: '🔍'; position: absolute; right: 15px; top: 50%; transform: translateY(-50%); font-size: 16px; opacity: 0.7; }
         .admin-panel { display: none; background: #002b2b; padding: 15px; border-bottom: 1px solid var(--dourado); gap: 10px; justify-content: center; flex-wrap: wrap; }
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; padding: 15px; padding-bottom: 120px; }
-
-        .video-card { 
-            background: #000; border: 1px solid rgba(197, 160, 89, 0.3); border-radius: 12px; 
-            overflow: hidden; aspect-ratio: 9/16; position: relative; cursor: pointer; transition: 0.2s;
-        }
-        
-        .video-number {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            color: var(--dourado);
-            font-weight: bold;
-            font-size: 18px;
-            z-index: 5;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-            background: rgba(0,0,0,0.3);
-            padding: 2px 8px;
-            border-radius: 5px;
-        }
-
+        .video-card { background: #000; border: 1px solid rgba(197, 160, 89, 0.3); border-radius: 12px; overflow: hidden; aspect-ratio: 9/16; position: relative; cursor: pointer; transition: 0.2s; }
+        .video-number { position: absolute; top: 10px; right: 10px; color: var(--dourado); font-weight: bold; font-size: 18px; z-index: 5; text-shadow: 2px 2px 4px rgba(0,0,0,0.8); background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 5px; }
         .video-card:active { transform: scale(0.95); }
-        .video-card img, .video-card video { width: 100%; height: 100%; object-fit: cover; }
-
+        .video-card video { width: 100%; height: 100%; object-fit: cover; }
         .btn-del-mini { position: absolute; bottom: 10px; right: 10px; background: var(--danger); border: none; color: white; border-radius: 50%; width: 30px; height: 30px; display: none; z-index: 10; font-weight: bold; }
-
         #modal-zoom { position: fixed; inset: 0; background: rgba(0,0,0,0.98); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
         #media-full { width: 85%; max-height: 70vh; border: 2px solid var(--dourado); border-radius: 15px; background: #000; }
-        
         .modal-controls { margin-top: 25px; display: flex; gap: 10px; width: 85%; justify-content: center; flex-wrap: wrap; }
-        
         .btn-action { padding: 12px 20px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 12px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 5px; }
         .btn-close { background: #333; color: white; }
         .btn-download { background: var(--dourado); color: black; }
         .btn-danger { background: var(--danger); color: white; }
         .btn-zip { background: #28a745; color: white; }
-
         .nav-footer { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 500; width: 90%; }
     </style>
 </head>
@@ -127,20 +42,10 @@
 
     <div class="header">
         <div class="header-top">
-            <div class="event-left">
-                <div class="v-line"></div>
-                <p id="nome-evento-titulo">Sincronizando...</p>
-            </div>
-            
-            <div class="title-group">
-                <h1 onclick="detectarAdmin()">PHOTO MOVIE</h1>
-                <p class="subtitle">COLECIONANDO MOMENTOS</p>
-            </div>
+            <div class="event-left"><div class="v-line"></div><p id="nome-evento-titulo">Sincronizando...</p></div>
+            <div class="title-group"><h1 onclick="detectarAdmin()">PHOTO MOVIE</h1><p class="subtitle">COLECIONANDO MOMENTOS</p></div>
         </div>
-
-        <div class="search-container">
-            <input type="number" id="input-busca" class="search-input" placeholder="Digite o número do vídeo..." oninput="filtrarVideos()">
-        </div>
+        <div class="search-container"><input type="number" id="input-busca" class="search-input" placeholder="Número do vídeo..." oninput="filtrarVideos()"></div>
     </div>
 
     <div id="admin-panel" class="admin-panel">
@@ -150,9 +55,7 @@
 
     <div id="gallery-container" class="gallery-grid"></div>
 
-    <div class="nav-footer">
-        <a href="index.html" class="btn-action btn-close" style="display: block; text-align: center;">← VOLTAR</a>
-    </div>
+    <div class="nav-footer"><a href="index.html" class="btn-action btn-close" style="display: block; text-align: center;">← VOLTAR</a></div>
 
     <div id="modal-zoom">
         <video id="media-full" controls playsinline crossorigin="anonymous"></video>
@@ -168,87 +71,49 @@
     let isAdmin = false;
     let cliquesAdmin = 0;
     let listaArquivosAtuais = [];
-    
-    // VARIÁVEL CHAVE: Mantém o ID da pasta fixo para não perder os vídeos
-    let pastaIDBusca = ""; 
 
-    window.onload = () => {
+    // Esta função agora lê SEMPRE o que está no localStorage
+    async function carregarGaleria(isSilent = false) {
         const config = JSON.parse(localStorage.getItem('config_atual'));
-        if(!config) { window.location.href = "index.html"; return; }
-        
-        // Se houver um ID fixo salvo, usamos ele. Se não, usamos o nome da primeira vez que abriu.
-        // Isso garante que se você mudar o NOME, ele continue buscando na pasta original.
-        pastaIDBusca = config.id_original || config.nome; 
-        
-        // Se for a primeira vez, salvamos o ID original para nunca mais perder o vínculo
-        if(!config.id_original) {
-            config.id_original = config.nome;
-            localStorage.setItem('config_atual', JSON.stringify(config));
-        }
+        if(!config) return;
 
+        // Atualiza o nome no topo na hora
         document.getElementById('nome-evento-titulo').innerText = config.nome.replace(/_/g, ' ');
-        carregarArquivos(pastaIDBusca);
-        
-        setInterval(() => {
-            const configRefresh = JSON.parse(localStorage.getItem('config_atual'));
-            if(configRefresh) {
-                document.getElementById('nome-evento-titulo').innerText = configRefresh.nome.replace(/_/g, ' ');
-                carregarArquivos(pastaIDBusca, true);
-            }
-        }, 8000);
-    };
 
-    function detectarAdmin() {
-        cliquesAdmin++;
-        if(cliquesAdmin >= 5) {
-            isAdmin = true;
-            document.getElementById('admin-panel').style.display = 'flex';
-            document.querySelectorAll('.btn-del-mini').forEach(b => b.style.display = 'block');
-            alert("MODO ADMIN ATIVADO");
-            cliquesAdmin = 0;
-        }
-    }
-
-    async function carregarArquivos(eventoID, isSilent = false) {
         try {
-            const res = await fetch(`${WORKER_URL}/listar-galeria?evento=${encodeURIComponent(eventoID)}`);
+            // Se você editou o nome mas a pasta no R2 é a antiga, você precisa garantir
+            // que 'config.nome' seja o nome da pasta correta.
+            const res = await fetch(`${WORKER_URL}/listar-galeria?evento=${encodeURIComponent(config.nome)}`);
             const dados = await res.json();
             listaArquivosAtuais = dados.filter(f => f.path.includes('final_'));
             renderizarGaleria(isSilent);
-        } catch (e) { console.error("Erro na galeria", e); }
+        } catch (e) { console.error(e); }
     }
 
-    function filtrarVideos() {
-        renderizarGaleria(true);
-    }
+    window.onload = () => {
+        carregarGaleria();
+        setInterval(() => carregarGaleria(true), 8000);
+    };
 
     function renderizarGaleria(isSilent = false) {
         const container = document.getElementById('gallery-container');
         const termoBusca = document.getElementById('input-busca').value;
-        
         const filtrados = listaArquivosAtuais.filter((file, index) => {
-            const numeroVideo = (index + 1).toString();
-            return termoBusca === "" || numeroVideo === termoBusca || numeroVideo.includes(termoBusca);
+            const num = (index + 1).toString();
+            return termoBusca === "" || num === termoBusca || num.includes(termoBusca);
         });
-
-        if(!isSilent && filtrados.length === 0) {
-            container.innerHTML = "<p style='grid-column: 1/-1; opacity:0.5; margin-top:50px;'>Nenhum vídeo encontrado...</p>";
-            return;
-        }
 
         if(isSilent && filtrados.length === container.querySelectorAll('.video-card').length && termoBusca === "") return;
 
-        container.innerHTML = "";
+        container.innerHTML = filtrados.length ? "" : "<p style='grid-column:1/-1; opacity:0.5; margin-top:50px;'>Nenhum vídeo...</p>";
+        
         filtrados.forEach((file) => {
-            const indiceOriginal = listaArquivosAtuais.findIndex(f => f.path === file.path) + 1;
+            const indice = listaArquivosAtuais.findIndex(f => f.path === file.path) + 1;
             const url = `${WORKER_URL}/stream?id=${encodeURIComponent(file.path)}`;
             const card = document.createElement('div');
             card.className = 'video-card';
-            card.innerHTML = `
-                <div class="video-number">#${indiceOriginal}</div>
-                <video src="${url}#t=0.5" muted playsinline></video>
-                <button class="btn-del-mini" style="display:${isAdmin?'block':'none'}" onclick="event.stopPropagation(); excluirArquivo('${file.path}')">X</button>
-            `;
+            card.innerHTML = `<div class="video-number">#${indice}</div><video src="${url}#t=0.5" muted playsinline></video>
+                <button class="btn-del-mini" style="display:${isAdmin?'block':'none'}" onclick="event.stopPropagation(); excluirArquivo('${file.path}')">X</button>`;
             card.onclick = () => abrirZoom(url, file.path);
             container.appendChild(card);
         });
@@ -262,71 +127,57 @@
         video.play();
         document.getElementById('btn-download-force').onclick = () => forcarDownload(url, path.split('/').pop());
         const btnDel = document.getElementById('btn-delete-single');
-        if(isAdmin) {
-            btnDel.style.display = 'flex';
-            btnDel.onclick = () => { excluirArquivo(path); fecharZoom(); };
-        }
+        if(isAdmin) { btnDel.style.display = 'flex'; btnDel.onclick = () => { excluirArquivo(path); fecharZoom(); }; }
     }
 
     async function excluirArquivo(path) {
-        if(!confirm("Deseja apagar este vídeo permanentemente?")) return;
-        try {
-            await fetch(`${WORKER_URL}/deletar`, {
-                method: 'POST',
-                body: JSON.stringify({ id: path, evento: pastaIDBusca })
-            });
-            carregarArquivos(pastaIDBusca);
-        } catch (e) { alert("Erro ao deletar"); }
+        if(!confirm("Apagar?")) return;
+        const config = JSON.parse(localStorage.getItem('config_atual'));
+        await fetch(`${WORKER_URL}/deletar`, { method: 'POST', body: JSON.stringify({ id: path, evento: config.nome })});
+        carregarGaleria();
     }
 
     async function excluirTudo() {
-        const pass = prompt("Para apagar TUDO, digite 'apagar':");
-        if(pass !== 'apagar') return;
+        if(prompt("Digite 'apagar':") !== 'apagar') return;
+        const config = JSON.parse(localStorage.getItem('config_atual'));
         for(let f of listaArquivosAtuais) {
-            await fetch(`${WORKER_URL}/deletar`, {
-                method: 'POST',
-                body: JSON.stringify({ id: f.path, evento: pastaIDBusca })
-            });
+            await fetch(`${WORKER_URL}/deletar`, { method: 'POST', body: JSON.stringify({ id: f.path, evento: config.nome })});
         }
-        carregarArquivos(pastaIDBusca);
+        carregarGaleria();
+    }
+
+    function detectarAdmin() {
+        if(++cliquesAdmin >= 5) {
+            isAdmin = true;
+            document.getElementById('admin-panel').style.display = 'flex';
+            document.querySelectorAll('.btn-del-mini').forEach(b => b.style.display = 'block');
+            cliquesAdmin = 0;
+        }
     }
 
     async function baixarTudoZip() {
         const btn = document.querySelector('.btn-zip');
-        const origText = btn.innerText;
-        btn.innerText = "⚡ PREPARANDO PACOTE...";
+        btn.innerText = "⚡...";
         const zip = new JSZip();
-        try {
-            for(let i = 0; i < listaArquivosAtuais.length; i++) {
-                btn.innerText = `⚡ BAIXANDO ${i+1}/${listaArquivosAtuais.length}`;
-                const url = `${WORKER_URL}/stream?id=${encodeURIComponent(listaArquivosAtuais[i].path)}`;
-                const response = await fetch(url);
-                const blob = await response.blob();
-                zip.file(`video_${i+1}.mp4`, blob);
-            }
-            btn.innerText = "📦 COMPRIMINDO...";
-            const content = await zip.generateAsync({type:"blob"});
-            saveAs(content, `Galeria_${document.getElementById('nome-evento-titulo').innerText}.zip`);
-        } catch (e) { alert("Erro ao gerar ZIP"); }
-        finally { btn.innerText = origText; }
+        for(let i = 0; i < listaArquivosAtuais.length; i++) {
+            const url = `${WORKER_URL}/stream?id=${encodeURIComponent(listaArquivosAtuais[i].path)}`;
+            const res = await fetch(url);
+            zip.file(`video_${i+1}.mp4`, await res.blob());
+        }
+        saveAs(await zip.generateAsync({type:"blob"}), `Galeria.zip`);
+        btn.innerText = "📦 BAIXAR TUDO (ZIP)";
     }
 
     async function forcarDownload(url, filename) {
-        const btn = document.getElementById('btn-download-force');
-        btn.innerText = "⏳...";
-        try {
-            const res = await fetch(url);
-            const blob = await res.blob();
-            saveAs(blob, filename);
-        } catch (e) { alert("Erro no download."); }
-        finally { btn.innerText = "BAIXAR MP4"; }
+        saveAs(await (await fetch(url)).blob(), filename);
     }
 
     function fecharZoom() {
         document.getElementById('modal-zoom').style.display = 'none';
-        const v = document.getElementById('media-full');
-        v.pause(); v.src = "";
+        document.getElementById('media-full').pause();
     }
+
+    function filtrarVideos() { renderizarGaleria(true); }
 </script>
 </body>
 </html>
