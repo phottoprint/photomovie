@@ -7,7 +7,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
-        /* AJUSTE CORES: IGUAL AO ABRIR GALERIA */
         :root { --turquesa: #00d1d1; --dourado: #c5a059; --bg: #001a1a; --danger: #ff4d4d; }
         body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; min-height: 100vh; }
         
@@ -15,12 +14,11 @@
         .header h1 { color: var(--dourado); letter-spacing: 5px; margin: 0; text-transform: uppercase; font-size: 1.8rem; font-weight: 900; }
         .header p { color: var(--dourado); font-size: 12px; margin-top: 5px; opacity: 0.7; letter-spacing: 3px; text-transform: uppercase; }
 
-        /* BUSCADOR */
         .search-container { padding: 15px; background: rgba(0,0,0,0.3); }
         .search-container input { 
             width: 80%; max-width: 300px; padding: 12px; border-radius: 8px; 
             border: 1px solid var(--dourado); background: #000; color: var(--dourado); 
-            text-align: center; font-weight: bold; outline: none;
+            text-align: center; font-weight: bold; outline: none; font-size: 16px;
         }
 
         .admin-tools { display: flex; gap: 10px; justify-content: center; padding: 15px; flex-wrap: wrap; }
@@ -31,9 +29,8 @@
             background: #000; border: 1px solid rgba(197, 160, 89, 0.3); border-radius: 12px; 
             overflow: hidden; aspect-ratio: 9/16; position: relative; cursor: pointer;
         }
-        .video-card video { width: 100%; height: 100%; object-fit: cover; }
+        .video-card video { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 
-        /* IDENTIFICADOR NUMÉRICO */
         .video-id-badge {
             position: absolute; top: 8px; left: 8px; background: var(--dourado);
             color: black; padding: 2px 8px; border-radius: 4px; font-weight: 900; font-size: 12px; z-index: 10;
@@ -41,7 +38,6 @@
 
         .btn-del-mini { position: absolute; top: 8px; right: 8px; background: var(--danger); border: none; color: white; border-radius: 50%; width: 30px; height: 30px; font-weight: bold; cursor: pointer; z-index: 20; }
 
-        /* MODAL ZOOM (IGUAL GALERIA) */
         #modal-zoom { position: fixed; inset: 0; background: rgba(0,0,0,0.98); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
         #media-full { width: 85%; max-height: 70vh; border: 2px solid var(--dourado); border-radius: 15px; background: #000; }
 
@@ -49,10 +45,13 @@
         
         .btn-action { padding: 12px 20px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 12px; text-transform: uppercase; }
         .btn-close { background: #333; color: white; }
+        
+        /* COR DO BOTAO IGUAL ABRIR GALERIA */
+        .btn-galeria-style { background: rgba(197, 160, 89, 0.1); color: var(--dourado); border: 1px solid var(--dourado); }
+        
         .btn-download { background: var(--dourado); color: black; }
         .btn-danger { background: var(--danger); color: white; }
         .btn-zip { background: #28a745; color: white; }
-        .btn-voltar { background: #333; color: white; display: block; margin: 0 auto; width: 200px; }
 
         .nav-footer { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 500; width: 90%; }
     </style>
@@ -65,7 +64,7 @@
     </div>
 
     <div class="search-container">
-        <input type="number" id="input-busca" placeholder="BUSCAR POR NÚMERO..." oninput="buscarVideo()">
+        <input type="number" id="input-busca" placeholder="Nº DO VÍDEO (EX: 15)" oninput="agendarBusca()">
     </div>
 
     <div class="admin-tools">
@@ -76,7 +75,7 @@
     <div id="gallery-container" class="gallery-grid"></div>
 
     <div class="nav-footer">
-        <a href="index.html" class="btn-action btn-voltar">← VOLTAR</a>
+        <a href="index.html" class="btn-action btn-galeria-style" style="display:block; text-align:center;">← VOLTAR</a>
     </div>
 
     <div id="modal-zoom">
@@ -91,6 +90,7 @@
 <script>
     const WORKER_URL = "https://photomovie.maxprimefotovideo.workers.dev";
     let listaFinais = [];
+    let tempoBusca; // Timer para o buscador
 
     window.onload = () => {
         const config = JSON.parse(localStorage.getItem('config_atual'));
@@ -102,22 +102,17 @@
     async function carregarArquivos(eventoNome) {
         const container = document.getElementById('gallery-container');
         container.innerHTML = "<p>Buscando arquivos...</p>";
-
         try {
             const res = await fetch(`${WORKER_URL}/listar-galeria?evento=${encodeURIComponent(eventoNome)}`);
             const dados = await res.json();
-            
-            // FILTRO: Só os editados
             listaFinais = dados.filter(f => f.path.includes('final_'));
             
             container.innerHTML = "";
             listaFinais.forEach((file, index) => {
                 const url = `${WORKER_URL}/stream?id=${encodeURIComponent(file.path)}`;
                 const numIdentificador = index + 1;
-                
                 const card = document.createElement('div');
                 card.className = 'video-card';
-                card.id = `card-${numIdentificador}`;
                 card.innerHTML = `
                     <div class="video-id-badge">#${numIdentificador}</div>
                     <button class="btn-del-mini" onclick="event.stopPropagation(); excluirArquivo('${file.path}')">X</button>
@@ -129,18 +124,23 @@
         } catch (e) { console.error(e); }
     }
 
-    function buscarVideo() {
-        const num = document.getElementById('input-busca').value;
-        if (!num) return;
-        
-        const index = parseInt(num) - 1;
-        if (listaFinais[index]) {
-            const file = listaFinais[index];
-            const url = `${WORKER_URL}/stream?id=${encodeURIComponent(file.path)}`;
-            abrirZoom(url, file.path);
-            // Limpa o busca após abrir para facilitar a próxima
-            document.getElementById('input-busca').value = '';
-        }
+    // FUNÇÃO COM ATRASO PARA PERMITIR DIGITAR 2 OU MAIS DÍGITOS
+    function agendarBusca() {
+        clearTimeout(tempoBusca);
+        tempoBusca = setTimeout(() => {
+            const num = document.getElementById('input-busca').value;
+            if (!num) return;
+            const index = parseInt(num) - 1;
+            if (listaFinais[index]) {
+                const file = listaFinais[index];
+                const url = `${WORKER_URL}/stream?id=${encodeURIComponent(file.path)}`;
+                abrirZoom(url, file.path);
+                document.getElementById('input-busca').value = '';
+            } else if (num > 0) {
+                alert("Vídeo não encontrado!");
+                document.getElementById('input-busca').value = '';
+            }
+        }, 800); // Aguarda 0.8 segundos após o último dígito
     }
 
     function abrirZoom(url, path) {
@@ -148,7 +148,8 @@
         const video = document.getElementById('media-full');
         modal.style.display = 'flex';
         video.src = url;
-        video.play();
+        video.load(); // Garante o carregamento
+        video.play().catch(e => console.log("Play bloqueado pelo browser"));
 
         document.getElementById('btn-download-force').onclick = () => forcarDownload(url, path.split('/').pop());
         document.getElementById('btn-delete-modal').onclick = () => { excluirArquivo(path); fecharZoom(); };
@@ -181,6 +182,7 @@
 
     async function baixarTudoZip() {
         const btn = document.querySelector('.btn-zip');
+        const originalText = btn.innerText;
         btn.innerText = "⏳ PROCESSANDO...";
         const zip = new JSZip();
         try {
@@ -193,7 +195,7 @@
             const content = await zip.generateAsync({type:"blob"});
             saveAs(content, "Galeria_Admin.zip");
         } catch (e) { alert("Erro no ZIP"); }
-        finally { btn.innerText = "📦 BAIXAR TODOS (ZIP)"; }
+        finally { btn.innerText = originalText; }
     }
 
     async function forcarDownload(url, filename) {
