@@ -10,65 +10,69 @@
         :root { --turquesa: #00d1d1; --dourado: #c5a059; --bg: #001a1a; --danger: #ff4d4d; }
         body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; min-height: 100vh; }
         
-        /* CABEÇALHO E BUSCADOR TRAVADOS (IGUAL ADMIN) */
-        .sticky-top {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: var(--bg);
-        }
-
         .header { 
             padding: 20px; 
             border-bottom: 2px solid var(--dourado); 
-            background: rgba(0,0,0,0.8); 
+            background: rgba(0,0,0,0.6); 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
             backdrop-filter: blur(15px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        .header h1 { color: var(--dourado); letter-spacing: 5px; margin: 0; text-transform: uppercase; font-size: 1.8rem; font-weight: 900; cursor: pointer; }
-        .subtitle { font-size: 11px; letter-spacing: 4px; opacity: 0.9; margin-top: 2px; text-transform: uppercase; color: var(--dourado); }
-        
-        /* IDENTIDADE DO EVENTO NO CANTO ESQUERDO */
-        .event-info-container {
+        .header-top {
             display: flex;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: center;
             width: 100%;
-            margin-top: 15px;
-            padding-left: 10px;
+            position: relative;
+            margin-bottom: 15px;
         }
-        .v-line { width: 2px; height: 30px; background: var(--dourado); border-radius: 2px; margin-right: 10px; }
+
+        .event-left { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            position: absolute; 
+            left: 0;
+        }
+        .v-line { width: 2px; height: 35px; background: var(--dourado); border-radius: 2px; }
         #nome-evento-titulo { 
             color: var(--dourado); 
-            font-size: 13px; 
+            font-size: 14px; 
             margin: 0; 
-            letter-spacing: 1px; 
+            letter-spacing: 2px; 
             text-transform: uppercase; 
             font-weight: bold;
             text-align: left;
         }
 
-        /* BUSCADOR IGUAL AO ADMIN */
-        .search-area { 
-            padding: 15px; 
-            background: rgba(0,0,0,0.9); 
-            display: flex; 
-            justify-content: center; 
-            gap: 10px; 
-            border-bottom: 1px solid rgba(197, 160, 89, 0.2);
-            backdrop-filter: blur(10px);
-        }
-        .search-area input { 
-            width: 180px;
-            padding: 12px; border-radius: 8px; 
-            border: 1px solid var(--dourado); background: #000; color: var(--dourado); 
-            text-align: center; font-weight: bold; outline: none; font-size: 18px;
-        }
-        .btn-busca { background: var(--dourado); color: black; border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .title-group { flex-grow: 1; }
+        .header h1 { color: var(--dourado); letter-spacing: 5px; margin: 0; text-transform: uppercase; font-size: 1.8rem; font-weight: 900; cursor: pointer; }
+        .header .subtitle { font-size: 11px; letter-spacing: 4px; opacity: 0.9; margin-top: 2px; text-transform: uppercase; color: var(--dourado); }
 
-        /* PAINEL ADMIN OCULTO (ATIVADO POR CLIQUES NO TITULO) */
+        .search-container {
+            position: relative;
+            width: 90%;
+            max-width: 400px;
+            margin-top: 5px;
+        }
+        .search-input {
+            width: 100%;
+            padding: 10px 40px 10px 20px;
+            border-radius: 25px;
+            border: 1px solid var(--dourado);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            outline: none;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
         .admin-panel { display: none; background: #002b2b; padding: 15px; border-bottom: 1px solid var(--dourado); gap: 10px; justify-content: center; flex-wrap: wrap; }
-
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; padding: 15px; padding-bottom: 120px; }
 
         .video-card { 
@@ -101,28 +105,24 @@
         .btn-close { background: #333; color: white; }
         .btn-download { background: var(--dourado); color: black; }
         .btn-zip { background: #28a745; color: white; }
-        
-        /* BOTAO VOLTAR IGUAL AO ADMIN */
-        .btn-voltar-estilo { background: rgba(197, 160, 89, 0.1); color: var(--dourado); border: 1px solid var(--dourado); display: block; text-align: center; }
         .nav-footer { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 500; width: 90%; }
     </style>
 </head>
 <body>
 
-    <div class="sticky-top">
-        <div class="header">
-            <h1 onclick="detectarAdmin()">PHOTO MOVIE</h1>
-            <p class="subtitle">COLECIONANDO MOMENTOS</p>
-            
-            <div class="event-info-container">
+    <div class="header">
+        <div class="header-top">
+            <div class="event-left">
                 <div class="v-line"></div>
                 <p id="nome-evento-titulo">SINCRONIZANDO...</p>
             </div>
+            <div class="title-group">
+                <h1 onclick="detectarAdmin()">PHOTO MOVIE</h1>
+                <p class="subtitle">COLECIONANDO MOMENTOS</p>
+            </div>
         </div>
-
-        <div class="search-area">
-            <input type="number" id="input-busca" placeholder="Nº VÍDEO">
-            <button class="btn-busca" onclick="executarBusca()">🔍 PESQUISAR</button>
+        <div class="search-container">
+            <input type="number" id="input-busca" class="search-input" placeholder="Número do vídeo..." oninput="filtrarVideos()">
         </div>
     </div>
 
@@ -134,7 +134,7 @@
     <div id="gallery-container" class="gallery-grid"></div>
 
     <div class="nav-footer">
-        <a href="index.html" class="btn-action btn-voltar-estilo">← VOLTAR</a>
+        <a href="index.html" class="btn-action btn-close" style="display: block; text-align: center;">← VOLTAR</a>
     </div>
 
     <div id="modal-zoom">
@@ -158,55 +158,56 @@
         if(!gDados) return;
         const config = JSON.parse(gDados);
 
+        // 1. Atualiza Nome (Capa)
         const tituloHTML = document.getElementById('nome-evento-titulo');
         const nomeFormatado = (config.nome || "").replace(/_/g, ' ');
         if(tituloHTML.innerText !== nomeFormatado) tituloHTML.innerText = nomeFormatado;
 
-        idPastaFixo = config.id_fixo || config.nome;
+        // 2. Trava o ID da Pasta
+        if(!config.id_fixo) {
+            config.id_fixo = config.nome;
+            localStorage.setItem('config_atual', JSON.stringify(config));
+        }
+        idPastaFixo = config.id_fixo;
 
+        // 3. Busca arquivos
         try {
             const res = await fetch(`${WORKER_URL}/listar-galeria?evento=${encodeURIComponent(idPastaFixo)}`);
             const dados = await res.json();
             const novosFiltrados = dados.filter(f => f.path.toLowerCase().includes('final_'));
             
+            // Só renderiza se mudar a lista ou se for o primeiro carregamento
             if (JSON.stringify(novosFiltrados) !== JSON.stringify(listaArquivosAtuais) || !isSilent) {
                 listaArquivosAtuais = novosFiltrados;
-                renderizarGaleria();
+                renderizarGaleria(isSilent);
             }
         } catch (e) { console.error("Erro:", e); }
     }
 
-    function renderizarGaleria() {
+    function renderizarGaleria(isSilent) {
         const container = document.getElementById('gallery-container');
-        container.innerHTML = listaArquivosAtuais.length ? "" : "<p style='grid-column: 1/-1; opacity:0.5; margin-top:50px;'>Aguardando novos vídeos...</p>";
+        const termoBusca = document.getElementById('input-busca').value;
+        
+        const filtrados = listaArquivosAtuais.filter((file, index) => {
+            const num = (index + 1).toString();
+            return termoBusca === "" || num === termoBusca || num.includes(termoBusca);
+        });
 
-        listaArquivosAtuais.forEach((file, index) => {
+        container.innerHTML = filtrados.length ? "" : "<p style='grid-column: 1/-1; opacity:0.5; margin-top:50px;'>Aguardando novos vídeos...</p>";
+
+        filtrados.forEach((file) => {
+            const indiceOriginal = listaArquivosAtuais.findIndex(f => f.path === file.path) + 1;
             const url = `${WORKER_URL}/stream?id=${encodeURIComponent(file.path)}`;
             const card = document.createElement('div');
             card.className = 'video-card';
             card.innerHTML = `
-                <div class="video-number">#${index + 1}</div>
+                <div class="video-number">#${indiceOriginal}</div>
                 <video src="${url}#t=0.5" muted playsinline></video>
                 <button class="btn-del-mini" style="display:${isAdmin?'block':'none'}" onclick="event.stopPropagation(); excluirArquivo('${file.path}')">X</button>
             `;
             card.onclick = () => abrirZoom(url, file.path);
             container.appendChild(card);
         });
-    }
-
-    // BUSCA EXATA QUE ABRE O ZOOM (PADRÃO ADMIN)
-    function executarBusca() {
-        const num = document.getElementById('input-busca').value;
-        if (!num) return;
-        const index = parseInt(num) - 1;
-        if (listaArquivosAtuais[index]) {
-            const file = listaArquivosAtuais[index];
-            const url = `${WORKER_URL}/stream?id=${encodeURIComponent(file.path)}`;
-            abrirZoom(url, file.path);
-            document.getElementById('input-busca').value = '';
-        } else {
-            alert("Vídeo #" + num + " não encontrado!");
-        }
     }
 
     function abrirZoom(url, path) {
@@ -249,7 +250,7 @@
             document.getElementById('admin-panel').style.display = 'flex';
             document.querySelectorAll('.btn-del-mini').forEach(b => b.style.display = 'block');
             cliquesAdmin = 0;
-            alert("Modo Admin Temporário Ativo");
+            alert("Modo Admin Ativo");
         }
     }
 
@@ -263,7 +264,7 @@
             zip.file(`video_${i+1}.mp4`, await res.blob());
         }
         const content = await zip.generateAsync({type:"blob"});
-        saveAs(content, `Galeria_${idPastaFixo}.zip`);
+        saveAs(content, "Galeria.zip");
         btn.innerText = textOrig;
     }
 
@@ -275,8 +276,9 @@
     function fecharZoom() {
         document.getElementById('modal-zoom').style.display = 'none';
         document.getElementById('media-full').pause();
-        document.getElementById('media-full').src = "";
     }
+
+    function filtrarVideos() { renderizarGaleria(true); }
 
     window.onload = () => {
         sincronizarInterface();
