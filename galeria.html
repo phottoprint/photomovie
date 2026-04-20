@@ -8,190 +8,132 @@
     <meta property="og:image" content="https://maxsynk.github.io/photomovie/seu-logo.png">
     <meta property="og:url" content="https://maxsynk.github.io/photomovie/galeria.html">
     <title>PHOTO MOVIE - GALERIA</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
-        :root { --turquesa: #00d1d1; --dourado: #c5a059; --bg: #001a1a; --danger: #ff4d4d; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; min-height: 100vh; }
+        :root { --turquesa: #00d1d1; --dourado: #c5a059; --bg: #001a1a; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; min-height: 100vh; overflow-x: hidden; }
         
         .sticky-top { position: sticky; top: 0; z-index: 100; background: var(--bg); }
-
-        .header { 
-            padding: 20px; 
-            border-bottom: 2px solid var(--dourado); 
-            background: rgba(0,0,0,0.8); 
-            backdrop-filter: blur(15px);
-        }
-
+        .header { padding: 20px; border-bottom: 2px solid var(--dourado); background: rgba(0,0,0,0.8); backdrop-filter: blur(15px); }
         .header h1 { color: var(--dourado); letter-spacing: 5px; margin: 0; text-transform: uppercase; font-size: 1.8rem; font-weight: 900; }
         .subtitle { font-size: 11px; letter-spacing: 4px; opacity: 0.9; margin-top: 2px; text-transform: uppercase; color: var(--dourado); }
-        .admin-label { font-size: 14px; color: var(--dourado); letter-spacing: 2px; margin-top: 5px; font-weight: bold; text-transform: uppercase; }
-
-        .event-info-container {
-            display: flex; align-items: center; justify-content: flex-start;
-            width: 100%; margin-top: 15px; padding-left: 10px;
-        }
+        
+        .event-info-container { display: flex; align-items: center; justify-content: flex-start; width: 100%; margin-top: 15px; padding-left: 10px; }
         .v-line { width: 2px; height: 30px; background: var(--dourado); border-radius: 2px; margin-right: 10px; }
-        #nome-evento-titulo { 
-            color: var(--dourado); font-size: 13px; margin: 0; 
-            letter-spacing: 1px; text-transform: uppercase; font-weight: bold; text-align: left;
-        }
+        #nome-evento-titulo { color: var(--dourado); font-size: 13px; margin: 0; letter-spacing: 1px; text-transform: uppercase; font-weight: bold; }
 
-        .search-area { 
-            padding: 15px; background: rgba(0,0,0,0.9); display: flex; 
-            justify-content: center; gap: 10px; border-bottom: 1px solid rgba(197, 160, 89, 0.2);
-            backdrop-filter: blur(10px);
-        }
-        .search-area input { 
-            width: 180px; padding: 12px; border-radius: 8px; 
-            border: 1px solid var(--dourado); background: #000; color: var(--dourado); 
-            text-align: center; font-weight: bold; outline: none; font-size: 18px;
-        }
-        .btn-busca { background: var(--dourado); color: black; border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
-
-        /* PAINEL ADMIN OCULTO */
-        .admin-panel { display: none; background: #002b2b; padding: 15px; border-bottom: 1px solid var(--dourado); gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .search-area { padding: 15px; background: rgba(0,0,0,0.9); display: flex; justify-content: center; gap: 10px; border-bottom: 1px solid rgba(197, 160, 89, 0.2); }
+        .search-area input { width: 180px; padding: 12px; border-radius: 8px; border: 1px solid var(--dourado); background: #000; color: var(--dourado); text-align: center; font-size: 18px; outline: none; }
+        .btn-busca { background: var(--dourado); color: black; border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
 
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; padding: 15px; padding-bottom: 120px; }
-
-        .video-card { 
-            background: #000; border: 1px solid rgba(197, 160, 89, 0.3); border-radius: 12px; 
-            overflow: hidden; aspect-ratio: 9/16; position: relative; cursor: pointer; 
-        }
-        .video-number {
-            position: absolute; top: 10px; right: 10px; color: var(--dourado);
-            font-weight: bold; font-size: 18px; z-index: 5; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-            background: rgba(0,0,0,0.3); padding: 2px 8px; border-radius: 5px;
-        }
-        .video-card video { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+        .video-card { background: #000; border: 1px solid rgba(197, 160, 89, 0.3); border-radius: 12px; overflow: hidden; aspect-ratio: 9/16; position: relative; }
+        .video-number { position: absolute; top: 10px; right: 10px; color: var(--dourado); font-weight: bold; background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 5px; z-index: 5; }
+        .video-card video { width: 100%; height: 100%; object-fit: cover; }
 
         #modal-zoom { position: fixed; inset: 0; background: rgba(0,0,0,0.98); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
-        #media-full { width: 85%; max-height: 70vh; border: 2px solid var(--dourado); border-radius: 15px; background: #000; }
-        
-        .modal-controls { margin-top: 25px; display: flex; gap: 10px; width: 85%; justify-content: center; flex-wrap: wrap; }
-        .btn-action { padding: 12px 20px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; text-decoration: none; font-size: 12px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        #media-full { width: 85%; max-height: 70vh; border: 2px solid var(--dourado); border-radius: 15px; }
+        .modal-controls { margin-top: 25px; display: flex; gap: 10px; width: 85%; justify-content: center; }
+        .btn-action { padding: 12px 20px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 12px; }
         .btn-close { background: #333; color: white; }
         .btn-download { background: var(--dourado); color: black; }
         
-        /* FOOTER CEGO (SEM VOLTAR) */
-        .btn-voltar-estilo { background: rgba(197, 160, 89, 0.05); color: var(--dourado); border: 1px solid rgba(197, 160, 89, 0.3); display: block; text-align: center; cursor: default; }
         .nav-footer { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 500; width: 90%; }
+        .btn-footer { background: rgba(197, 160, 89, 0.1); color: var(--dourado); border: 1px solid var(--dourado); padding: 12px; border-radius: 10px; display: block; font-weight: bold; text-decoration: none; }
     </style>
 </head>
 <body>
 
     <div class="sticky-top">
         <div class="header">
-            <h1 onclick="detectarAdmin()">PHOTO MOVIE</h1>
+            <h1 id="logo-exit">PHOTO MOVIE</h1>
             <p class="subtitle">COLECIONANDO MOMENTOS</p>
-            <div class="admin-label">GALERIA EXCLUSIVA</div>
-            
             <div class="event-info-container">
                 <div class="v-line"></div>
-                <p id="nome-evento-titulo">CARREGANDO GALERIA...</p>
+                <p id="nome-evento-titulo">CARREGANDO...</p>
             </div>
         </div>
-
         <div class="search-area">
             <input type="number" id="input-busca" placeholder="Nº VÍDEO">
-            <button class="btn-busca" onclick="executarBusca()">🔍 PESQUISAR</button>
+            <button class="btn-busca" onclick="executarBusca()">🔍</button>
         </div>
-    </div>
-
-    <div id="admin-panel" class="admin-panel">
-        <button class="btn-action" onclick="baixarTudoZip()" style="background: #28a745; color: white;">📦 BAIXAR TUDO (ZIP)</button>
     </div>
 
     <div id="gallery-container" class="gallery-grid"></div>
 
     <div class="nav-footer">
-        <div class="btn-action btn-voltar-estilo">SISTEMA GESTÃO 360º</div>
+        <div class="btn-footer">SISTEMA GESTÃO 360º</div>
     </div>
 
     <div id="modal-zoom">
         <video id="media-full" controls playsinline crossorigin="anonymous"></video>
         <div class="modal-controls">
             <button class="btn-action btn-close" onclick="fecharZoom()">FECHAR</button>
-            <button id="btn-download-force" class="btn-action btn-download">BAIXAR VÍDEO</button>
+            <button id="btn-download-force" class="btn-action btn-download">BAIXAR</button>
         </div>
     </div>
 
 <script>
     const WORKER_URL = "https://photomovie.maxprimefotovideo.workers.dev";
-    let isAdmin = false;
-    let cliquesAdmin = 0;
     let listaArquivosAtuais = [];
     let idPastaFixo = ""; 
 
-    // PEGA O NOME DO EVENTO DIRETO DA URL: galeria.html?evento=Nome_Do_Evento
-    const urlParams = new URLSearchParams(window.location.search);
-    const eventoViaURL = urlParams.get('evento');
+    // 1. BLOQUEIO DE VOLTAR: Injeta a página no histórico repetidamente
+    function bloquearVoltar() {
+        window.history.pushState(null, null, window.location.href);
+        window.onpopstate = function () {
+            window.history.go(1);
+        };
+    }
 
-    async function sincronizarInterface(isSilent = false) {
-        let nomeEvento = "";
+    // 2. SAÍDA PARA ADMIN: Se você clicar 7 vezes no título, ele volta para o index
+    let cliquesSaida = 0;
+    document.getElementById('logo-exit').onclick = () => {
+        if(++cliquesSaida >= 7) window.location.href = 'index.html';
+    };
 
-        if (eventoViaURL) {
-            nomeEvento = eventoViaURL;
-        } else {
+    async function sincronizarInterface() {
+        const urlParams = new URLSearchParams(window.location.search);
+        idPastaFixo = urlParams.get('evento');
+
+        if(!idPastaFixo) {
             const gDados = localStorage.getItem('config_atual');
-            if(gDados) {
-                const config = JSON.parse(gDados);
-                nomeEvento = config.id_fixo || config.nome;
-            }
+            if(gDados) idPastaFixo = JSON.parse(gDados).id_fixo || JSON.parse(gDados).nome;
         }
 
-        if(!nomeEvento) {
-            document.getElementById('nome-evento-titulo').innerText = "ERRO: EVENTO NÃO ENCONTRADO";
-            return;
-        }
-
-        idPastaFixo = nomeEvento;
-        const tituloHTML = document.getElementById('nome-evento-titulo');
-        tituloHTML.innerText = nomeEvento.replace(/_/g, ' ');
+        if(!idPastaFixo) return;
+        document.getElementById('nome-evento-titulo').innerText = idPastaFixo.replace(/_/g, ' ');
 
         try {
             const res = await fetch(`${WORKER_URL}/listar-galeria?evento=${encodeURIComponent(idPastaFixo)}`);
             const dados = await res.json();
-            const novosFiltrados = dados.filter(f => f.path.toLowerCase().includes('final_'));
+            const novos = dados.filter(f => f.path.toLowerCase().includes('final_'));
             
-            if (JSON.stringify(novosFiltrados) !== JSON.stringify(listaArquivosAtuais) || !isSilent) {
-                listaArquivosAtuais = novosFiltrados;
-                renderizarGaleria();
+            if (JSON.stringify(novos) !== JSON.stringify(listaArquivosAtuais)) {
+                listaArquivosAtuais = novos;
+                renderizar();
             }
-        } catch (e) { console.error("Erro:", e); }
+        } catch (e) {}
     }
 
-    function renderizarGaleria() {
+    function renderizar() {
         const container = document.getElementById('gallery-container');
-        if (listaArquivosAtuais.length === 0) {
-            container.innerHTML = "<p style='grid-column: 1/-1; opacity:0.5; margin-top:50px;'>Aguardando vídeos serem processados...</p>";
-            return;
-        }
-
         container.innerHTML = "";
         listaArquivosAtuais.forEach((file, index) => {
             const url = `${WORKER_URL}/stream?id=${encodeURIComponent(file.path)}`;
             const card = document.createElement('div');
             card.className = 'video-card';
-            card.innerHTML = `
-                <div class="video-number">#${index + 1}</div>
-                <video src="${url}#t=0.5" muted playsinline></video>
-            `;
+            card.innerHTML = `<div class="video-number">#${index + 1}</div><video src="${url}#t=0.5" muted playsinline></video>`;
             card.onclick = () => abrirZoom(url, file.path);
             container.appendChild(card);
         });
     }
 
     function executarBusca() {
-        const num = document.getElementById('input-busca').value;
-        const index = parseInt(num) - 1;
+        const index = parseInt(document.getElementById('input-busca').value) - 1;
         if (listaArquivosAtuais[index]) {
             const file = listaArquivosAtuais[index];
-            const url = `${WORKER_URL}/stream?id=${encodeURIComponent(file.path)}`;
-            abrirZoom(url, file.path);
-            document.getElementById('input-busca').value = '';
-        } else if(num) {
-            alert("Vídeo não encontrado!");
+            abrirZoom(`${WORKER_URL}/stream?id=${encodeURIComponent(file.path)}`, file.path);
         }
     }
 
@@ -201,12 +143,9 @@
         modal.style.display = 'flex';
         video.src = url;
         video.play();
-        document.getElementById('btn-download-force').onclick = () => forcarDownload(url, path.split('/').pop());
-    }
-
-    async function forcarDownload(url, filename) {
-        const res = await fetch(url);
-        saveAs(await res.blob(), filename);
+        document.getElementById('btn-download-force').onclick = () => {
+            fetch(url).then(r => r.blob()).then(b => saveAs(b, path.split('/').pop()));
+        };
     }
 
     function fecharZoom() {
@@ -215,26 +154,10 @@
         document.getElementById('media-full').src = "";
     }
 
-    function detectarAdmin() {
-        if(++cliquesAdmin >= 10) { // Aumentei para 10 cliques para ficar mais escondido
-            document.getElementById('admin-panel').style.display = 'flex';
-            alert("Modo Download em Massa Ativado");
-        }
-    }
-
-    async function baixarTudoZip() {
-        const zip = new JSZip();
-        for(let i = 0; i < listaArquivosAtuais.length; i++) {
-            const res = await fetch(`${WORKER_URL}/stream?id=${encodeURIComponent(listaArquivosAtuais[i].path)}`);
-            zip.file(`video_${i+1}.mp4`, await res.blob());
-        }
-        const content = await zip.generateAsync({type:"blob"});
-        saveAs(content, `Galeria_${idPastaFixo}.zip`);
-    }
-
     window.onload = () => {
+        bloquearVoltar();
         sincronizarInterface();
-        setInterval(() => sincronizarInterface(true), 5000);
+        setInterval(sincronizarInterface, 5000);
     };
 </script>
 </body>
