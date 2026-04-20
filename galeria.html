@@ -18,7 +18,7 @@
         .header h1 { color: var(--dourado); letter-spacing: 5px; margin: 0; text-transform: uppercase; font-size: 1.8rem; font-weight: 900; }
         .subtitle { font-size: 11px; letter-spacing: 4px; opacity: 0.9; margin-top: 2px; text-transform: uppercase; color: var(--dourado); }
         
-        .event-info-container { display: flex; align-items: center; justify-content: flex-start; width: 100%; margin-top: 15px; padding-left: 10px; }
+        .event-info-container { display: flex; align-items: center; justify-content: flex-start; width: 100%; margin-top: 15px; padding-left: 10px; cursor: pointer; }
         .v-line { width: 2px; height: 30px; background: var(--dourado); border-radius: 2px; margin-right: 10px; }
         #nome-evento-titulo { color: var(--dourado); font-size: 13px; margin: 0; letter-spacing: 1px; text-transform: uppercase; font-weight: bold; }
 
@@ -48,7 +48,7 @@
         <div class="header">
             <h1 id="logo-exit">PHOTO MOVIE</h1>
             <p class="subtitle">COLECIONANDO MOMENTOS</p>
-            <div class="event-info-container">
+            <div class="event-info-container" onclick="copiarLinkGaleria()">
                 <div class="v-line"></div>
                 <p id="nome-evento-titulo">CARREGANDO...</p>
             </div>
@@ -78,7 +78,7 @@
     let listaArquivosAtuais = [];
     let idPastaFixo = ""; 
 
-    // 1. BLOQUEIO DE VOLTAR: Injeta a página no histórico repetidamente
+    // BLOQUEIO DO BOTÃO VOLTAR
     function bloquearVoltar() {
         window.history.pushState(null, null, window.location.href);
         window.onpopstate = function () {
@@ -86,22 +86,34 @@
         };
     }
 
-    // 2. SAÍDA PARA ADMIN: Se você clicar 7 vezes no título, ele volta para o index
+    // SAÍDA PARA ADMIN (7 Cliques no Título)
     let cliquesSaida = 0;
     document.getElementById('logo-exit').onclick = () => {
         if(++cliquesSaida >= 7) window.location.href = 'index.html';
     };
 
+    // FUNÇÃO PARA COPIAR O LINK DA GALERIA (Para você enviar fácil)
+    function copiarLinkGaleria() {
+        const link = `${window.location.origin}${window.location.pathname}?evento=${idPastaFixo}`;
+        navigator.clipboard.writeText(link).then(() => {
+            alert("Link da Galeria Copiado!\n" + link);
+        });
+    }
+
     async function sincronizarInterface() {
         const urlParams = new URLSearchParams(window.location.search);
-        idPastaFixo = urlParams.get('evento');
+        let eventoEncontrado = urlParams.get('evento');
 
-        if(!idPastaFixo) {
+        if(!eventoEncontrado) {
             const gDados = localStorage.getItem('config_atual');
-            if(gDados) idPastaFixo = JSON.parse(gDados).id_fixo || JSON.parse(gDados).nome;
+            if(gDados) {
+                const config = JSON.parse(gDados);
+                eventoEncontrado = config.id_fixo || config.nome;
+            }
         }
 
-        if(!idPastaFixo) return;
+        if(!eventoEncontrado) return;
+        idPastaFixo = eventoEncontrado;
         document.getElementById('nome-evento-titulo').innerText = idPastaFixo.replace(/_/g, ' ');
 
         try {
