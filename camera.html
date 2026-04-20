@@ -5,29 +5,87 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Câmera Pro - Photo Movie</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; font-family: sans-serif; }
-        #cam-container { width: 100vw; height: 100vh; position: relative; }
+        :root { --turquesa: #00d1d1; --dourado: #c5a059; --preto: #000; }
+        body { margin: 0; background: #000; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+        
+        #cam-container { width: 100vw; height: 100vh; position: relative; display: flex; flex-direction: column; }
         video { width: 100%; height: 100%; object-fit: cover; }
+        
         #moldura-view { 
             position: absolute; inset: 0; width: 100%; height: 100%; 
             pointer-events: none; object-fit: fill; z-index: 10; 
             display: none; 
         }
-        .controls { position: absolute; bottom: 50px; width: 100%; text-align: center; z-index: 100; }
-        .shutter { width: 80px; height: 80px; border-radius: 50%; background: #00d1d1; border: 5px solid white; display: inline-block; cursor: pointer; }
-        #status { position: fixed; inset: 0; display: none; background: rgba(0,0,0,0.5); color: #fff; font-size: 80px; align-items: center; justify-content: center; z-index: 200; }
-        #loading { position: fixed; inset: 0; display: none; background: #000; color: #00d1d1; align-items: center; justify-content: center; z-index: 300; flex-direction: column; gap: 10px; }
-        .spinner { width: 40px; height: 40px; border: 4px solid #fff; border-top: 4px solid #00d1d1; border-radius: 50%; animation: spin 1s linear infinite; }
+
+        /* Nome do Evento na Tela */
+        .event-overlay {
+            position: absolute; top: 30px; width: 100%; text-align: center;
+            z-index: 20; color: var(--dourado); text-transform: uppercase;
+            letter-spacing: 3px; font-weight: bold; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .controls-wrapper {
+            position: absolute; bottom: 80px; width: 100%;
+            display: flex; align-items: center; justify-content: space-around;
+            z-index: 100;
+        }
+
+        /* Botões de Ação Inferiores */
+        .side-btn {
+            background: rgba(0,0,0,0.5); border: 1px solid var(--dourado);
+            color: var(--dourado); width: 50px; height: 50px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 20px; backdrop-filter: blur(5px);
+        }
+
+        /* Obturador Dourado Pulsante */
+        .shutter-container { position: relative; display: flex; align-items: center; justify-content: center; }
+        .shutter { 
+            width: 75px; height: 75px; border-radius: 50%; 
+            background: transparent; border: 4px solid var(--dourado); 
+            cursor: pointer; position: relative; z-index: 105;
+            transition: transform 0.2s;
+        }
+        .shutter:active { transform: scale(0.9); }
+
+        /* Animação de Pulso */
+        .shutter::after {
+            content: ''; position: absolute; inset: -10px;
+            border-radius: 50%; border: 2px solid var(--dourado);
+            animation: pulse-gold 1.5s infinite; opacity: 0;
+        }
+
+        @keyframes pulse-gold {
+            0% { transform: scale(1); opacity: 0.8; }
+            100% { transform: scale(1.4); opacity: 0; }
+        }
+
+        #status { position: fixed; inset: 0; display: none; background: rgba(0,0,0,0.4); color: var(--dourado); font-size: 120px; align-items: center; justify-content: center; z-index: 200; font-weight: 900; }
+        
+        #loading { 
+            position: fixed; inset: 0; display: none; background: #000; color: var(--turquesa); 
+            align-items: center; justify-content: center; z-index: 300; flex-direction: column; gap: 15px; 
+        }
+        .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--turquesa); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
     <div id="cam-container">
+        <div class="event-overlay" id="txt-evento">PHOTO MOVIE</div>
+        
         <video id="preview" autoplay playsinline muted></video>
         <img id="moldura-view" alt="moldura">
-        <div class="controls">
-            <div class="shutter" id="btn-shoot"></div>
+
+        <div class="controls-wrapper">
+            <div class="side-btn" onclick="window.location.href='index.html'">✕</div>
+            
+            <div class="shutter-container">
+                <div class="shutter" id="btn-shoot"></div>
+            </div>
+
+            <div class="side-btn" onclick="toggleCamera()">🔄</div>
         </div>
     </div>
 
@@ -35,7 +93,7 @@
     <div id="status"></div>
     <div id="loading">
         <div class="spinner"></div>
-        <span>PROCESSANDO E ENVIANDO...</span>
+        <b style="letter-spacing: 2px;">PROCESSANDO E ENVIANDO...</b>
     </div>
 
 <script>
@@ -45,40 +103,49 @@
     const ctx = canvas.getContext('2d');
     const btn = document.getElementById('btn-shoot');
     const view = document.getElementById('moldura-view');
+    const txtEvento = document.getElementById('txt-evento');
     
+    let currentStream;
+    let useFrontCamera = false;
     const molduraImg = new Image();
     molduraImg.crossOrigin = "anonymous"; 
 
+    async function startCamera() {
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => track.stop());
+        }
+        const constraints = {
+            video: { 
+                facingMode: useFrontCamera ? "user" : "environment", 
+                width: { ideal: 1280 }, height: { ideal: 720 } 
+            },
+            audio: false
+        };
+        try {
+            currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+            video.srcObject = currentStream;
+        } catch (e) { alert("Erro ao acessar câmera."); }
+    }
+
+    function toggleCamera() {
+        useFrontCamera = !useFrontCamera;
+        startCamera();
+    }
+
     window.onload = async () => {
         const config = JSON.parse(localStorage.getItem('config_atual'));
-        
         if (config) {
-            // AJUSTE 1: Limpeza do ID da moldura para não vir link quebrado
+            txtEvento.innerText = config.nome || "PHOTO MOVIE";
             let molduraPath = config.molduraUrl || config.moldura;
             if (molduraPath) {
-                // Se o path vier com a URL do worker, extraímos apenas o que está depois do ID=
                 const cleanId = molduraPath.includes('id=') ? molduraPath.split('id=')[1] : molduraPath;
                 const urlFinal = `${WORKER_URL}/stream?id=${cleanId}`;
-                
                 molduraImg.src = urlFinal;
                 view.src = urlFinal;
-
-                molduraImg.onload = () => {
-                    view.style.display = 'block';
-                    console.log("Moldura carregada com sucesso.");
-                };
+                molduraImg.onload = () => view.style.display = 'block';
             }
         }
-        
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "environment", width: { ideal: 1280 }, height: { ideal: 720 } }, 
-                audio: false 
-            });
-            video.srcObject = stream;
-        } catch (e) {
-            alert("Erro ao abrir câmera.");
-        }
+        startCamera();
     };
 
     btn.onclick = () => {
@@ -102,14 +169,15 @@
         const chunks = [];
         const config = JSON.parse(localStorage.getItem('config_atual'));
         const tempo = (config ? parseInt(config.tempo) : 10) * 1000;
-        // AJUSTE 2: Garantir que o nome do evento seja EXATAMENTE o que está no banco
-        const nomeEvento = config ? config.nome : "Geral";
+        const nomeEvento = config ? (config.id_fixo || config.nome) : "Geral";
 
         let recorder;
 
         const loop = () => {
             if (video.paused || video.ended) return;
+            // Desenha o vídeo
             ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+            // Desenha a moldura por cima
             if (molduraImg.complete) {
                 ctx.drawImage(molduraImg, 0, 0, canvas.width, canvas.height);
             }
@@ -136,22 +204,14 @@
             fd.append("evento", nomeEvento); 
 
             try {
-                const res = await fetch(`${WORKER_URL}/upload`, { 
-                    method: "POST", 
-                    body: fd 
-                });
-                
+                const res = await fetch(`${WORKER_URL}/upload`, { method: "POST", body: fd });
                 if(res.ok) {
-                    // AJUSTE 3: Delay de segurança para o Banco D1 processar o registro
-                    setTimeout(() => {
-                        window.location.href = "galeria.html";
-                    }, 800);
+                    setTimeout(() => { window.location.href = "galeria.html"; }, 800);
                 } else {
-                    alert("Erro ao salvar vídeo.");
+                    alert("Erro no envio.");
                     document.getElementById('loading').style.display = 'none';
                 }
             } catch (err) {
-                alert("Erro de conexão.");
                 document.getElementById('loading').style.display = 'none';
             }
         };
