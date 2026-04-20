@@ -10,7 +10,7 @@
         :root { --turquesa: #00d1d1; --dourado: #c5a059; --bg: #001a1a; --danger: #ff4d4d; }
         body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; min-height: 100vh; }
         
-        /* CABEÇALHO E BUSCADOR TRAVADOS (IGUAL ADMIN) */
+        /* CABEÇALHO E BUSCADOR TRAVADOS */
         .sticky-top {
             position: sticky;
             top: 0;
@@ -28,7 +28,6 @@
         .header h1 { color: var(--dourado); letter-spacing: 5px; margin: 0; text-transform: uppercase; font-size: 1.8rem; font-weight: 900; cursor: pointer; }
         .subtitle { font-size: 11px; letter-spacing: 4px; opacity: 0.9; margin-top: 2px; text-transform: uppercase; color: var(--dourado); }
         
-        /* IDENTIDADE DO EVENTO NO CANTO ESQUERDO */
         .event-info-container {
             display: flex;
             align-items: center;
@@ -48,7 +47,6 @@
             text-align: left;
         }
 
-        /* BUSCADOR IGUAL AO ADMIN */
         .search-area { 
             padding: 15px; 
             background: rgba(0,0,0,0.9); 
@@ -66,7 +64,7 @@
         }
         .btn-busca { background: var(--dourado); color: black; border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
 
-        /* PAINEL ADMIN OCULTO (ATIVADO POR CLIQUES NO TITULO) */
+        /* PAINEL ADMIN OCULTO */
         .admin-panel { display: none; background: #002b2b; padding: 15px; border-bottom: 1px solid var(--dourado); gap: 10px; justify-content: center; flex-wrap: wrap; }
 
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; padding: 15px; padding-bottom: 120px; }
@@ -88,7 +86,7 @@
             padding: 2px 8px;
             border-radius: 5px;
         }
-        .video-card video { width: 100%; height: 100%; object-fit: cover; }
+        .video-card video { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
 
         .btn-del-mini { position: absolute; bottom: 10px; right: 10px; background: var(--danger); border: none; color: white; border-radius: 50%; width: 30px; height: 30px; display: none; z-index: 10; font-weight: bold; }
 
@@ -102,7 +100,6 @@
         .btn-download { background: var(--dourado); color: black; }
         .btn-zip { background: #28a745; color: white; }
         
-        /* BOTAO VOLTAR IGUAL AO ADMIN */
         .btn-voltar-estilo { background: rgba(197, 160, 89, 0.1); color: var(--dourado); border: 1px solid var(--dourado); display: block; text-align: center; }
         .nav-footer { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 500; width: 90%; }
     </style>
@@ -158,33 +155,23 @@
         if(!gDados) return;
         const config = JSON.parse(gDados);
 
-        // Atualiza apenas o texto visual do nome do evento
         const tituloHTML = document.getElementById('nome-evento-titulo');
         const nomeFormatado = (config.nome || "").replace(/_/g, ' ');
         if(tituloHTML.innerText !== nomeFormatado) tituloHTML.innerText = nomeFormatado;
 
-        // --- CORREÇÃO CRÍTICA AQUI ---
-        // Se mudarmos o nome no "Editar", o id_fixo garante que a galeria 
-        // continue apontando para a pasta correta no R2/Cloudflare.
-        idPastaFixo = config.id_fixo || config.nome; 
+        // USA O ID FIXO PARA NÃO PERDER OS VÍDEOS AO EDITAR O NOME
+        idPastaFixo = config.id_fixo || config.nome;
 
         try {
-            // Buscamos sempre pelo idPastaFixo (que nunca muda após a criação)
             const res = await fetch(`${WORKER_URL}/listar-galeria?evento=${encodeURIComponent(idPastaFixo)}`);
             const dados = await res.json();
-            
-            // Filtra apenas os vídeos que contém "final_" no nome
             const novosFiltrados = dados.filter(f => f.path.toLowerCase().includes('final_'));
             
-            // Compara se houve mudança real antes de limpar a tela (evita o "piscado" branco)
             if (JSON.stringify(novosFiltrados) !== JSON.stringify(listaArquivosAtuais) || !isSilent) {
                 listaArquivosAtuais = novosFiltrados;
                 renderizarGaleria();
             }
-        } catch (e) { 
-            console.error("Erro na sincronização:", e);
-            if(!isSilent) document.getElementById('gallery-container').innerHTML = "Erro ao conectar com o servidor.";
-        }
+        } catch (e) { console.error("Erro:", e); }
     }
 
     function renderizarGaleria() {
@@ -210,10 +197,6 @@
         });
     }
 
-    // ... (restante das funções abrirZoom, excluirArquivo, etc, permanecem as mesmas)
-</script>
-
-    // BUSCA EXATA QUE ABRE O ZOOM (PADRÃO ADMIN)
     function executarBusca() {
         const num = document.getElementById('input-busca').value;
         if (!num) return;
