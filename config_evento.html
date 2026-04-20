@@ -90,13 +90,13 @@
     </div>
 
     <div class="container">
-        <input type="hidden" id="conf-id" value="">
-        <input type="hidden" id="conf-id-fixo" value="">
+        <input type="hidden" id="conf-id">
+        <input type="hidden" id="conf-id-fixo">
 
         <div class="section">
             <h3>1. O Evento</h3>
-            <label>NOME DO EVENTO (Capa / Titulo)</label>
-            <input type="text" id="conf-nome" placeholder="Ex: Casamento_Tiago" oninput="this.value = this.value.replace(/\s+/g, '_')">
+            <label>NOME DO EVENTO (Visual)</label>
+            <input type="text" id="conf-nome" placeholder="Ex: Casamento João e Maria">
             <label>DATA</label>
             <input type="date" id="conf-data">
         </div>
@@ -145,9 +145,9 @@
                 <span id="upload-label">📸 UPAR MOLDURA (PNG)</span>
                 <input type="file" id="file-moldura" accept="image/png" style="display:none" onchange="subirArquivo(this, 'MOLDURA')">
             </div>
-            <input type="hidden" id="conf-moldura-url" value="">
-            <input type="hidden" id="conf-musica-url" value="">
-            <input type="hidden" id="conf-musica-name" value="">
+            <input type="hidden" id="conf-moldura-url">
+            <input type="hidden" id="conf-musica-url">
+            <input type="hidden" id="conf-musica-name">
             <center><img id="frame-preview"></center>
         </div>
 
@@ -183,16 +183,26 @@
     const WORKER_URL = "https://photomovie.maxprimefotovideo.workers.dev";
     const player = document.getElementById('audio-player');
 
+    // Função para limpar nomes de pastas (Segurança R2)
+    function sanitizarPasta(texto) {
+        return texto.normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "") // Remove acentos
+                    .replace(/[^\w\s]/gi, '')       // Remove caracteres especiais
+                    .replace(/\s+/g, '_')           // Troca espaço por underline
+                    .toLowerCase();
+    }
+
     window.onload = () => {
         const editData = localStorage.getItem('evento_para_editar');
         if (editData) {
             const ev = JSON.parse(editData);
             
-            // TRAVA O ID FIXO: Se já existe, usa ele. Se não, trava o nome atual como ID.
-            const idFixoOriginal = ev.id_fixo || ev.nome || "";
+            // LOGICA DE OURO: Se já tem id_fixo no banco, trava ele.
+            // Se não tem (evento antigo), sanitiza o nome original e trava.
+            const idSeguro = ev.id_fixo || sanitizarPasta(ev.nome);
             
             document.getElementById('conf-id').value = ev.id || "";
-            document.getElementById('conf-id-fixo').value = idFixoOriginal; 
+            document.getElementById('conf-id-fixo').value = idSeguro; 
             document.getElementById('conf-nome').value = ev.nome || "";
             document.getElementById('conf-data').value = ev.data || "";
             
@@ -257,12 +267,10 @@
     function setTime(val, btn) { document.getElementById('conf-tempo').value = val; document.querySelectorAll('.time-btn').forEach(b => b.classList.remove('active')); if(btn) btn.classList.add('active'); }
 
     async function subirArquivo(input, tipo) {
-        // SEMPRE usa o ID Fixo se ele existir, senão usa o nome
-        const idFixo = document.getElementById('conf-id-fixo').value.trim();
-        const nomeAtual = document.getElementById('conf-nome').value.trim();
-        const nomePasta = idFixo || nomeAtual;
+        // SEMPRE usa o ID Fixo para upload, nunca o nome visual da tela
+        const idPasta = document.getElementById('conf-id-fixo').value.trim() || sanitizarPasta(document.getElementById('conf-nome').value);
         
-        if(!nomePasta) { alert("Nome do evento obrigatório!"); return; }
+        if(!idPasta) { alert("Nome do evento obrigatório!"); return; }
         if(!input.files[0]) return;
         
         const file = input.files[0];
@@ -273,11 +281,11 @@
         formData.append("file", file);
         const fileName = tipo === 'MOLDURA' ? `moldura_principal.png` : `musica_evento.mp3`;
         formData.append("uuid", fileName); 
-        formData.append("evento", nomePasta);
+        formData.append("evento", idPasta);
 
         try {
             await fetch(`${WORKER_URL}/upload`, { method: 'POST', body: formData });
-            const pathRelativo = `${nomePasta}/${fileName}`;
+            const pathRelativo = `${idPasta}/${fileName}`;
             if(tipo === 'MOLDURA') {
                 document.getElementById('conf-moldura-url').value = pathRelativo;
                 document.getElementById('frame-preview').src = `${WORKER_URL}/stream?id=${pathRelativo}&t=${Date.now()}`;
@@ -299,8 +307,8 @@
         
         if(!nomeVisual) return alert("Digite o nome do evento.");
 
-        // Se é novo, o ID Fixo vira o nome. Se é edição, mantém o original pra sempre.
-        if(!idFixo) { idFixo = nomeVisual; }
+        // Se for novo, gera o ID fixo sanitizado pela primeira e única vez.
+        if(!idFixo) { idFixo = sanitizarPasta(nomeVisual); }
 
         const config = {
             id: document.getElementById('conf-id').value || String(Date.now()),
@@ -329,7 +337,7 @@
             if(res.ok) { 
                 localStorage.setItem('config_atual', JSON.stringify(config));
                 localStorage.removeItem('evento_para_editar');
-                alert("Evento salvo!"); 
+                alert("Evento salvo com sucesso!"); 
                 window.location.href = 'index.html'; 
             }
         } catch (e) { alert("Erro ao salvar."); }
