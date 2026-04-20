@@ -10,22 +10,27 @@
         :root { --turquesa: #00d1d1; --dourado: #c5a059; --bg: #001a1a; --danger: #ff4d4d; }
         body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; min-height: 100vh; }
         
-        /* 1 & 3 - CABEÇALHO REFORMULADO */
+        /* CABEÇALHO E BUSCADOR TRAVADOS (STICKY) */
+        .sticky-top {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg);
+        }
+
         .header { 
             padding: 20px; 
             border-bottom: 2px solid var(--dourado); 
-            background: rgba(0,0,0,0.6); 
-            position: sticky; 
-            top: 0; 
-            z-index: 100; 
+            background: rgba(0,0,0,0.8); 
             backdrop-filter: blur(15px);
         }
 
         .header h1 { color: var(--dourado); letter-spacing: 5px; margin: 0; text-transform: uppercase; font-size: 1.8rem; font-weight: 900; }
         .subtitle { font-size: 11px; letter-spacing: 4px; opacity: 0.9; margin-top: 2px; text-transform: uppercase; color: var(--dourado); }
-        .admin-label { font-size: 14px; color: #fff; letter-spacing: 2px; margin-top: 5px; font-weight: bold; opacity: 0.7; }
+        
+        /* 3- COR DOURADA NO NOME ADMIN */
+        .admin-label { font-size: 14px; color: var(--dourado); letter-spacing: 2px; margin-top: 5px; font-weight: bold; }
 
-        /* 4 - NOME DO EVENTO NO CANTO ESQUERDO COM BARRA */
         .event-info-container {
             display: flex;
             align-items: center;
@@ -45,21 +50,23 @@
             text-align: left;
         }
 
-        /* 2 - BUSCADOR ABAIXO DA LINHA, ACIMA DOS BOTOES */
+        /* 1 & 2 - BUSCADOR TRAVADO E MAIOR */
         .search-area { 
             padding: 15px; 
-            background: rgba(0,0,0,0.2); 
+            background: rgba(0,0,0,0.9); 
             display: flex; 
             justify-content: center; 
-            gap: 8px; 
+            gap: 10px; 
             border-bottom: 1px solid rgba(197, 160, 89, 0.2);
+            backdrop-filter: blur(10px);
         }
         .search-area input { 
-            width: 100px; padding: 10px; border-radius: 8px; 
+            width: 180px; /* Aumentado o tamanho */
+            padding: 12px; border-radius: 8px; 
             border: 1px solid var(--dourado); background: #000; color: var(--dourado); 
-            text-align: center; font-weight: bold; outline: none; font-size: 16px;
+            text-align: center; font-weight: bold; outline: none; font-size: 18px;
         }
-        .btn-busca { background: var(--dourado); color: black; border: none; padding: 0 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-busca { background: var(--dourado); color: black; border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
 
         .admin-tools { display: flex; gap: 10px; justify-content: center; padding: 15px; flex-wrap: wrap; }
         .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; padding: 15px; padding-bottom: 120px; }
@@ -85,20 +92,22 @@
 </head>
 <body>
 
-    <div class="header">
-        <h1>PHOTO MOVIE</h1>
-        <p class="subtitle">COLECIONANDO MOMENTOS</p>
-        <div class="admin-label">GALERIA ADMIN</div>
-        
-        <div class="event-info-container">
-            <div class="v-line"></div>
-            <p id="nome-evento-titulo">SINCRONIZANDO...</p>
+    <div class="sticky-top">
+        <div class="header">
+            <h1>PHOTO MOVIE</h1>
+            <p class="subtitle">COLECIONANDO MOMENTOS</p>
+            <div class="admin-label">GALERIA ADMIN</div>
+            
+            <div class="event-info-container">
+                <div class="v-line"></div>
+                <p id="nome-evento-titulo">SINCRONIZANDO...</p>
+            </div>
         </div>
-    </div>
 
-    <div class="search-area">
-        <input type="number" id="input-busca" placeholder="Nº">
-        <button class="btn-busca" onclick="executarBusca()">🔍 PESQUISAR</button>
+        <div class="search-area">
+            <input type="number" id="input-busca" placeholder="Nº VÍDEO">
+            <button class="btn-busca" onclick="executarBusca()">🔍 PESQUISAR</button>
+        </div>
     </div>
 
     <div class="admin-tools">
