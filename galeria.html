@@ -3,173 +3,219 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta property="og:title" content="Galeria de Fotos - Photo Movie">
-    <meta property="og:description" content="Acesse suas fotos do evento aqui.">
-    <meta property="og:image" content="https://maxsynk.github.io/photomovie/seu-logo.png">
-    <meta property="og:url" content="https://maxsynk.github.io/photomovie/galeria.html">
-    <title>PHOTO MOVIE - GALERIA</title>
+    <title>GALERIA - AUTOGRAPH CAM</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
-        :root { --turquesa: #00d1d1; --dourado: #c5a059; --bg: #001a1a; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; min-height: 100vh; overflow-x: hidden; }
-        
-        .sticky-top { position: sticky; top: 0; z-index: 100; background: var(--bg); }
-        .header { padding: 20px; border-bottom: 2px solid var(--dourado); background: rgba(0,0,0,0.8); backdrop-filter: blur(15px); }
-        .header h1 { color: var(--dourado); letter-spacing: 5px; margin: 0; text-transform: uppercase; font-size: 1.8rem; font-weight: 900; }
-        .subtitle { font-size: 11px; letter-spacing: 4px; opacity: 0.9; margin-top: 2px; text-transform: uppercase; color: var(--dourado); }
-        
-        .event-info-container { display: flex; align-items: center; justify-content: flex-start; width: 100%; margin-top: 15px; padding-left: 10px; cursor: pointer; }
-        .v-line { width: 2px; height: 30px; background: var(--dourado); border-radius: 2px; margin-right: 10px; }
-        #nome-evento-titulo { color: var(--dourado); font-size: 13px; margin: 0; letter-spacing: 1px; text-transform: uppercase; font-weight: bold; }
+        :root { --bg: #0E1A25; --surface: #182232; --accent: #69829E; --text: #EFEEE9; }
+        * { -webkit-tap-highlight-color: transparent; user-select: none; box-sizing: border-box; }
 
-        .search-area { padding: 15px; background: rgba(0,0,0,0.9); display: flex; justify-content: center; gap: 10px; border-bottom: 1px solid rgba(197, 160, 89, 0.2); }
-        .search-area input { width: 180px; padding: 12px; border-radius: 8px; border: 1px solid var(--dourado); background: #000; color: var(--dourado); text-align: center; font-size: 18px; outline: none; }
-        .btn-busca { background: var(--dourado); color: black; border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-
-        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; padding: 15px; padding-bottom: 120px; }
-        .video-card { background: #000; border: 1px solid rgba(197, 160, 89, 0.3); border-radius: 12px; overflow: hidden; aspect-ratio: 9/16; position: relative; }
-        .video-number { position: absolute; top: 10px; right: 10px; color: var(--dourado); font-weight: bold; background: rgba(0,0,0,0.5); padding: 2px 8px; border-radius: 5px; z-index: 5; }
-        .video-card video { width: 100%; height: 100%; object-fit: cover; }
-
-        #modal-zoom { position: fixed; inset: 0; background: rgba(0,0,0,0.98); display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
-        #media-full { width: 85%; max-height: 70vh; border: 2px solid var(--dourado); border-radius: 15px; }
-        .modal-controls { margin-top: 25px; display: flex; gap: 10px; width: 85%; justify-content: center; }
-        .btn-action { padding: 12px 20px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 12px; }
-        .btn-close { background: #333; color: white; }
-        .btn-download { background: var(--dourado); color: black; }
+        body { 
+            margin: 0; background: var(--bg); color: var(--text); 
+            font-family: sans-serif; text-align: center; overflow-x: hidden;
+            overscroll-behavior-y: contain; /* Bloqueia o "puxar para atualizar" no mobile */
+        }
         
-        .nav-footer { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); z-index: 500; width: 90%; }
-        .btn-footer { background: rgba(197, 160, 89, 0.1); color: var(--dourado); border: 1px solid var(--dourado); padding: 12px; border-radius: 10px; display: block; font-weight: bold; text-decoration: none; }
+        .header { padding: 30px 20px 10px 20px; cursor: pointer; }
+        .header h1 { font-size: 32px; letter-spacing: 4px; margin: 0; text-transform: uppercase; font-weight: 900; }
+        .subtitle { font-size: 11px; letter-spacing: 4px; opacity: 0.9; margin-top: 2px; text-transform: uppercase; color: var(--accent); }
+        
+        .event-info-container { display: flex; align-items: center; padding: 15px 20px; }
+        .v-line { width: 2px; height: 30px; background: var(--accent); margin-right: 10px; }
+        #nome-evento { color: var(--accent); font-size: 13px; text-transform: uppercase; font-weight: bold; text-align: left; }
+
+        .search-area { padding: 15px; background: rgba(0,0,0,0.3); display: flex; justify-content: center; margin-bottom: 10px; }
+        .search-area input { 
+            width: 180px; padding: 12px; border-radius: 8px; border: 1px solid var(--accent); 
+            background: #000; color: var(--accent); text-align: center; font-size: 18px; outline: none;
+        }
+
+        .grid { 
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); 
+            gap: 15px; padding: 20px; max-width: 1000px; margin: 0 auto; 
+        }
+        
+        .card { 
+            background: var(--surface); border-radius: 12px; overflow: hidden; 
+            aspect-ratio: 9/16; position: relative; border: 1px solid rgba(105, 130, 158, 0.2); 
+        }
+        
+        .card video { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+        .num { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; z-index: 2; }
+
+        #modal { position: fixed; inset: 0; background: #000; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; }
+        #vid-full { width: 90%; max-height: 70vh; border-radius: 10px; }
+        .btns { margin-top: 25px; display: flex; gap: 15px; }
+        .btn { padding: 15px 30px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; }
+        .btn-back { background: #333; color: white; }
+        .btn-dl { background: var(--accent); color: white; }
     </style>
 </head>
-<body>
+<body oncontextmenu="return false;">
 
-    <div class="sticky-top">
-        <div class="header">
-            <h1 id="logo-exit">PHOTO MOVIE</h1>
-            <p class="subtitle">COLECIONANDO MOMENTOS</p>
-            <div class="event-info-container" onclick="copiarLinkGaleria()">
-                <div class="v-line"></div>
-                <p id="nome-evento-titulo">CARREGANDO...</p>
-            </div>
-        </div>
-        <div class="search-area">
-            <input type="number" id="input-busca" placeholder="Nº VÍDEO">
-            <button class="btn-busca" onclick="executarBusca()">🔍</button>
-        </div>
+    <!-- Adicionado o ID titulo-trava para a lógica de cliques -->
+    <div class="header" id="titulo-trava">
+        <h1>AUTOGRAPH CAM</h1>
+        <div class="subtitle">colecionando momentos</div>
     </div>
 
-    <div id="gallery-container" class="gallery-grid"></div>
-
-    <div class="nav-footer">
-        <div class="btn-footer">SISTEMA GESTÃO 360º</div>
+    <div class="event-info-container">
+        <div class="v-line"></div>
+        <div id="nome-evento">SINCRONIZANDO...</div>
     </div>
 
-    <div id="modal-zoom">
-        <video id="media-full" controls playsinline crossorigin="anonymous"></video>
-        <div class="modal-controls">
-            <button class="btn-action btn-close" onclick="fecharZoom()">FECHAR</button>
-            <button id="btn-download-force" class="btn-action btn-download">BAIXAR</button>
+    <div class="search-area">
+        <input type="number" id="input-busca" placeholder="Nº VÍDEO" oninput="timerBusca()">
+    </div>
+
+    <div id="grid" class="grid"></div>
+
+    <div id="modal">
+        <video id="vid-full" controls playsinline crossorigin="anonymous"></video>
+        <div class="btns">
+            <button class="btn btn-back" onclick="fechar()">VOLTAR</button>
+            <button id="btn-save" class="btn btn-dl">BAIXAR VÍDEO</button>
         </div>
     </div>
 
 <script>
-    const WORKER_URL = "https://photomovie.maxprimefotovideo.workers.dev";
-    let listaArquivosAtuais = [];
-    let idPastaFixo = ""; 
+    const WORKER = "https://autographcam.maxprimefotovideo.workers.dev";
+    let listaVideos = [];
+    let cliquesSaida = 0;
+    let tempoBusca;
+    let idEventoAtual = "";
 
-    // BLOQUEIO DO BOTÃO VOLTAR
-    function bloquearVoltar() {
+    // --- LÓGICA DE TRAVA DE SEGURANÇA (ESTILO KIOSK) ---
+    
+    function aplicarTrava() {
+        // Empurra um estado para o histórico
         window.history.pushState(null, null, window.location.href);
+        
+        // Sempre que o usuário tentar voltar, empurramos ele "para frente" de novo
         window.onpopstate = function () {
-            window.history.go(1);
+            window.history.pushState(null, null, window.location.href);
+            // Opcional: Se o modal estiver aberto e o usuário usar o "voltar" do celular, fechamos o modal
+            if(document.getElementById('modal').style.display === "flex") {
+                fechar();
+            }
         };
     }
 
-    // SAÍDA PARA ADMIN (7 Cliques no Título)
-    let cliquesSaida = 0;
-    document.getElementById('logo-exit').onclick = () => {
-        if(++cliquesSaida >= 7) window.location.href = 'index.html';
+    // Saída para Admin (7 Cliques no Título)
+    document.getElementById('titulo-trava').onclick = () => {
+        cliquesSaida++;
+        if (cliquesSaida >= 7) {
+            // Remove a trava antes de sair para não bugar a navegação da index
+            window.onpopstate = null;
+            window.location.href = 'index.html';
+        }
+        // Reseta o contador se não completar os 7 cliques em 3 segundos
+        clearTimeout(window.resetCliques);
+        window.resetCliques = setTimeout(() => { cliquesSaida = 0; }, 3000);
     };
 
-    // FUNÇÃO PARA COPIAR O LINK DA GALERIA (Para você enviar fácil)
-    function copiarLinkGaleria() {
-        const link = `${window.location.origin}${window.location.pathname}?evento=${idPastaFixo}`;
-        navigator.clipboard.writeText(link).then(() => {
-            alert("Link da Galeria Copiado!\n" + link);
-        });
+    // --- LÓGICA DA GALERIA ---
+
+    function timerBusca() {
+        clearTimeout(tempoBusca);
+        const valor = document.getElementById('input-busca').value;
+        if (valor) tempoBusca = setTimeout(() => executarBusca(valor), 2000);
     }
 
-    async function sincronizarInterface() {
-        const urlParams = new URLSearchParams(window.location.search);
-        let eventoEncontrado = urlParams.get('evento');
+    function executarBusca(num) {
+        const index = parseInt(num) - 1;
+        if (listaVideos[index]) {
+            abrir(listaVideos[index].path);
+            document.getElementById('input-busca').value = '';
+        } else {
+            alert("Vídeo #" + num + " não encontrado.");
+            document.getElementById('input-busca').value = '';
+        }
+    }
 
-        if(!eventoEncontrado) {
-            const gDados = localStorage.getItem('config_atual');
-            if(gDados) {
-                const config = JSON.parse(gDados);
-                eventoEncontrado = config.id_fixo || config.nome;
-            }
+    async function carregar() {
+        const params = new URLSearchParams(window.location.search);
+        const configLocal = JSON.parse(localStorage.getItem('config_atual') || "{}");
+        const eventoID = params.get('evento') || configLocal.id_fixo;
+
+        if (!eventoID) {
+            document.getElementById('nome-evento').innerText = "SELECIONE UM EVENTO NO PAINEL";
+            return;
         }
 
-        if(!eventoEncontrado) return;
-        idPastaFixo = eventoEncontrado;
-        document.getElementById('nome-evento-titulo').innerText = idPastaFixo.replace(/_/g, ' ');
+        idEventoAtual = eventoID;
+        document.getElementById('nome-evento').innerText = idEventoAtual.replace(/_/g, ' ');
 
         try {
-            const res = await fetch(`${WORKER_URL}/listar-galeria?evento=${encodeURIComponent(idPastaFixo)}`);
-            const dados = await res.json();
-            const novos = dados.filter(f => f.path.toLowerCase().includes('final_'));
+            const res = await fetch(`${WORKER}/listar-galeria?evento=${encodeURIComponent(idEventoAtual)}`);
+            const arquivos = await res.json();
             
-            if (JSON.stringify(novos) !== JSON.stringify(listaArquivosAtuais)) {
-                listaArquivosAtuais = novos;
+            const finais = arquivos.filter(f => f.path.toLowerCase().includes('final_')).reverse();
+
+            if (JSON.stringify(finais) !== JSON.stringify(listaVideos)) {
+                listaVideos = finais;
                 renderizar();
             }
-        } catch (e) {}
+        } catch (e) { 
+            console.error("Erro na sincronização:", e);
+        }
     }
 
     function renderizar() {
-        const container = document.getElementById('gallery-container');
-        container.innerHTML = "";
-        listaArquivosAtuais.forEach((file, index) => {
-            const url = `${WORKER_URL}/stream?id=${encodeURIComponent(file.path)}`;
+        const grid = document.getElementById('grid');
+        grid.innerHTML = "";
+        
+        if (listaVideos.length === 0) {
+            grid.innerHTML = "<p style='grid-column: 1/-1; opacity:0.5; margin-top:50px;'>Aguardando processamento dos vídeos...</p>";
+            return;
+        }
+
+        listaVideos.forEach((file, i) => {
+            const videoUrl = `${WORKER}/stream?id=${encodeURIComponent(file.path)}`;
             const card = document.createElement('div');
-            card.className = 'video-card';
-            card.innerHTML = `<div class="video-number">#${index + 1}</div><video src="${url}#t=0.5" muted playsinline></video>`;
-            card.onclick = () => abrirZoom(url, file.path);
-            container.appendChild(card);
+            card.className = 'card';
+            card.innerHTML = `
+                <div class="num">#${listaVideos.length - i}</div>
+                <video src="${videoUrl}#t=0.5" muted playsinline></video>
+            `;
+            card.onclick = () => abrir(file.path);
+            grid.appendChild(card);
         });
     }
 
-    function executarBusca() {
-        const index = parseInt(document.getElementById('input-busca').value) - 1;
-        if (listaArquivosAtuais[index]) {
-            const file = listaArquivosAtuais[index];
-            abrirZoom(`${WORKER_URL}/stream?id=${encodeURIComponent(file.path)}`, file.path);
-        }
-    }
+    function abrir(path) {
+        const videoUrl = `${WORKER}/stream?id=${encodeURIComponent(path)}`;
+        document.getElementById('modal').style.display = "flex";
+        const v = document.getElementById('vid-full');
+        v.src = videoUrl;
+        v.load();
+        v.play();
 
-    function abrirZoom(url, path) {
-        const modal = document.getElementById('modal-zoom');
-        const video = document.getElementById('media-full');
-        modal.style.display = 'flex';
-        video.src = url;
-        video.play();
-        document.getElementById('btn-download-force').onclick = () => {
-            fetch(url).then(r => r.blob()).then(b => saveAs(b, path.split('/').pop()));
+        document.getElementById('btn-save').onclick = async () => {
+            const btn = document.getElementById('btn-save');
+            btn.innerText = "BAIXANDO...";
+            try {
+                const r = await fetch(videoUrl);
+                const b = await r.blob();
+                saveAs(b, path.split('/').pop());
+            } catch (e) { 
+                alert("Erro ao baixar. Tente novamente."); 
+            }
+            btn.innerText = "BAIXAR VÍDEO";
         };
     }
 
-    function fecharZoom() {
-        document.getElementById('modal-zoom').style.display = 'none';
-        document.getElementById('media-full').pause();
-        document.getElementById('media-full').src = "";
+    function fechar() {
+        document.getElementById('modal').style.display = "none";
+        const v = document.getElementById('vid-full');
+        v.pause();
+        v.src = "";
     }
 
+    // Inicialização
     window.onload = () => {
-        bloquearVoltar();
-        sincronizarInterface();
-        setInterval(sincronizarInterface, 5000);
+        aplicarTrava();
+        carregar();
+        setInterval(carregar, 5000);
     };
 </script>
 </body>
