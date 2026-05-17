@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Câmera Pro - Photo Movie</title>
+    <title>Câmera Pro - PHOTO MOVIE v1.0</title>
     <style>
         :root { --turquesa: #00d1d1; --dourado: #c5a059; --preto: #000; }
         body { margin: 0; background: #000; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
         
         #cam-container { width: 100vw; height: 100vh; position: relative; display: flex; flex-direction: column; }
         video { width: 100%; height: 100%; object-fit: cover; }
+        .mirror { transform: scaleX(-1); }
         
         #moldura-view { 
             position: absolute; inset: 0; width: 100%; height: 100%; 
@@ -68,6 +69,8 @@
         }
         .spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--turquesa); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        
+        .version-badge { position: fixed; bottom: 10px; right: 10px; font-size: 10px; color: rgba(255,255,255,0.3); z-index: 1000; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -95,6 +98,8 @@
         <div class="spinner"></div>
         <b style="letter-spacing: 2px;">PROCESSANDO E ENVIANDO...</b>
     </div>
+    
+    <div class="version-badge">v2.5</div>
 
 <script>
     const WORKER_URL = "https://photomovie.maxprimefotovideo.workers.dev";
@@ -107,6 +112,7 @@
     
     let currentStream;
     let useFrontCamera = false;
+    let isRecording = false;
     const molduraImg = new Image();
     molduraImg.crossOrigin = "anonymous"; 
 
@@ -124,6 +130,11 @@
         try {
             currentStream = await navigator.mediaDevices.getUserMedia(constraints);
             video.srcObject = currentStream;
+            if (useFrontCamera) {
+                video.classList.add('mirror');
+            } else {
+                video.classList.remove('mirror');
+            }
         } catch (e) { alert("Erro ao acessar câmera."); }
     }
 
@@ -135,7 +146,7 @@
     window.onload = async () => {
         const config = JSON.parse(localStorage.getItem('config_atual'));
         if (config) {
-            txtEvento.innerText = config.nome || "PHOTO MOVIE";
+            txtEvento.innerText = config.nome || "WEBCAM";
             let molduraPath = config.molduraUrl || config.moldura;
             if (molduraPath) {
                 const cleanId = molduraPath.includes('id=') ? molduraPath.split('id=')[1] : molduraPath;
@@ -149,6 +160,7 @@
     };
 
     btn.onclick = () => {
+        if (isRecording) return;
         let c = 3;
         const status = document.getElementById('status');
         status.style.display = 'flex';
@@ -166,6 +178,7 @@
     };
 
     function iniciarGravacao() {
+        isRecording = true;
         const chunks = [];
         const config = JSON.parse(localStorage.getItem('config_atual'));
         const tempo = (config ? parseInt(config.tempo) : 10) * 1000;
@@ -174,32 +187,65 @@
         let recorder;
 
         const loop = () => {
-            if (video.paused || video.ended) return;
-            // Desenha o vídeo
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            // Desenha a moldura por cima
+            if (!isRecording || video.paused || video.ended) return;
+
+            ctx.save();
+            // Lógica de centralização inteligente proporcional (Cover automático)
+            const videoRatio = video.videoWidth / video.videoHeight;
+            const canvasRatio = canvas.width / canvas.height;
+            let startX = 0, startY = 0, renderW = canvas.width, renderH = canvas.height;
+
+            if (videoRatio > canvasRatio) {
+                let vWidth = canvas.height * videoRatio;
+                startX = (canvas.width - vWidth) / 2;
+                renderW = vWidth;
+            } else {
+                let vHeight = canvas.width / videoRatio;
+                startY = (canvas.height - vHeight) / 2;
+                renderH = vHeight;
+            }
+
+            // Corrige e renderiza o espelhamento se a câmera frontal estiver ativa
+            if (useFrontCamera) {
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
+                ctx.drawImage(video, -startX, startY, -renderW, renderH);
+            } else {
+                ctx.drawImage(video, startX, startY, renderW, renderH);
+            }
+            ctx.restore();
+
+            // Desenha a moldura por cima sem interferência de escala externa
             if (molduraImg.complete) {
                 ctx.drawImage(molduraImg, 0, 0, canvas.width, canvas.height);
             }
+
             if (recorder && recorder.state === "recording") {
                 requestAnimationFrame(loop);
             }
         };
 
-        const stream = canvas.captureStream(30);
-        recorder = new MediaRecorder(stream, { 
-            mimeType: 'video/webm;codecs=vp8',
-            videoBitsPerSecond: 3000000 
-        });
+        // Captura o stream em 30 FPS estáveis do Canvas
+        const streamTarget = canvas.captureStream(30);
         
-        recorder.ondataavailable = e => { if(e.data.size > 0) chunks.push(e.data); };
+        // Configura fallback de codec robusto e amplamente aceito
+        let options = { mimeType: 'video/webm;codecs=vp8', videoBitsPerSecond: 3000000 };
+        try {
+            recorder = new MediaRecorder(streamTarget, options);
+        } catch(e) {
+            // Fallback caso o navegador rejeite propriedades estritas de codec
+            recorder = new MediaRecorder(streamTarget, { videoBitsPerSecond: 3000000 });
+        }
+        
+        recorder.ondataavailable = e => { if(e.data && e.data.size > 0) chunks.push(e.data); };
         
         recorder.onstop = async () => {
+            isRecording = false;
             document.getElementById('loading').style.display = 'flex';
             const blob = new Blob(chunks, { type: 'video/webm' });
             
             const fd = new FormData();
-            fd.append("video", blob);
+            fd.append("video", blob, "vid_" + Date.now() + ".webm");
             fd.append("uuid", "vid_" + Date.now() + ".webm");
             fd.append("evento", nomeEvento); 
 
@@ -212,15 +258,19 @@
                     document.getElementById('loading').style.display = 'none';
                 }
             } catch (err) {
+                alert("Falha na conexão com o servidor.");
                 document.getElementById('loading').style.display = 'none';
             }
         };
 
-        recorder.start();
-        loop(); 
+        // Força a renderização do primeiro frame antes de disparar o gravador
+        loop();
+        recorder.start(100); // Fatiamento do buffer a cada 100ms para evitar estouro de memória
         
         setTimeout(() => { 
-            if(recorder.state === "recording") recorder.stop(); 
+            if(recorder && recorder.state === "recording") {
+                recorder.stop();
+            }
         }, tempo);
     }
 </script>
