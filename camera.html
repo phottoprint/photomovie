@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Câmera Pro - PHOTO MOVIE v1.0</title>
+    <title>Câmera Pro - PHOTO MOVIE v1.1</title>
     <style>
         :root { --turquesa: #00d1d1; --dourado: #c5a059; --preto: #000; }
         body { margin: 0; background: #000; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
@@ -146,7 +146,7 @@
     window.onload = async () => {
         const config = JSON.parse(localStorage.getItem('config_atual'));
         if (config) {
-            txtEvento.innerText = config.nome || "WEBCAM";
+            txtEvento.innerText = config.nome || "PHOTO MOVIE";
             let molduraPath = config.molduraUrl || config.moldura;
             if (molduraPath) {
                 const cleanId = molduraPath.includes('id=') ? molduraPath.split('id=')[1] : molduraPath;
@@ -182,7 +182,9 @@
         const chunks = [];
         const config = JSON.parse(localStorage.getItem('config_atual'));
         const tempo = (config ? parseInt(config.tempo) : 10) * 1000;
-        const nomeEvento = config ? (config.id_fixo || config.nome) : "Geral";
+        
+        // CORREÇÃO CRÍTICA: Fallback rigoroso para garantir que uma string válida de ID seja enviada
+        const nomeEvento = config ? (config.id_fixo || config.nome || "Geral") : "Geral";
 
         let recorder;
 
@@ -190,7 +192,6 @@
             if (!isRecording || video.paused || video.ended) return;
 
             ctx.save();
-            // Lógica de centralização inteligente proporcional (Cover automático)
             const videoRatio = video.videoWidth / video.videoHeight;
             const canvasRatio = canvas.width / canvas.height;
             let startX = 0, startY = 0, renderW = canvas.width, renderH = canvas.height;
@@ -205,7 +206,6 @@
                 renderH = vHeight;
             }
 
-            // Corrige e renderiza o espelhamento se a câmera frontal estiver ativa
             if (useFrontCamera) {
                 ctx.translate(canvas.width, 0);
                 ctx.scale(-1, 1);
@@ -215,7 +215,6 @@
             }
             ctx.restore();
 
-            // Desenha a moldura por cima sem interferência de escala externa
             if (molduraImg.complete) {
                 ctx.drawImage(molduraImg, 0, 0, canvas.width, canvas.height);
             }
@@ -225,15 +224,12 @@
             }
         };
 
-        // Captura o stream em 30 FPS estáveis do Canvas
         const streamTarget = canvas.captureStream(30);
         
-        // Configura fallback de codec robusto e amplamente aceito
         let options = { mimeType: 'video/webm;codecs=vp8', videoBitsPerSecond: 3000000 };
         try {
             recorder = new MediaRecorder(streamTarget, options);
         } catch(e) {
-            // Fallback caso o navegador rejeite propriedades estritas de codec
             recorder = new MediaRecorder(streamTarget, { videoBitsPerSecond: 3000000 });
         }
         
@@ -263,9 +259,8 @@
             }
         };
 
-        // Força a renderização do primeiro frame antes de disparar o gravador
         loop();
-        recorder.start(100); // Fatiamento do buffer a cada 100ms para evitar estouro de memória
+        recorder.start(100); 
         
         setTimeout(() => { 
             if(recorder && recorder.state === "recording") {
